@@ -704,6 +704,7 @@ def get_attr(
     default: tp.Any = MISSING,
     *,
     safe: bool = True,
+    static_only: bool = False,
     resolve_descriptor: bool = False,
 ) -> tp.Any:
     """Get an attribute of an object.
@@ -713,6 +714,7 @@ def get_attr(
         attr_name (str): Name of the attribute to retrieve.
         default (Any): Default value to return if the attribute is not found.
         safe (bool): If True and the class defines `__getattr__`, return default or raise `AttributeError`.
+        static_only (bool): If True, only use static attribute retrieval without calling `getattr`.
         resolve_descriptor (bool): If True, resolve descriptors by calling `getattr`.
 
     Returns:
@@ -727,6 +729,10 @@ def get_attr(
                 if default is not MISSING:
                     return default
                 raise e
+        if static_only:
+            if default is not MISSING:
+                return default
+            raise e
         value = getattr(obj, attr_name, default)
         if value is MISSING:
             raise e
@@ -900,7 +906,9 @@ def get_attrs(
     is_mod = inspect.ismodule(cls)
     attrs = set(iter_attr_names(obj))
     if not incl_private:
-        attrs = {a for a in attrs if not a.startswith("_")}
+        attrs = {a for a in attrs if checks.is_public_name(a)}
+    else:
+        attrs = {a for a in attrs if checks.is_public_name(a) or checks.is_private_name(a)}
     obj_refname = ensure_refname(obj, can_be_refname=False, raise_error=False)
     obj_root = obj_refname.split(".", 1)[0] if obj_refname is not None else None
 
@@ -922,8 +930,8 @@ def get_attrs(
                     raw = None
                     raw_is_none = True
 
-        refname = ensure_refname(f"{obj_refname}.{name}", raise_error=False) if obj_refname is not None else None
         raw_refname = ensure_refname(raw, can_be_refname=False, allow_type_fallback=False, raise_error=False)
+        refname = ensure_refname(f"{obj_refname}.{name}", raise_error=False) if obj_refname is not None else None
         if raw_refname is not None:
             raw_root = raw_refname.split(".", 1)[0]
             use_raw = False
@@ -936,8 +944,6 @@ def get_attrs(
             else:
                 use_raw = False
             if use_raw:
-                if refname is not None and raw_refname != refname:
-                    print(raw_refname, refname)
                 refname = raw_refname
 
         _is_own = is_own(cls if is_mod else obj, name)

@@ -100,9 +100,24 @@ def get_module(obj: tp.Any) -> tp.Optional[ModuleType]:
     if mod is not None:
         return mod
     try:
-        return importlib.import_module(modname)
+        return import_module(modname)
     except Exception:
         return None
+
+
+def import_module(module_name: str) -> ModuleType:
+    """Import and return the module with the specified name.
+
+    Args:
+        module_name (str): Name of the module to import.
+
+    Returns:
+        ModuleType: Imported module.
+    """
+    mod = importlib.import_module(module_name)
+    if not isinstance(mod, ModuleType):
+        raise ImportError(f"Expected a module for {module_name!r}, got {type(mod)!r}")
+    return mod
 
 
 def resolve_module(module: tp.ModuleLike) -> ModuleType:
@@ -117,8 +132,10 @@ def resolve_module(module: tp.ModuleLike) -> ModuleType:
     from vectorbtpro.utils.refs import get_obj
 
     if isinstance(module, str):
-        if module in sys.modules:
-            return sys.modules[module]
+        try:
+            return import_module(module)
+        except ImportError:
+            pass
         obj = get_obj(module)
         if obj is None:
             raise ModuleNotFoundError(f"Module {module!r} not found")
@@ -209,7 +226,7 @@ def search_package(
     results = {}
 
     if isinstance(package, str):
-        package = importlib.import_module(package)
+        package = import_module(package)
     if package.__name__ not in _visited:
         _visited.add(package.__name__)
         for attr in dir(package):
@@ -229,7 +246,7 @@ def search_package(
             if name in _visited or name in blacklist:
                 continue
             _visited.add(name)
-            module = importlib.import_module(name)
+            module = import_module(name)
             for attr in dir(module):
                 if path_attrs:
                     path_attr = module.__name__ + "." + attr

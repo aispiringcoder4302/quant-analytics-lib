@@ -1774,6 +1774,7 @@ class IndicatorBase(Analyzable):
             method.__closure__,
         )
         update_wrapper(new_method, method)
+        new_method.__qualname__ = f"{cls.__name__}.{target_name}"
         setattr(cls, target_name, new_method)
 
 

@@ -20,7 +20,7 @@ from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.eval_ import evaluate
 from vectorbtpro.utils.execution import Task
-from vectorbtpro.utils.module_ import package_shortcut_config
+from vectorbtpro.utils.module_ import import_module, package_shortcut_config
 from vectorbtpro.utils.parsing import get_func_arg_names
 
 __all__ = [
@@ -298,7 +298,6 @@ class ComplexAssetPipeline(AssetPipeline):
         Returns:
             Tuple[str, Kwargs]: Tuple containing the modified expression and the updated context.
         """
-        import importlib
         import builtins
         import ast
         import sys
@@ -308,7 +307,7 @@ class ComplexAssetPipeline(AssetPipeline):
         for k, v in package_shortcut_config.items():
             if k not in context:
                 try:
-                    context[k] = importlib.import_module(v)
+                    context[k] = import_module(v)
                 except ImportError:
                     pass
         tree = ast.parse(expression)

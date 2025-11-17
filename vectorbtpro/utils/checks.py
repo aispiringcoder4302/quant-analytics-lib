@@ -11,6 +11,7 @@
 """Module providing utilities for validation during runtime."""
 
 import datetime
+from operator import is_
 import traceback
 from collections.abc import Collection, Iterable, Sequence, Hashable, Mapping
 from functools import partial
@@ -949,16 +950,52 @@ def is_mapping_like(obj: tp.Any) -> bool:
     return is_mapping(obj) or is_series(obj) or is_index(obj) or is_namedtuple(obj)
 
 
-def is_valid_variable_name(obj: str) -> bool:
+def is_valid_variable_name(name: str) -> bool:
     """Return True if the object is a valid variable name.
 
     Args:
-        obj (str): String representing the variable name.
+        name (str): String representing the variable name.
 
     Returns:
         bool: True if the string is a valid variable name, False otherwise.
     """
-    return obj.isidentifier() and not iskeyword(obj)
+    return name.isidentifier() and not iskeyword(name)
+
+
+def is_dunder_name(name: str) -> bool:
+    """Return True if the name is a dunder (double underscore) name.
+
+    Args:
+        name (str): String representing the name.
+
+    Returns:
+        bool: True if the name is a dunder name, False otherwise.
+    """
+    return len(name) > 4 and name.startswith("__") and name.endswith("__") and not set(name[2:-2]) <= {"_"}
+
+
+def is_private_name(name: str) -> bool:
+    """Return True if the name is a private (single underscore) name.
+
+    Args:
+        name (str): String representing the name.
+
+    Returns:
+        bool: True if the name is a private name, False otherwise.
+    """
+    return name.startswith("_") and not is_dunder_name(name)
+
+
+def is_public_name(name: str) -> bool:
+    """Return True if the name is a public name.
+
+    Args:
+        name (str): String representing the name.
+
+    Returns:
+        bool: True if the name is a public name, False otherwise.
+    """
+    return not name.startswith("_")
 
 
 def in_notebook() -> bool:

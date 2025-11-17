@@ -23,6 +23,7 @@ def map_value_to_cmap(
     vmin: tp.Optional[float] = None,
     vcenter: tp.Optional[float] = None,
     vmax: tp.Optional[float] = None,
+    as_hex: bool = False,
 ) -> tp.MaybeSequence[str]:
     """Return the RGB color(s) corresponding to the input value(s) according to the given colormap.
 
@@ -32,6 +33,7 @@ def map_value_to_cmap(
         vmin (Optional[float]): Minimum data value for colormap normalization.
         vcenter (Optional[float]): Midpoint for two-slope colormap normalization.
         vmax (Optional[float]): Maximum data value for colormap normalization.
+        as_hex (bool): Whether to return colors in hexadecimal format.
 
     Returns:
         MaybeSequence[str]: Color string in `rgb(r,g,b)` format for each input value.
@@ -45,10 +47,14 @@ def map_value_to_cmap(
     value_is_scalar = np.isscalar(value)
     if value_is_scalar:
         value = np.array([value])
+    else:
+        value = np.asarray(value)
+
     if isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
     elif isinstance(cmap, (tuple, list)):
         cmap = mcolors.LinearSegmentedColormap.from_list("", cmap)
+
     if vmin is not None and vcenter is not None and vmin > vcenter:
         vmin = vcenter
     if vmin is not None and vcenter is not None and vmin == vcenter:
@@ -57,6 +63,7 @@ def map_value_to_cmap(
         vmax = vcenter
     if vmax is not None and vcenter is not None and vmax == vcenter:
         vcenter = None
+
     if vcenter is not None:
         norm = mcolors.TwoSlopeNorm(vmin=vmin, vcenter=vcenter, vmax=vmax)
         value = norm(value)
@@ -66,10 +73,26 @@ def map_value_to_cmap(
         else:
             norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
             value = norm(value)
-    rgbs = list(map(lambda x: "rgb(%d,%d,%d)" % (int(x[0] * 255), int(x[1] * 255), int(x[2] * 255)), cmap(value)))
+
+    colors = cmap(value)
+
+    def to_int_channel(x):
+        return int(np.clip(x, 0.0, 1.0) * 255)
+
+    out = []
+    for c in colors:
+        r = to_int_channel(c[0])
+        g = to_int_channel(c[1])
+        b = to_int_channel(c[2])
+
+        if as_hex:
+            out.append(f"#{r:02x}{g:02x}{b:02x}")
+        else:
+            out.append(f"rgb({r},{g},{b})")
+
     if value_is_scalar:
-        return rgbs[0]
-    return rgbs
+        return out[0]
+    return out
 
 
 def parse_rgba_tuple(color: str) -> tp.Tuple[float, float, float, float]:

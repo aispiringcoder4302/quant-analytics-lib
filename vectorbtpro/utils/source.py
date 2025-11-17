@@ -31,12 +31,11 @@ from vectorbtpro.knowledge.custom_assets import search
 from vectorbtpro.knowledge.text_splitting import split_text
 from vectorbtpro.utils.checks import is_numba_func, is_complex_iterable
 from vectorbtpro.utils.config import merge_dicts
-from vectorbtpro.utils.decorators import cached
 from vectorbtpro.utils.formatting import dump, get_dump_language
-from vectorbtpro.utils.module_ import assert_can_import, resolve_module
+from vectorbtpro.utils.module_ import import_module, assert_can_import, resolve_module
 from vectorbtpro.utils.path_ import check_mkdir, get_common_prefix
 from vectorbtpro.utils.pbar import ProgressBar
-from vectorbtpro.utils.refs import ensure_refname
+from vectorbtpro.utils.refs import ensure_refname, get_refname_obj
 from vectorbtpro.utils.template import CustomTemplate, RepEval
 
 __all__ = [
@@ -149,8 +148,13 @@ def get_source(refname: str, clean_indent: bool = True, return_meta: bool = Fals
         return [line[len(pad) :] if line.startswith(pad) else line for line in lines]
 
     refname, module, qualname = ensure_refname(refname, return_parts=True)
-    filepath = get_module_source_path(module)
+    if module is not None:
+        filepath = get_module_source_path(module)
+    else:
+        filepath = None
     if not filepath or not os.path.exists(filepath):
+        if module is None:
+            raise FileNotFoundError(f"No pure-Python source for {refname!r}")
         raise FileNotFoundError(f"No pure-Python source for {module.__name__!r}")
 
     with open(filepath, encoding="utf-8") as fh:
@@ -166,7 +170,17 @@ def get_source(refname: str, clean_indent: bool = True, return_meta: bool = Fals
     tree = ast.parse(source, filename=filepath)
     target = _find(tree, chain)
     if target is None:
-        raise ValueError(f"Could not locate {'.'.join(chain)!r} in {module.__name__!r}")
+        obj = get_refname_obj(refname)
+        if obj is None or not hasattr(obj, "__code__"):
+            raise ValueError(f"Could not locate {'.'.join(chain)!r} in {module.__name__!r}")
+        lines, start = inspect.getsourcelines(obj)
+        end = start + len(lines) - 1
+        snippet = "".join(lines)
+        if clean_indent:
+            snippet = textwrap.dedent(snippet)
+        if return_meta:
+            return {"code": snippet, "file": filepath, "start_line": start, "end_line": end}
+        return snippet
 
     if isinstance(target, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and target.decorator_list:
         start = min(d.lineno for d in target.decorator_list) - 1
@@ -688,8 +702,7 @@ def cut_and_save_module(module: tp.ModuleLike, *args, **kwargs) -> Path:
     Returns:
         Path: File path where the extracted module section is saved.
     """
-    if isinstance(module, str):
-        module = importlib.import_module(module)
+    module = importlib.resolve_module(module)
     source = inspect.getsource(module)
     return cut_and_save(source, *args, **kwargs)
 
@@ -712,7 +725,7 @@ def cut_and_save_func(func: tp.Union[str, FunctionType], *args, **kwargs) -> Pat
         Path: File path where the extracted function section is saved.
     """
     if isinstance(func, str):
-        module = importlib.import_module(".".join(func.split(".")[:-1]))
+        module = import_module(".".join(func.split(".")[:-1]))
         func = getattr(module, func.split(".")[-1])
     else:
         module = inspect.getmodule(func)

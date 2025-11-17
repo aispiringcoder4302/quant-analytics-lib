@@ -28,9 +28,10 @@ from functools import cached_property, lru_cache, partial
 from types import ModuleType, MethodWrapperType
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import DefineMixin, define, get_type_and_kind, get_attr, get_attrs
 from vectorbtpro.utils.config import Configured
-from vectorbtpro.utils.module_ import resolve_module, get_module, package_shortcut_config
+from vectorbtpro.utils.module_ import import_module, resolve_module, get_module, package_shortcut_config
 from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
@@ -210,12 +211,13 @@ def get_obj_refname(obj: tp.Any, allow_type_fallback: bool = True) -> tp.Optiona
     return None
 
 
-def annotate_refname_parts(refname: str, allow_partial: bool = False) -> tp.Tuple[dict, ...]:
+def annotate_refname_parts(refname: str, allow_partial: bool = False, **kwargs) -> tp.Tuple[dict, ...]:
     """Annotate each part of a reference name with its corresponding object.
 
     Args:
         refname (str): Fully-qualified dotted name (e.g. "pkg.mod.Class.attr").
         allow_partial (bool): Whether to allow partial resolution of the reference name.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.attr_.get_attr`.
 
     Returns:
         Tuple[dict, ...]: Tuple of dictionaries, each containing:
@@ -227,11 +229,12 @@ def annotate_refname_parts(refname: str, allow_partial: bool = False) -> tp.Tupl
     obj = None
     annotated_parts = []
     refname_so_far = None
+
     for i, name in enumerate(refname_parts):
         if obj is None:
             if i == 0:
                 try:
-                    obj = importlib.import_module(name)
+                    obj = import_module(name)
                 except ImportError as e:
                     if allow_partial:
                         obj = None
@@ -239,19 +242,32 @@ def annotate_refname_parts(refname: str, allow_partial: bool = False) -> tp.Tupl
                         raise e
         else:
             try:
-                obj = get_attr(obj, name)
+                obj = get_attr(obj, name, **kwargs)
             except AttributeError as e:
-                if refname_so_far == "vectorbtpro.indicators.factory":
-                    import vectorbtpro as vbt
+                if refname_so_far.startswith("vectorbtpro.indicators.factory."):
+                    from vectorbtpro.indicators.factory import IndicatorFactory
 
-                    obj = get_attr(vbt, name)
-                elif refname_so_far.startswith("vectorbtpro.indicators.factory."):
-                    obj = obj(name)
+                    if inspect.isfunction(obj) and obj.__name__ in IndicatorFactory.list_builtin_locations():
+                        obj = obj(name)
+                    else:
+                        if allow_partial:
+                            obj = None
+                        else:
+                            raise e
                 else:
                     if allow_partial:
                         obj = None
                     else:
                         raise e
+            else:
+                shadow_modname = refname_so_far + "." + name
+                try:
+                    shadow_mod = import_module(shadow_modname)
+                except ImportError:
+                    pass
+                else:
+                    if shadow_mod is not obj:
+                        obj = shadow_mod
         annotated_parts.append(dict(name=name, obj=obj))
         if refname_so_far is None:
             refname_so_far = name
@@ -260,17 +276,18 @@ def annotate_refname_parts(refname: str, allow_partial: bool = False) -> tp.Tupl
     return tuple(annotated_parts)
 
 
-def get_refname_obj(refname: str, raise_error: bool = False) -> tp.Any:
+def get_refname_obj(refname: str, raise_error: bool = False, **kwargs) -> tp.Any:
     """Return the object corresponding to the provided reference name.
 
     Args:
         refname (str): Fully-qualified dotted name (e.g. "pkg.mod.Class.attr").
         raise_error (bool): Whether to raise an error if the object cannot be found.
+        **kwargs: Keyword arguments for `annotate_refname_parts`.
 
     Returns:
         Any: Object obtained by importing modules and accessing attributes.
     """
-    refname_parts = annotate_refname_parts(refname, allow_partial=not raise_error)
+    refname_parts = annotate_refname_parts(refname, allow_partial=not raise_error, **kwargs)
     if not refname_parts:
         return None
     return refname_parts[-1]["obj"]
@@ -296,8 +313,8 @@ def split_refname(
     refname_parts = refname.split(".")
     if module is None:
         try:
-            module = importlib.import_module(refname_parts[0])
-        except ModuleNotFoundError as e:
+            module = import_module(refname_parts[0])
+        except ImportError as e:
             if raise_error:
                 raise e
             return None, refname
@@ -306,24 +323,25 @@ def split_refname(
             return module, None
         return split_refname(".".join(refname_parts), module=module)
     else:
-        maybe_module = get_attr(module, refname_parts[0], None)
-        if maybe_module is not None and inspect.ismodule(maybe_module):
-            module = maybe_module
+        try:
+            module = import_module(module.__name__ + "." + refname_parts[0])
+        except ImportError:
+            return module, ".".join(refname_parts)
+        else:
             refname_parts = refname_parts[1:]
             if len(refname_parts) == 0:
                 return module, None
             return split_refname(".".join(refname_parts), module=module)
-        else:
-            return module, ".".join(refname_parts)
 
 
 def resolve_refname(
     refname: str,
     module: tp.Optional[tp.ModuleLike] = None,
-    _call_stack: tp.Optional[tp.List[tp.Tuple[str, tp.Optional[str]]]] = None,
-    _test_no_module: bool = True,
+    silence_warnings: bool = False,
 ) -> tp.Optional[tp.MaybeList[str]]:
     """Resolve a reference name into its fully qualified form using the provided module context.
+
+    Uses static introspection to avoid executing code.
 
     !!! note
         This function attempts to resolve the reference name by checking the module context
@@ -336,202 +354,269 @@ def resolve_refname(
             a library re-export ("vectorbtpro.Data"), a common alias ("vbt.Data"),
             or a simple name ("Data") that uniquely identifies an object.
         module (Optional[ModuleLike]): Module context used in reference resolution.
+        silence_warnings (bool): Flag to suppress warning messages.
 
     Returns:
         Optional[MaybeList[str]]: Reference name(s), or None if resolution fails.
     """
-    from vectorbtpro.utils.source import get_import_alias_map, get_defined_names
 
-    if _call_stack is None:
-        _call_stack = []
-    else:
-        _call_stack = list(_call_stack)
+    def _resolve_refname(refname, module=None, _refname_stack=None, _alias_stack=None, _test_no_module=True):
+        from vectorbtpro.utils.source import get_import_alias_map, get_defined_names
+
+        if _refname_stack is None:
+            _refname_stack = []
+        else:
+            _refname_stack = list(_refname_stack)
+        if _alias_stack is None:
+            _alias_stack = []
+        else:
+            _alias_stack = list(_alias_stack)
+
+        if module is not None:
+            module = resolve_module(module)
+
+        def _make_key(module, name):
+            return (module.__name__ if module is not None else None, name)
+
+        def _key_to_str(key):
+            return f"{key[0] + '.' if key[0] is not None else ''}{key[1]}"
+
+        def _resolve(refname, module=None, _test_no_module=False):
+            return _resolve_refname(
+                refname,
+                module=module,
+                _refname_stack=_refname_stack,
+                _test_no_module=_test_no_module,
+                _alias_stack=_alias_stack,
+            )
+
+        if refname == "":
+            if module is None:
+                return None
+            return module.__name__
+        refname_parts = refname.split(".")
+
+        if module is None:
+            if refname_parts[0] in package_shortcut_config:
+                refname_parts[0] = package_shortcut_config[refname_parts[0]]
+                module = import_module(refname_parts[0])
+                refname_parts = refname_parts[1:]
+            else:
+                try:
+                    module = import_module(refname_parts[0])
+                    refname_parts = refname_parts[1:]
+                except ImportError:
+                    module = import_module("vectorbtpro")
+        elif _test_no_module:
+            should_test = False
+            if refname_parts[0] in package_shortcut_config:
+                should_test = True
+            else:
+                try:
+                    module = import_module(refname_parts[0])
+                except ImportError:
+                    pass
+                else:
+                    should_test = True
+            if should_test:
+                resolved_refname = _resolve(refname)
+                if resolved_refname is not None:
+                    if not isinstance(resolved_refname, list):
+                        resolved_refnames = [resolved_refname]
+                        made_list = True
+                    else:
+                        resolved_refnames = resolved_refname
+                        made_list = False
+                    for r in resolved_refnames:
+                        if r != module.__name__ and not r.startswith(module.__name__ + "."):
+                            return None
+                    if made_list:
+                        return resolved_refnames[0]
+                    return resolved_refnames
+
+        if len(refname_parts) == 0:
+            return module.__name__
+        if refname_parts[0] in package_shortcut_config:
+            if package_shortcut_config[refname_parts[0]] == module.__name__:
+                refname_parts[0] = package_shortcut_config[refname_parts[0]]
+        if refname_parts[0] == module.__name__ and refname_parts[0] not in module.__dict__:
+            refname_parts = refname_parts[1:]
+            if len(refname_parts) == 0:
+                return module.__name__
+
+        refname_key = _make_key(module, ".".join(refname_parts))
+        if refname_key in _refname_stack:
+            call_stack_str = map(_key_to_str, _refname_stack + [refname_key])
+            refname_key_str = _key_to_str(refname_key)
+            if not silence_warnings:
+                warn(f"Cyclic reference detected: {' -> '.join(call_stack_str)}. Using {refname_key_str!r}.")
+            return refname_key_str
+        _refname_stack.append(refname_key)
+
+        obj = get_attr(module, refname_parts[0], None, static_only=True)
+        if obj is not None:
+            shadow_modname = module.__name__ + "." + refname_parts[0]
+            try:
+                shadow_mod = import_module(shadow_modname)
+            except ImportError:
+                pass
+            else:
+                if shadow_mod is not obj:
+                    module = shadow_mod
+                    refname_parts = refname_parts[1:]
+                    if not refname_parts:
+                        return module.__name__
+                    return _resolve(".".join(refname_parts), module=module)
+
+        if len(refname_parts) == 1:
+            defined_names = get_defined_names(module, raise_error=False)
+            if refname_parts[0] in defined_names:
+                return f"{module.__name__}.{refname_parts[0]}"
+            alias_map = get_import_alias_map(module, raise_error=False)
+            if refname_parts[0] in alias_map:
+                target = alias_map[refname_parts[0]]
+                if target == refname or target == f"{module.__name__}.{refname_parts[0]}":
+                    return target
+                alias_key = _make_key(module, refname_parts[0])
+                if alias_key in _alias_stack:
+                    return None
+                _alias_stack.append(alias_key)
+                return _resolve(target)
+
+        if obj is not None:
+            obj_refname = get_obj_refname(obj, allow_type_fallback=False)
+            if obj_refname is not None:
+                obj_refname_root = obj_refname.split(".", 1)[0]
+                module_root = module.__name__.split(".", 1)[0]
+                if obj_refname_root == module_root:
+                    full_path = module.__name__ + "." + ".".join(refname_parts)
+                    if obj_refname == full_path:
+                        return obj_refname
+                    head_path = module.__name__ + "." + refname_parts[0]
+                    if obj_refname != head_path and not obj_refname.startswith(head_path + "."):
+                        if len(refname_parts) == 1:
+                            return obj_refname
+                        tail = ".".join(refname_parts[1:])
+                        candidate = obj_refname + "." + tail
+                        if get_refname_obj(candidate, raise_error=False, static_only=True) is None:
+                            return None
+                        return candidate
+
+            if inspect.ismodule(obj):
+                parent_module = ".".join(obj.__name__.split(".")[:-1])
+            else:
+                parent_mod = get_module(obj)
+                parent_module = None
+                if parent_mod is not None:
+                    if refname_parts[0] in parent_mod.__dict__:
+                        if parent_mod.__dict__[refname_parts[0]] is obj:
+                            parent_module = parent_mod.__name__
+
+            if parent_module is None or parent_module == module.__name__:
+                if inspect.ismodule(obj):
+                    module = obj
+                    refname_parts = refname_parts[1:]
+                    if not refname_parts:
+                        return module.__name__
+                    return _resolve(".".join(refname_parts), module=module)
+                name = get_attr(obj, "__name__", None)
+                if name is not None and isinstance(name, str) and name in module.__dict__:
+                    obj = module.__dict__[name]
+                    refname_parts[0] = name
+                if len(refname_parts) == 1:
+                    return module.__name__ + "." + refname_parts[0]
+                if not isinstance(obj, type):
+                    cls = type(obj)
+                else:
+                    cls = obj
+                k = refname_parts[1]
+                owner = None
+                for super_cls in inspect.getmro(cls):
+                    d = get_attr(super_cls, "__dict__", {})
+                    if k in d:
+                        owner = super_cls
+                        break
+                if owner is None:
+                    return None
+                owner_module = get_attr(owner, "__module__", None)
+                owner_name = get_attr(owner, "__name__", None)
+                if owner_module is None or owner_name is None:
+                    return None
+                if not isinstance(owner_module, str) or not isinstance(owner_name, str):
+                    return None
+                cls_path = owner_module + "." + owner_name
+                tail = ".".join(refname_parts[1:])
+                candidate = cls_path + "." + tail
+                if get_refname_obj(candidate, raise_error=False, static_only=True) is None:
+                    return None
+                return candidate
+
+            if inspect.ismodule(obj):
+                parent_module = obj
+                refname_parts = refname_parts[1:]
+            return _resolve(".".join(refname_parts), module=parent_module)
+
+        if len(refname_parts) > 1:
+            alias_map = get_import_alias_map(module, raise_error=False)
+            if refname_parts[0] in alias_map:
+                target = alias_map[refname_parts[0]]
+                tail = ".".join(refname_parts[1:])
+                new_refname = f"{target}.{tail}"
+                if new_refname == refname:
+                    return new_refname
+                alias_key = _make_key(module, refname_parts[0])
+                if alias_key in _alias_stack:
+                    return None
+                _alias_stack.append(alias_key)
+                return _resolve(new_refname)
+
+        refnames = []
+        visited_modules = set()
+        for k, v in list(module.__dict__.items()):
+            if v is not module:
+                if inspect.ismodule(v) and v.__name__.startswith(module.__name__) and v.__name__ not in visited_modules:
+                    visited_modules.add(v.__name__)
+                    refname = _resolve(".".join(refname_parts), module=v)
+                    if refname is not None:
+                        if isinstance(refname, str):
+                            refname = [refname]
+                        for r in refname:
+                            if r not in refnames:
+                                refnames.append(r)
+        if len(refnames) > 1:
+            pairs = [(r, get_refname_obj(r, static_only=True)) for r in refnames]
+            pairs = [(r, o) for (r, o) in pairs if o is not None]
+            if not pairs:
+                return refnames
+            ids = {id(o) for _, o in pairs}
+            if len(ids) > 1:
+                return refnames
+            obj = pairs[0][1]
+            obj_refname = get_obj_refname(obj, allow_type_fallback=False)
+            if obj_refname is not None:
+                obj_refname_root = obj_refname.split(".", 1)[0]
+                candidate_roots = {r.split(".", 1)[0] for (r, _) in pairs}
+                if obj_refname_root in candidate_roots:
+                    return obj_refname
+            return refnames
+        if len(refnames) == 1:
+            return refnames[0]
+        return None
 
     if module is not None:
         module = resolve_module(module)
 
-    def _make_key(refname, module):
-        return (refname, module.__name__ if module is not None else None)
+    if not hasattr(resolve_refname, "_cache"):
+        resolve_refname._cache = {}
+    cache = resolve_refname._cache
+    cache_key = (module.__name__ if module is not None else None, refname)
+    if cache_key in cache:
+        return cache[cache_key]
 
-    def _key_to_str(key):
-        return f"{key[1] + '.' if key[1] is not None else ''}{key[0]}"
+    resolved = _resolve_refname(refname, module=module)
 
-    def _resolve(refname, module=None, _call_stack=_call_stack, _test_no_module=False):
-        return resolve_refname(refname, module=module, _call_stack=_call_stack, _test_no_module=_test_no_module)
-
-    if refname == "":
-        if module is None:
-            return None
-        return module.__name__
-    refname_parts = refname.split(".")
-
-    if module is None:
-        if refname_parts[0] in package_shortcut_config:
-            refname_parts[0] = package_shortcut_config[refname_parts[0]]
-            module = importlib.import_module(refname_parts[0])
-            refname_parts = refname_parts[1:]
-        else:
-            try:
-                module = importlib.import_module(refname_parts[0])
-                refname_parts = refname_parts[1:]
-            except ImportError:
-                module = importlib.import_module("vectorbtpro")
-    elif _test_no_module:
-        should_test = False
-        if refname_parts[0] in package_shortcut_config:
-            should_test = True
-        else:
-            try:
-                module = importlib.import_module(refname_parts[0])
-            except ImportError:
-                pass
-            else:
-                should_test = True
-        if should_test:
-            resolved_refname = _resolve(refname)
-            if resolved_refname is not None:
-                if not isinstance(resolved_refname, list):
-                    resolved_refnames = [resolved_refname]
-                    made_list = True
-                else:
-                    resolved_refnames = resolved_refname
-                    made_list = False
-                for r in resolved_refnames:
-                    if r != module.__name__ and not r.startswith(module.__name__ + "."):
-                        return None
-                if made_list:
-                    return resolved_refnames[0]
-                return resolved_refnames
-
-    if len(refname_parts) == 0:
-        return module.__name__
-    if refname_parts[0] in package_shortcut_config:
-        if package_shortcut_config[refname_parts[0]] == module.__name__:
-            refname_parts[0] = package_shortcut_config[refname_parts[0]]
-    if refname_parts[0] == module.__name__ and refname_parts[0] not in module.__dict__:
-        refname_parts = refname_parts[1:]
-        if len(refname_parts) == 0:
-            return module.__name__
-
-    stack_key = _make_key(".".join(refname_parts), module)
-    if stack_key in _call_stack:
-        call_stack_str = map(_key_to_str, _call_stack + [stack_key])
-        stack_key_str = _key_to_str(stack_key)
-        warn(f"Cyclic reference detected: {' -> '.join(call_stack_str)}. Using {stack_key_str!r}.")
-        return stack_key_str
-    _call_stack.append(stack_key)
-
-    if len(refname_parts) == 1:
-        defined_names = get_defined_names(module, raise_error=False)
-        if refname_parts[0] in defined_names:
-            return f"{module.__name__}.{refname_parts[0]}"
-        alias_map = get_import_alias_map(module, raise_error=False)
-        if refname_parts[0] in alias_map:
-            target = alias_map[refname_parts[0]]
-            if target == refname:
-                return refname
-            if target == f"{module.__name__}.{refname_parts[0]}":
-                return target
-            return _resolve(target)
-
-    obj = get_attr(module, refname_parts[0], None)
-    if obj is not None:
-        canon = get_obj_refname(obj, allow_type_fallback=False)
-        if canon is not None:
-            canon_root = canon.split(".", 1)[0]
-            module_root = module.__name__.split(".", 1)[0]
-            if canon_root == module_root:
-                head_path = module.__name__ + "." + refname_parts[0]
-                if canon != head_path:
-                    if len(refname_parts) == 1:
-                        return canon
-                    new_refname = canon + "." + ".".join(refname_parts[1:])
-                    return _resolve(new_refname)
-
-        if inspect.ismodule(obj):
-            parent_module = ".".join(obj.__name__.split(".")[:-1])
-        else:
-            parent_mod = get_module(obj)
-            parent_module = None
-            if parent_mod is not None:
-                if refname_parts[0] in parent_mod.__dict__:
-                    if parent_mod.__dict__[refname_parts[0]] is obj:
-                        parent_module = parent_mod.__name__
-        if parent_module is None or parent_module == module.__name__:
-            if inspect.ismodule(obj):
-                module = obj
-                refname_parts = refname_parts[1:]
-                if not refname_parts:
-                    return module.__name__
-                return _resolve(".".join(refname_parts), module=module)
-            name = get_attr(obj, "__name__", None)
-            if name is not None and isinstance(name, str) and name in module.__dict__:
-                obj = module.__dict__[name]
-                refname_parts[0] = name
-            if len(refname_parts) == 1:
-                return module.__name__ + "." + refname_parts[0]
-            if not isinstance(obj, type):
-                cls = type(obj)
-            else:
-                cls = obj
-            k = refname_parts[1]
-            v = get_attr(cls, k, None)
-            found_super_cls = None
-            for super_cls in inspect.getmro(cls)[1:]:
-                if k in dir(super_cls):
-                    v2 = get_attr(super_cls, k, None)
-                    if v2 is not None and v == v2:
-                        found_super_cls = super_cls
-            if found_super_cls is not None:
-                cls_path = found_super_cls.__module__ + "." + found_super_cls.__name__
-                return cls_path + "." + ".".join(refname_parts[1:])
-            return module.__name__ + "." + ".".join(refname_parts)
-        if inspect.ismodule(obj):
-            parent_module = obj
-            refname_parts = refname_parts[1:]
-        return _resolve(".".join(refname_parts), module=parent_module)
-
-    if len(refname_parts) > 1:
-        alias_map = get_import_alias_map(module, raise_error=False)
-        if refname_parts[0] in alias_map:
-            target = alias_map[refname_parts[0]]
-            tail = ".".join(refname_parts[1:])
-            new_refname = f"{target}.{tail}"
-            if new_refname != refname:
-                return _resolve(new_refname)
-
-    refnames = []
-    visited_modules = set()
-    for k, v in list(module.__dict__.items()):
-        if v is not module:
-            if inspect.ismodule(v) and v.__name__.startswith(module.__name__) and v.__name__ not in visited_modules:
-                visited_modules.add(v.__name__)
-                refname = _resolve(".".join(refname_parts), module=v)
-                if refname is not None:
-                    if isinstance(refname, str):
-                        refname = [refname]
-                    for r in refname:
-                        if r not in refnames:
-                            refnames.append(r)
-    if len(refnames) > 1:
-        pairs = [(r, get_refname_obj(r)) for r in refnames]
-        pairs = [(r, o) for (r, o) in pairs if o is not None]
-        if not pairs:
-            return refnames
-        ids = {id(o) for _, o in pairs}
-        if len(ids) > 1:
-            return refnames
-        obj = pairs[0][1]
-        canon = get_obj_refname(obj, allow_type_fallback=False)
-        if canon is not None:
-            canon_root = canon.split(".", 1)[0]
-            candidate_roots = {r.split(".", 1)[0] for (r, _) in pairs}
-            if canon_root in candidate_roots:
-                return canon
-        return refnames
-    if len(refnames) == 1:
-        return refnames[0]
-    return None
+    cache[cache_key] = resolved
+    return cache[cache_key]
 
 
 def get_refname(
@@ -540,6 +625,7 @@ def get_refname(
     resolve: bool = True,
     can_be_refname: bool = True,
     allow_type_fallback: bool = True,
+    **kwargs,
 ) -> tp.Optional[tp.MaybeList[str]]:
     """Return the reference name(s) for the provided object.
 
@@ -552,6 +638,7 @@ def get_refname(
         can_be_refname (bool): Whether the provided object can be a reference name itself.
         allow_type_fallback (bool): Whether to fallback to the type's reference name
             if no direct reference name is found.
+        **kwargs: Keyword arguments for `resolve_refname`.
 
     Returns:
         Optional[MaybeList[str]]: Reference name as a string, a list of strings if multiple
@@ -572,15 +659,25 @@ def get_refname(
         if refname is None:
             return None
     if resolve:
-        return resolve_refname(refname, module=module)
+        return resolve_refname(refname, module=module, **kwargs)
     return refname
 
 
-def get_obj(*args, allow_multiple: bool = False, **kwargs) -> tp.Optional[tp.MaybeList]:
+def get_obj(
+    obj: tp.Any,
+    module: tp.Optional[tp.ModuleLike] = None,
+    resolve: bool = True,
+    allow_multiple: bool = False,
+    **kwargs,
+) -> tp.Optional[tp.MaybeList]:
     """Return the object by its reference name.
 
     Args:
-        *args: Positional arguments for `get_refname`.
+        obj (Any): Object from which to extract the reference name.
+
+            If a string or tuple is provided, it is treated as a reference name.
+        module (Optional[ModuleLike]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the reference to an actual object.
         allow_multiple (bool): Whether to allow returning multiple objects
             if more than one reference name is found.
         **kwargs: Keyword arguments for `get_refname`.
@@ -588,7 +685,7 @@ def get_obj(*args, allow_multiple: bool = False, **kwargs) -> tp.Optional[tp.May
     Returns:
         Optional[MaybeList]: Object or a list of objects if multiple reference names are found, or None.
     """
-    refname = get_refname(*args, **kwargs)
+    refname = get_refname(obj, module=module, resolve=resolve, **kwargs)
     if refname is None:
         return None
     if isinstance(refname, list):
@@ -614,11 +711,10 @@ def ensure_refname(
     obj: tp.Any,
     module: tp.Optional[tp.ModuleLike] = None,
     resolve: bool = True,
-    can_be_refname: bool = True,
-    allow_type_fallback: bool = True,
     vbt_only: bool = False,
     return_parts: bool = False,
     raise_error: bool = True,
+    **kwargs,
 ) -> tp.Union[None, str, tp.Tuple[str, ModuleType, str]]:
     """Return the reference name for an object and optionally its module and qualified name.
 
@@ -628,12 +724,10 @@ def ensure_refname(
             If a string or tuple is provided, it is treated as a reference name.
         module (Optional[ModuleLike]): Module context used in reference resolution.
         resolve (bool): Whether to resolve the reference to an actual object.
-        can_be_refname (bool): Whether the provided object can be a reference name itself.
-        allow_type_fallback (bool): Whether to fallback to the type's reference name
-            if no direct reference name is found.
         vbt_only (bool): If True, limit resolution to objects within vectorbtpro.
         return_parts (bool): If True, return a tuple containing the reference name, module, and qualified name.
         raise_error (bool): Whether to raise an error if the reference name cannot be determined.
+        **kwargs: Keyword arguments for `get_refname`.
 
     Returns:
         Union[None, str, Tuple[str, ModuleType, str]]: Reference name as a string, or a tuple of
@@ -647,13 +741,7 @@ def ensure_refname(
             "If the object is internal, please decompose the object or provide a string instead."
         )
 
-    refname = get_refname(
-        obj,
-        module=module,
-        resolve=resolve,
-        can_be_refname=can_be_refname,
-        allow_type_fallback=allow_type_fallback,
-    )
+    refname = get_refname(obj, module=module, resolve=resolve, **kwargs)
     if refname is None:
         if raise_error:
             _raise_error()
@@ -698,27 +786,19 @@ def get_imlucky_url(query: str) -> str:
     return "https://duckduckgo.com/?q=!ducky+" + urllib.request.pathname2url(query)
 
 
-def imlucky(query: str, **kwargs) -> bool:
+def imlucky(query: str) -> bool:
     """Open a DuckDuckGo "I'm lucky" URL for a query in the web browser.
 
     Args:
         query (str): Search query.
-        **kwargs: Keyword arguments for `webbrowser.open`.
 
     Returns:
         bool: True if the browser was opened successfully, False otherwise.
     """
-    return webbrowser.open(get_imlucky_url(query), **kwargs)
+    return webbrowser.open(get_imlucky_url(query))
 
 
-def get_api_ref(
-    obj: tp.Any,
-    module: tp.Optional[tp.ModuleLike] = None,
-    resolve: bool = True,
-    can_be_refname: bool = True,
-    allow_type_fallback: bool = True,
-    vbt_only: bool = False,
-) -> str:
+def get_api_ref(obj: tp.Any, module: tp.Optional[tp.ModuleLike] = None, resolve: bool = True, **kwargs) -> str:
     """Return the API reference URL for an object.
 
     Args:
@@ -727,23 +807,12 @@ def get_api_ref(
             If a string or tuple is provided, it is treated as a reference name.
         module (Optional[ModuleLike]): Module context used in reference resolution.
         resolve (bool): Whether to resolve the reference to an actual object.
-        can_be_refname (bool): Whether the provided object can be a reference name itself.
-        allow_type_fallback (bool): Whether to fallback to the type's reference name
-            if no direct reference name is found.
-        vbt_only (bool): If True, limit resolution to objects within vectorbtpro.
+        **kwargs: Keyword arguments for `ensure_refname`.
 
     Returns:
         str: API reference URL for the given object.
     """
-    refname, module, qualname = ensure_refname(
-        obj,
-        module=module,
-        resolve=resolve,
-        can_be_refname=can_be_refname,
-        allow_type_fallback=allow_type_fallback,
-        vbt_only=vbt_only,
-        return_parts=True,
-    )
+    refname, module, qualname = ensure_refname(obj, module=module, resolve=resolve, return_parts=True, **kwargs)
     if module.__name__.split(".")[0] == "vectorbtpro":
         api_url = "https://github.com/polakowo/vectorbt.pro/blob/pvt-links/api/"
         md_url = api_url + module.__name__ + ".md/"
@@ -760,12 +829,7 @@ def get_api_ref(
     return get_imlucky_url(search_query)
 
 
-def open_api_ref(
-    obj: tp.Any,
-    module: tp.Optional[tp.ModuleLike] = None,
-    resolve: bool = True,
-    **kwargs,
-) -> bool:
+def open_api_ref(obj: tp.Any, module: tp.Optional[tp.ModuleLike] = None, resolve: bool = True, **kwargs) -> bool:
     """Open the API reference URL for an object in the web browser.
 
     Args:
@@ -774,12 +838,12 @@ def open_api_ref(
             If a string or tuple is provided, it is treated as a reference name.
         module (Optional[ModuleLike]): Module context used in reference resolution.
         resolve (bool): Whether to resolve the reference to an actual object.
-        **kwargs: Keyword arguments for `webbrowser.open`.
+        **kwargs: Keyword arguments for `get_api_ref`.
 
     Returns:
         bool: True if the browser was opened successfully, False otherwise.
     """
-    return webbrowser.open(get_api_ref(obj, module=module, resolve=resolve), **kwargs)
+    return webbrowser.open(get_api_ref(obj, module=module, resolve=resolve, **kwargs))
 
 
 DBlock = tp.Literal["decorator", "head", "body"]
@@ -896,21 +960,53 @@ class RefIndex(Configured):
     Args:
         expand_star_imports (bool): If True, attempts to resolve `from x import *` by importing the module
             and expanding its public names.
+        container_kinds (Optional[List[str]]): Container kinds to visit regardless of checks.
+        incl_modules (Optional[MaybeList[ModuleLike]]): Module names or objects to include for reference names.
+        excl_modules (Optional[MaybeList[ModuleLike]]): Module names or objects to exclude for reference names.
+        incl_unreachable (bool): Whether to allow visiting reference names from unreachable scopes.
+        incl_builtins (bool): Whether to allow visiting reference names from builtins.
+        incl_private (bool): Whether to allow visiting private reference names.
     """
 
     def __init__(
         self,
         expand_star_imports: bool = False,
-        container_kinds: tp.Optional[tp.Iterable[str]] = None,
+        container_kinds: tp.Optional[tp.List[str]] = None,
+        incl_modules: tp.Optional[tp.MaybeList[tp.ModuleLike]] = None,
+        excl_modules: tp.Optional[tp.MaybeList[tp.ModuleLike]] = None,
+        incl_unreachable: bool = False,
+        incl_builtins: bool = False,
+        incl_private: bool = False,
     ) -> None:
         Configured.__init__(
             self,
             expand_star_imports=expand_star_imports,
             container_kinds=container_kinds,
+            incl_modules=incl_modules,
+            excl_modules=excl_modules,
+            incl_unreachable=incl_unreachable,
+            incl_builtins=incl_builtins,
+            incl_private=incl_private,
         )
+
+        if incl_modules is None:
+            incl_modules = []
+        elif not isinstance(incl_modules, list):
+            incl_modules = [incl_modules]
+        incl_modules = [resolve_module(module) for module in incl_modules]
+        if excl_modules is None:
+            excl_modules = []
+        elif not isinstance(excl_modules, list):
+            excl_modules = [excl_modules]
+        excl_modules = [resolve_module(module) for module in excl_modules]
 
         self._expand_star_imports = expand_star_imports
         self._container_kinds = container_kinds
+        self._incl_modules = incl_modules
+        self._excl_modules = excl_modules
+        self._incl_unreachable = incl_unreachable
+        self._incl_builtins = incl_builtins
+        self._incl_private = incl_private
 
         self._dependencies = {}
 
@@ -925,13 +1021,58 @@ class RefIndex(Configured):
         return self._expand_star_imports
 
     @property
-    def container_kinds(self) -> tp.Optional[tp.Iterable[str]]:
-        """Container kinds to consider when indexing references.
+    def container_kinds(self) -> tp.Optional[tp.List[str]]:
+        """Container kinds to visit regardless of checks.
 
         Returns:
-            Optional[Iterable[str]]: Container kinds, or None if all kinds are considered.
+            Optional[List[str]]: List of container kinds, or None if all kinds are considered.
         """
         return self._container_kinds
+
+    @property
+    def incl_modules(self) -> tp.List[tp.ModuleLike]:
+        """Module names or objects to include for reference names.
+
+        Returns:
+            List[ModuleLike]: List of included modules.
+        """
+        return self._incl_modules
+
+    @property
+    def excl_modules(self) -> tp.List[tp.ModuleLike]:
+        """Module names or objects to exclude for reference names.
+
+        Returns:
+            List[ModuleLike]: List of excluded modules.
+        """
+        return self._excl_modules
+
+    @property
+    def incl_unreachable(self) -> bool:
+        """Whether to allow visiting reference names from unreachable scopes.
+
+        Returns:
+            bool: Whether to include unreachable scopes.
+        """
+        return self._incl_unreachable
+
+    @property
+    def incl_builtins(self) -> bool:
+        """Whether to allow visiting reference names from builtins.
+
+        Returns:
+            bool: Whether to include builtins.
+        """
+        return self._incl_builtins
+
+    @property
+    def incl_private(self) -> bool:
+        """Whether to allow visiting private reference names.
+
+        Returns:
+            bool: Whether to include private names.
+        """
+        return self._incl_private
 
     @property
     def dependencies(self) -> tp.Dict[str, tp.List[DHitMeta]]:
@@ -1072,7 +1213,7 @@ class RefIndex(Configured):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                 return f"{base}.{node.name}"
             tag = type(node).__name__.lower()
-            return f"{base}.<{tag}>"
+            return f"{base}::<{tag}>"
 
         class LocalCollector(ast.NodeVisitor):
             def __init__(self):
@@ -1201,7 +1342,7 @@ class RefIndex(Configured):
                     if not spec or not (spec.origin or "").endswith((".py", ".pyc")):
                         continue
                     try:
-                        mod = importlib.import_module(modname)
+                        mod = import_module(modname)
                     except Exception:
                         continue
                     public = getattr(mod, "__all__", None)
@@ -1497,20 +1638,23 @@ class RefIndex(Configured):
     def get_dependency_scopes(
         self,
         module: tp.ModuleType,
-        incl_unreachable: bool = False,
+        incl_unreachable: tp.Optional[bool] = None,
         unique_only: bool = True,
     ) -> tp.List[str]:
         """Return dependency scopes in the specified module.
 
         Args:
             module (ModuleLike): Module reference name or object.
-            incl_unreachable (bool): If False, exclude scopes that are not
-                attribute-accessible (those rendered with '::', e.g., `pkg.mod.func::<lambda>`)
+            incl_unreachable (Optional[bool]): Whether to allow visiting reference names from unreachable scopes.
+
+                Defaults to `RefIndex.incl_unreachable`.
             unique_only (bool): If True, return only unique reference names.
 
         Returns:
             List[str]: List of scope reference names.
         """
+        if incl_unreachable is None:
+            incl_unreachable = self.incl_unreachable
         self.index_module(module)
         scopes = []
         for dependency in self.dependencies[module.__name__]:
@@ -1527,11 +1671,6 @@ class RefIndex(Configured):
         module: tp.Optional[tp.ModuleLike] = None,
         resolve: bool = True,
         relation: str = "all",
-        incl_modules: tp.Optional[tp.MaybeList[tp.ModuleLike]] = None,
-        excl_modules: tp.Optional[tp.MaybeList[tp.ModuleLike]] = None,
-        incl_unreachable: bool = False,
-        incl_builtins: bool = False,
-        incl_private: bool = False,
         block: tp.Optional[str] = None,
         role: tp.Optional[str] = None,
         return_meta: bool = True,
@@ -1548,16 +1687,8 @@ class RefIndex(Configured):
                 * "direct": References that are connected directly.
                 * "nested": References that are connected through other references.
                 * "all": Both direct and nested references.
-            incl_modules (Optional[MaybeList[ModuleLike]]): If provided, only include dependencies whose
-                reference names start with names of these modules.
-            excl_modules (Optional[MaybeList[ModuleLike]]): If provided, exclude dependencies whose
-                reference names start with names of these modules.
             block (Optional[str]): Block to filter by (e.g., "decorator", "head", "body").
             role (Optional[str]): Syntactic role to filter by (e.g., "expr", "annotation", "default").
-            incl_unreachable (bool): If False, exclude references that are not
-                attribute-accessible (those rendered with '::', e.g., `pkg.mod.func::<lambda>`)
-            incl_builtins (bool): If True, include builtins as `"builtins.<name>"` when no nearer binding exists.
-            incl_private (bool): If True, include private members (those starting with `_`) in the search.
             return_meta (bool): If True, returns detailed dependency hit metadata of type `DHitMeta`.
 
                 If False, returns only reference name strings.
@@ -1580,16 +1711,6 @@ class RefIndex(Configured):
             scopes = [scope_refname] + [s for s in all_scopes if s.startswith(scope_refname + ".")]
         else:
             raise ValueError(f"Invalid relation: {relation!r}")
-        if incl_modules is None:
-            incl_modules = []
-        elif not isinstance(incl_modules, list):
-            incl_modules = [incl_modules]
-        incl_modules = [resolve_module(module) for module in incl_modules]
-        if excl_modules is None:
-            excl_modules = []
-        elif not isinstance(excl_modules, list):
-            excl_modules = [excl_modules]
-        excl_modules = [resolve_module(module) for module in excl_modules]
 
         dependencies = []
         for scope in scopes:
@@ -1600,30 +1721,12 @@ class RefIndex(Configured):
                     continue
                 if role is not None and dependency.role != role:
                     continue
-                if not incl_builtins and dependency.is_builtin:
-                    continue
-                if not incl_unreachable and dependency.is_unreachable:
-                    continue
-                if not incl_private and dependency.is_private:
-                    continue
                 if (
                     dependency.refname == scope_refname
                     or dependency.refname.startswith(scope_refname + ".")
                     or dependency.refname.startswith(scope_refname + "::")
                 ):
                     continue
-                if incl_modules:
-                    if not any(
-                        dependency.refname == mod.__name__ or dependency.refname.startswith(mod.__name__ + ".")
-                        for mod in incl_modules
-                    ):
-                        continue
-                if excl_modules:
-                    if any(
-                        dependency.refname == mod.__name__ or dependency.refname.startswith(mod.__name__ + ".")
-                        for mod in excl_modules
-                    ):
-                        continue
                 dependencies.append(dependency)
 
         if not return_meta:
@@ -1654,6 +1757,7 @@ class RefIndex(Configured):
         module: tp.Optional[tp.ModuleLike] = None,
         resolve: bool = True,
         incl_relations: bool = True,
+        incl_private: tp.Optional[bool] = None,
         **kwargs,
     ) -> RefInfo:
         """Get information about the specified object.
@@ -1665,6 +1769,9 @@ class RefIndex(Configured):
             module (Optional[ModuleLike]): Module context used in reference resolution.
             resolve (bool): Whether to resolve the reference to an actual object.
             incl_relations (bool): If True, include direct and nested members, bases, and dependencies.
+            incl_private (Optional[bool]): Whether to include private members.
+
+                Defaults to `RefIndex.incl_private`.
             **kwargs: Keyword arguments for `RefIndex.get_scope_dependencies`.
 
         Returns:
@@ -1672,6 +1779,8 @@ class RefIndex(Configured):
         """
         refname = ensure_refname(obj, module=module, resolve=resolve)
         obj = get_refname_obj(refname, raise_error=False)
+        if incl_private is None:
+            incl_private = self.incl_private
 
         ref_info = {}
         ref_info["refname"] = refname
@@ -1682,7 +1791,7 @@ class RefIndex(Configured):
             ref_info["container"] = container
         if incl_relations:
             if obj is not None and self.is_kind_container(ref_info.get("kind")):
-                attr_meta = get_attrs(obj, return_meta=True)
+                attr_meta = get_attrs(obj, incl_private=incl_private, return_meta=True)
                 direct_members = []
                 for m in attr_meta:
                     if m.refname is not None and m.is_own:
@@ -1728,7 +1837,7 @@ class RefIndex(Configured):
                 )
                 if direct_dependencies:
                     ref_info["direct_dependencies"] = direct_dependencies
-            except (ModuleNotFoundError, FileNotFoundError, ReferenceResolutionError):
+            except (ModuleNotFoundError, FileNotFoundError, ReferenceResolutionError, SyntaxError):
                 pass
             try:
                 nested_dependencies = self.get_scope_dependencies(
@@ -1741,7 +1850,7 @@ class RefIndex(Configured):
                 )
                 if nested_dependencies:
                     ref_info["nested_dependencies"] = nested_dependencies
-            except (ModuleNotFoundError, FileNotFoundError, ReferenceResolutionError):
+            except (ModuleNotFoundError, FileNotFoundError, ReferenceResolutionError, SyntaxError):
                 pass
             ref_info["is_shallow"] = False
         else:
@@ -1758,11 +1867,6 @@ class RefIndex(Configured):
         missing: str = "shallow",
         traversal: str = "BFS",
         max_depth: tp.Optional[int] = None,
-        visit_modules: tp.Optional[tp.MaybeList[tp.ModuleLike]] = None,
-        skip_modules: tp.Optional[tp.MaybeList[tp.ModuleLike]] = None,
-        visit_unreachable: tp.Optional[bool] = None,
-        visit_builtins: tp.Optional[bool] = None,
-        visit_private: tp.Optional[bool] = None,
         visit_containers: bool = True,
         incl_keys: tp.Optional[tp.Set[str]] = None,
         merge_edges: bool = True,
@@ -1793,24 +1897,7 @@ class RefIndex(Configured):
                 * "DFS" for depth-first search.
                 * "BFS" for breadth-first search.
             max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal, None = unlimited).
-            visit_modules (Optional[MaybeList[ModuleLike]]): Only visit reference names that start with any of these.
-
-                If None, defaults to `incl_modules` passed to `RefIndex.get_info`.
-            skip_modules (Optional[MaybeList[ModuleLike]]): Exclude reference names that start with any of these.
-
-                If None, defaults to `excl_modules` passed to `RefIndex.get_info`.
-            visit_unreachable (Optional[bool]): If True, allow visiting reference names containing '::'.
-
-                If None, defaults to `incl_unreachable` passed to `RefIndex.get_info`.
-            visit_builtins (Optional[bool]): If True, allow visiting reference names starting with 'builtins.'.
-
-                If None, defaults to `incl_builtins` passed to `RefIndex.get_info`.
-            visit_private (Optional[bool]): If True, allow visiting private reference names
-                (those whose last part starts with '_').
-
-                If None, defaults to `incl_private` passed to `RefIndex.get_info`.
-            visit_containers (bool): If True, visit the container of each reference name
-                regardless of `own_only` or `visit_private`.
+            visit_containers (bool): If True, visit the container of each reference name regardless of `own_only`.
             incl_keys (Optional[Set[str]]): Which fields of `RefInfo` to traverse from.
             merge_edges (bool): If True, merge multiple edges between the same nodes
                 into a single edge with a set of kinds.
@@ -1820,26 +1907,6 @@ class RefIndex(Configured):
             RefGraph: `RefGraph` instance representing the traversed graph.
         """
         refname = ensure_refname(obj, module=module, resolve=resolve)
-        if visit_modules is None:
-            visit_modules = kwargs.get("incl_modules", None)
-        if visit_modules is None:
-            visit_modules = []
-        elif not isinstance(visit_modules, list):
-            visit_modules = [visit_modules]
-        visit_modules = [resolve_module(module) for module in visit_modules]
-        if skip_modules is None:
-            skip_modules = kwargs.get("excl_modules", None)
-        if skip_modules is None:
-            skip_modules = []
-        elif not isinstance(skip_modules, list):
-            skip_modules = [skip_modules]
-        skip_modules = [resolve_module(module) for module in skip_modules]
-        if visit_unreachable is None:
-            visit_unreachable = kwargs.get("incl_unreachable", False)
-        if visit_builtins is None:
-            visit_builtins = kwargs.get("incl_builtins", False)
-        if visit_private is None:
-            visit_private = kwargs.get("incl_private", False)
         if incl_keys is None:
             incl_keys = {
                 "container",
@@ -1874,18 +1941,18 @@ class RefIndex(Configured):
                     yield d, "nested_dependencies"
 
         def _passes_base_filters(name, is_container=False):
-            if not visit_builtins and (name == "builtins" or name.startswith("builtins.")):
+            if not self.incl_builtins and (name == "builtins" or name.startswith("builtins.")):
                 return False
-            if not visit_unreachable and "::" in name:
+            if not self.incl_unreachable and "::" in name:
                 return False
-            if not is_container and not visit_private and name.split(".")[-1].startswith("_"):
+            if not is_container and not self.incl_private and not checks.is_public_name(name.split(".")[-1]):
                 return False
-            if visit_modules and not any(
-                name == mod.__name__ or name.startswith(mod.__name__ + ".") for mod in visit_modules
+            if self.incl_modules and not any(
+                name == mod.__name__ or name.startswith(mod.__name__ + ".") for mod in self.incl_modules
             ):
                 return False
-            if skip_modules and any(
-                name == mod.__name__ or name.startswith(mod.__name__ + ".") for mod in skip_modules
+            if self.excl_modules and any(
+                name == mod.__name__ or name.startswith(mod.__name__ + ".") for mod in self.excl_modules
             ):
                 return False
             return True
@@ -2159,7 +2226,12 @@ class RefGraph(Configured):
                 new_G.add_edge(u, v, kind=kind)
         return self.replace(G=new_G)
 
-    def generate_layout(self, layout_name: str = "spring", **kwargs) -> tp.Dict[str, tp.Tuple[float, float]]:
+    def generate_layout(
+        self,
+        layout_name: str = "spring",
+        add_root: bool = False,
+        **kwargs,
+    ) -> tp.Dict[str, tp.Tuple[float, float]]:
         """Generate layout for the graph.
 
         Args:
@@ -2167,6 +2239,7 @@ class RefGraph(Configured):
 
                 Will be searched as `networkx.layout.<layout_name>_layout`
                 and used as `prog` in `graphviz_layout` if not found and `graphviz` is installed.
+            add_root (bool): If True, add a root node to the layout computation.
             **kwargs: Keyword arguments for layout computation.
 
         Returns:
@@ -2177,6 +2250,12 @@ class RefGraph(Configured):
         if self.is_multigraph:
             self = self.merge_edges()
         H = self.filter_edges(lambda u, v, d: "container" in d.get("kinds", set())).G
+        if add_root:
+            root_node = "__root__"
+            H.add_node(root_node)
+            for n in H.nodes():
+                if H.in_degree(n) == 0 and n != root_node:
+                    H.add_edge(root_node, n)
 
         layout_func = getattr(nx.layout, f"{layout_name}_layout", None)
         if layout_func is not None:
@@ -2188,13 +2267,79 @@ class RefGraph(Configured):
         except ImportError:
             raise ValueError(f"Layout {layout_name!r} not found in networkx and graphviz is not installed")
 
-    def generate_colors(self) -> tp.Dict[str, str]:
+    def generate_colors(self, strategy: str = "partition", cmap: tp.Any = "rainbow") -> tp.Dict[str, str]:
         """Generate colors for the nodes in the graph.
+
+        Args:
+            strategy (str): Coloring strategy.
+            cmap (Any): Colormap identifier provided as a string name or a collection (list/tuple) of colors.
 
         Returns:
             Dict[str, str]: Dictionary mapping node IDs to their colors.
         """
-        return {}
+        from vectorbtpro.utils.colors import map_value_to_cmap
+
+        if strategy.lower() == "partition":
+            graph_nodes = list(self.G.nodes())
+            node_set = set(graph_nodes)
+            root = {
+                "name": "",
+                "full_path": "",
+                "is_actual_node": False,
+                "children": {},
+            }
+
+            for fqn in node_set:
+                parts = fqn.split(".")
+                current = root
+                full_path = ""
+                for part in parts:
+                    full_path = part if not full_path else full_path + "." + part
+                    children = current["children"]
+                    if part not in children:
+                        children[part] = {
+                            "name": part,
+                            "full_path": full_path,
+                            "is_actual_node": full_path in node_set,
+                            "children": {},
+                        }
+                    else:
+                        if full_path in node_set:
+                            children[part]["is_actual_node"] = True
+                    current = children[part]
+
+            values = {}
+
+            def _assign_interval(node, start, end):
+                if node["is_actual_node"] and node["full_path"]:
+                    values[node["full_path"]] = start
+
+                children = node["children"]
+                if not children:
+                    return
+
+                keys = sorted(children.keys())
+                n = len(keys)
+                if n == 0:
+                    return
+
+                width = (end - start) / n
+                for i, key in enumerate(keys):
+                    child_start = start + i * width
+                    child_end = child_start + width
+                    _assign_interval(children[key], child_start, child_end)
+
+            _assign_interval(root, 0.0, 1.0)
+            color_list = map_value_to_cmap(
+                [values[node] for node in graph_nodes],
+                cmap=cmap,
+                vmin=0.0,
+                vmax=1.0,
+                as_hex=True,
+            )
+            return {node: color for node, color in zip(graph_nodes, color_list)}
+        else:
+            raise ValueError(f"Invalid strategy: {strategy!r}")
 
     def export(
         self,
