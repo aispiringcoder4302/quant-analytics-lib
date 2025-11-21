@@ -96,6 +96,32 @@ def get_domain(ref: str, fig: tp.BaseFigure) -> tp.Tuple[int, int]:
     return 0, 1
 
 
+def get_bgcolor(fig: tp.BaseFigure) -> str:
+    """Get the background color of the figure.
+
+    Args:
+        fig (BaseFigure): Plotly figure.
+
+    Returns:
+        str: Background color of the figure.
+    """
+    if "plot_bgcolor" in fig.layout and fig.layout.plot_bgcolor is not None:
+        return fig.layout.plot_bgcolor
+    if "template" in fig.layout and fig.layout.template is not None:
+        template = fig.layout.template
+        if "layout" in template and "plot_bgcolor" in template.layout:
+            if template.layout.plot_bgcolor is not None:
+                return template.layout.plot_bgcolor
+    if "paper_bgcolor" in fig.layout and fig.layout.paper_bgcolor is not None:
+        return fig.layout.paper_bgcolor
+    if "template" in fig.layout and fig.layout.template is not None:
+        template = fig.layout.template
+        if "layout" in template and "paper_bgcolor" in template.layout:
+            if template.layout.paper_bgcolor is not None:
+                return template.layout.paper_bgcolor
+    return "white"
+
+
 FigureMixinT = tp.TypeVar("FigureMixinT", bound="FigureMixin")
 
 

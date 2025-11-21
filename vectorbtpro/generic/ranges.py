@@ -1062,6 +1062,7 @@ class Ranges(PriceRecords):
         aux_middle_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot projections.
@@ -1146,6 +1147,9 @@ class Ranges(PriceRecords):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -1296,7 +1300,9 @@ class Ranges(PriceRecords):
         plot_past_period = _resolve_period(plot_past_period)
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         if plot_ohlc and ohlc is not None:
@@ -1384,6 +1390,7 @@ class Ranges(PriceRecords):
         xref: str = "x",
         yref: str = "y",
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot range shapes on a figure.
@@ -1406,6 +1413,9 @@ class Ranges(PriceRecords):
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -1484,7 +1494,9 @@ class Ranges(PriceRecords):
             plot_close = True
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
         x_domain = get_domain(yref, fig)
         y_domain = get_domain(yref, fig)
@@ -1569,6 +1581,7 @@ class Ranges(PriceRecords):
         yref: str = "y",
         fig: tp.Optional[tp.BaseFigure] = None,
         return_close: bool = False,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.Tuple[tp.BaseFigure, tp.Series]]:
         """Plot range data including OHLC, close prices, start/end markers,
@@ -1598,6 +1611,9 @@ class Ranges(PriceRecords):
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             return_close (bool): Whether to return the close Series along with the figure.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -1677,9 +1693,10 @@ class Ranges(PriceRecords):
             plot_close = True
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
-        y_domain = get_domain(yref, fig)
 
         plotting_ohlc = False
         if plot_ohlc and ohlc is not None:

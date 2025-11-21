@@ -5895,6 +5895,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         hidden_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot a Series as a line against another line.
@@ -5912,6 +5913,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -5952,7 +5956,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 other = other.rename("Other")
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         pos_mask = obj > other
@@ -6569,6 +6575,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         trace_kwargs: tp.KwargsLikeSequence = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot a stacked area chart.
@@ -6582,6 +6589,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -6602,7 +6612,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         import plotly.express as px
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         if colorway is None:
@@ -6645,7 +6657,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                     for c in range(len(self.wrapper.columns))
                 ],
                 add_trace_kwargs=add_trace_kwargs,
-                use_gl=False,
+                use_webgl=False,
                 fig=fig,
                 **layout_kwargs,
             )
@@ -6667,7 +6679,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                     for c in range(len(self.wrapper.columns))
                 ],
                 add_trace_kwargs=add_trace_kwargs,
-                use_gl=False,
+                use_webgl=False,
                 fig=fig,
                 **layout_kwargs,
             )
@@ -6695,6 +6707,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         upper_max_error_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot the pattern with computed error bounds.
@@ -6738,6 +6751,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -6783,7 +6799,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             upper_max_error_trace_kwargs = {}
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         self_col = self.select_col(column=column, group_by=False)
@@ -7349,6 +7367,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
         aux_middle_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot DataFrame columns as projections with optional bands and colorization.
@@ -7422,6 +7441,9 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -7535,7 +7557,9 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             proj_max = None
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         if len(self.obj.columns) > 0:

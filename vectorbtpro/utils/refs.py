@@ -15,6 +15,7 @@ from __future__ import annotations
 import ast
 import builtins
 import contextlib
+import hashlib
 import importlib
 import importlib.util
 import inspect
@@ -30,7 +31,7 @@ from types import ModuleType, MethodWrapperType
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import DefineMixin, define, get_type_and_kind, get_attr, get_attrs
-from vectorbtpro.utils.config import Configured
+from vectorbtpro.utils.config import Configured, merge_dicts
 from vectorbtpro.utils.module_ import import_module, resolve_module, get_module, package_shortcut_config
 from vectorbtpro.utils.warnings_ import warn
 
@@ -40,8 +41,8 @@ __all__ = [
     "imlucky",
     "get_api_ref",
     "open_api_ref",
-    "RefIndex",
     "RefGraph",
+    "RefIndex",
 ]
 
 if tp.TYPE_CHECKING:
@@ -500,7 +501,7 @@ def resolve_refname(
                         candidate = obj_refname + "." + tail
                         if get_refname_obj(candidate, raise_error=False, static_only=True) is None:
                             return None
-                        return candidate
+                        return _resolve(candidate)
 
             if inspect.ismodule(obj):
                 parent_module = ".".join(obj.__name__.split(".")[:-1])
@@ -715,7 +716,7 @@ def ensure_refname(
     return_parts: bool = False,
     raise_error: bool = True,
     **kwargs,
-) -> tp.Union[None, str, tp.Tuple[str, ModuleType, str]]:
+) -> tp.Union[tp.Optional[str], tp.Tuple[tp.Optional[str], tp.Optional[ModuleType], tp.Optional[str]]]:
     """Return the reference name for an object and optionally its module and qualified name.
 
     Args:
@@ -730,9 +731,9 @@ def ensure_refname(
         **kwargs: Keyword arguments for `get_refname`.
 
     Returns:
-        Union[None, str, Tuple[str, ModuleType, str]]: Reference name as a string, or a tuple of
-            (reference name, module, qualified name) if `return_parts` is True;
-            or None if the reference name cannot be determined.
+        Union[Optional[str], Tuple[Optional[str], Optional[ModuleType], Optional[str]]]:
+            Reference name as a string, or a tuple of (reference name, module, qualified name)
+            if `return_parts` is True; or None if the reference name cannot be determined.
     """
 
     def _raise_error():
@@ -745,11 +746,15 @@ def ensure_refname(
     if refname is None:
         if raise_error:
             _raise_error()
+        if return_parts:
+            return None, None, None
         return None
     if isinstance(refname, list):
         if raise_error:
             reflist = "\n* ".join(refname)
             raise AmbiguousReferenceError(f"Multiple reference names found for {obj!r}:\n\n* {reflist}")
+        if return_parts:
+            return None, None, None
         return None
     if vbt_only or return_parts or resolve:
         module, qualname = split_refname(refname, raise_error=False)
@@ -757,6 +762,8 @@ def ensure_refname(
             if vbt_only and module.__name__.split(".")[0] != "vectorbtpro":
                 if raise_error:
                     _raise_error()
+                if return_parts:
+                    return None, None, None
                 return None
             if return_parts:
                 return refname, module, qualname
@@ -768,6 +775,8 @@ def ensure_refname(
             if vbt_only and refname.split(".")[0] != "vectorbtpro":
                 if raise_error:
                     _raise_error()
+                if return_parts:
+                    return None, None, None
                 return None
             if return_parts:
                 return refname, module, qualname
@@ -846,6 +855,1166 @@ def open_api_ref(obj: tp.Any, module: tp.Optional[tp.ModuleLike] = None, resolve
     return webbrowser.open(get_api_ref(obj, module=module, resolve=resolve, **kwargs))
 
 
+@define
+class RefInfo(DefineMixin):
+    """Class representing information about a reference."""
+
+    refname: str = define.field()
+    """Fully qualified reference name."""
+
+    qualname: tp.Optional[str] = define.field(default=None)
+    """Qualified name of the referenced object within its module."""
+
+    module: tp.Optional[str] = define.field(default=None)
+    """Module where the referenced object is defined."""
+
+    type: tp.Optional[str] = define.field(default=None)
+    """Type of the referenced object."""
+
+    kind: tp.Optional[str] = define.field(default=None)
+    """Kind of the referenced object."""
+
+    container: tp.Optional[str] = define.field(default=None)
+    """Reference name of the container."""
+
+    direct_members: tp.List[str] = define.field(factory=list)
+    """List of reference names of the direct members."""
+
+    nested_members: tp.List[str] = define.field(factory=list)
+    """List of reference names of the nested members."""
+
+    direct_bases: tp.List[str] = define.field(factory=list)
+    """List of reference names of the direct base classes."""
+
+    nested_bases: tp.List[str] = define.field(factory=list)
+    """List of reference names of the nested base classes."""
+
+    direct_dependencies: tp.List[str] = define.field(factory=list)
+    """List of reference names of the direct dependencies."""
+
+    nested_dependencies: tp.List[str] = define.field(factory=list)
+    """List of reference names of the nested dependencies."""
+
+    is_shallow: bool = define.field(default=False)
+    """Whether relations are not included."""
+
+
+RefGraphT = tp.TypeVar("RefGraphT", bound="RefGraph")
+
+
+class RefGraph(Configured):
+    """Class representing a reference graph.
+
+    Args:
+        G (DiGraph): NetworkX directed graph representing the reference relationships.
+    """
+
+    def __init__(self, G: DiGraphT) -> None:
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("networkx")
+
+        Configured.__init__(self, G=G)
+
+        self._G = G
+
+    @property
+    def G(self) -> DiGraphT:
+        """NetworkX directed graph representing the reference relationships.
+
+        Returns:
+            DiGraph: NetworkX directed graph.
+        """
+        return self._G
+
+    @property
+    def is_multigraph(self) -> bool:
+        """Check if the graph is a MultiGraph.
+
+        Returns:
+            bool: True if the graph is a MultiGraph, False otherwise.
+        """
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("networkx")
+        import networkx as nx
+
+        return isinstance(self.G, nx.MultiGraph)
+
+    @classmethod
+    def from_ref_infos(cls: tp.Type[RefGraphT], ref_infos: tp.List[RefInfo], merge_edges: bool = True) -> RefGraphT:
+        """Build a NetworkX directed graph from the provided reference information.
+
+        Args:
+            ref_infos (List[RefInfo]): List of `RefInfo` instances.
+            merge_edges (bool): If True, merge multiple edges between the same nodes
+                into a single edge with a set of kinds.
+
+        Returns:
+            RefGraph: Reference graph built from the reference information.
+        """
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("networkx")
+        import networkx as nx
+
+        G = nx.MultiDiGraph()
+
+        for ref_info in ref_infos:
+            if ref_info.refname not in G:
+                G.add_node(ref_info.refname)
+            G.nodes[ref_info.refname].update(
+                qualname=ref_info.qualname,
+                module=ref_info.module,
+                type=ref_info.type,
+                kind=ref_info.kind,
+            )
+
+        for ref_info in ref_infos:
+            if ref_info.container is not None and ref_info.container in G:
+                G.add_edge(ref_info.container, ref_info.refname, kind="container")
+            for m in ref_info.direct_members:
+                if m in G:
+                    G.add_edge(ref_info.refname, m, kind="direct_member")
+            for m in ref_info.nested_members:
+                if m in G:
+                    G.add_edge(ref_info.refname, m, kind="nested_member")
+            for b in ref_info.direct_bases:
+                if b in G:
+                    G.add_edge(ref_info.refname, b, kind="direct_base")
+            for b in ref_info.nested_bases:
+                if b in G:
+                    G.add_edge(ref_info.refname, b, kind="nested_base")
+            for d in ref_info.direct_dependencies:
+                if d in G:
+                    G.add_edge(ref_info.refname, d, kind="direct_dependency")
+            for d in ref_info.nested_dependencies:
+                if d in G:
+                    G.add_edge(ref_info.refname, d, kind="nested_dependency")
+
+        return cls(G=G).merge_edges() if merge_edges else cls(G=G)
+
+    def filter_nodes(self: RefGraphT, predicate: tp.Callable[[str, tp.Dict[str, tp.Any]], bool]) -> RefGraphT:
+        """Filter nodes in the graph based on a predicate function.
+
+        Args:
+            predicate (Callable[[str, Dict[str, Any]], bool]): Function that takes a node ID
+                and a data dictionary, and returns True if the node should be kept, False otherwise.
+
+        Returns:
+            RefGraph: Reference graph with filtered nodes.
+        """
+        new_G = type(self.G)()
+        for n, d in self.G.nodes(data=True):
+            if predicate(n, d):
+                new_G.add_node(n, **d)
+        if self.is_multigraph:
+            for u, v, d in self.G.edges(data=True):
+                if u in new_G and v in new_G:
+                    new_G.add_edge(u, v, **d)
+        else:
+            for u, v, d in self.G.edges(data=True):
+                if u in new_G and v in new_G:
+                    new_G.add_edge(u, v, **d)
+        return self.replace(G=new_G)
+
+    def filter_edges(self: RefGraphT, predicate: tp.Callable[[str, str, tp.Dict[str, tp.Any]], bool]) -> RefGraphT:
+        """Filter edges in the graph based on a predicate function.
+
+        Args:
+            predicate (Callable[[str, str, Dict[str, Any]], bool]): Function that takes a source node ID,
+                a target node ID, and a data dictionary, and returns True if the edge should be kept,
+                False otherwise.
+
+        Returns:
+            RefGraph: Reference graph with filtered edges.
+        """
+        new_G = type(self.G)()
+        for n, d in self.G.nodes(data=True):
+            new_G.add_node(n, **d)
+        if self.is_multigraph:
+            for u, v, d in self.G.edges(data=True):
+                if predicate(u, v, d):
+                    new_G.add_edge(u, v, **d)
+        else:
+            for u, v, d in self.G.edges(data=True):
+                if predicate(u, v, d):
+                    new_G.add_edge(u, v, **d)
+        return self.replace(G=new_G)
+
+    def merge_edges(self: RefGraphT) -> RefGraphT:
+        """Merge multiple edges between the same nodes into a single edge with a set of kinds.
+
+        Returns:
+            RefGraph: Reference graph with merged edges.
+        """
+        import networkx as nx
+
+        if not self.is_multigraph:
+            return self
+        new_G = nx.DiGraph()
+        for n, d in self.G.nodes(data=True):
+            new_G.add_node(n, **d)
+        for u, v, d in self.G.edges(data=True):
+            if new_G.has_edge(u, v):
+                new_G[u][v]["kinds"].add(d.get("kind"))
+            else:
+                new_d = dict(d)
+                kinds = {new_d.pop("kind")}
+                new_G.add_edge(u, v, kinds=kinds, **new_d)
+        return self.replace(G=new_G)
+
+    def split_edges(self: RefGraphT) -> RefGraphT:
+        """Split edges with multiple kinds into multiple edges with single kinds.
+
+        Returns:
+            RefGraph: Reference graph with split edges.
+        """
+        import networkx as nx
+
+        if self.is_multigraph:
+            return self
+        new_G = nx.MultiDiGraph()
+        for n, d in self.G.nodes(data=True):
+            new_G.add_node(n, **d)
+        for u, v, d in self.G.edges(data=True):
+            new_d = dict(d)
+            kinds = new_d.pop("kinds", set())
+            for kind in kinds:
+                new_G.add_edge(u, v, kind=kind, **new_d)
+        return self.replace(G=new_G)
+
+    def generate_node_positions(
+        self,
+        layout: str = "spring",
+        add_root: bool = False,
+        **kwargs,
+    ) -> tp.Dict[str, tp.Tuple[float, float]]:
+        """Generate positions for the nodes in the graph.
+
+        Args:
+            layout (str): Layout algorithm to use.
+
+                Will be searched as `networkx.layout.<layout>_layout`
+                and used as `prog` in `graphviz_layout` if not found and `graphviz` is installed.
+            add_root (bool): If True, add a root node to the layout computation.
+            **kwargs: Keyword arguments for layout computation.
+
+        Returns:
+            Dict[str, Tuple[float, float]]: Dictionary mapping node IDs to their (x, y) positions.
+        """
+        import networkx as nx
+
+        if self.is_multigraph:
+            self = self.merge_edges()
+        H = self.filter_edges(lambda u, v, d: "container" in d.get("kinds", set())).G
+        if add_root:
+            root_node = "__root__"
+            H.add_node(root_node)
+            for n in H.nodes():
+                if H.in_degree(n) == 0 and n != root_node:
+                    H.add_edge(root_node, n)
+
+        layout_func = getattr(nx.layout, f"{layout}_layout", None)
+        if layout_func is not None:
+            return layout_func(H, **kwargs)
+        try:
+            from networkx.drawing.nx_agraph import graphviz_layout
+
+            return graphviz_layout(H, prog=layout, **kwargs)
+        except ImportError:
+            raise ValueError(f"Layout {layout!r} not found in networkx and graphviz is not installed")
+
+    def generate_node_colors(
+        self,
+        partition: bool = False,
+        alphabetical: bool = True,
+        max_depth: tp.Optional[int] = None,
+        cmap: tp.Any = "hsv",
+    ) -> tp.Dict[str, str]:
+        """Generate colors for the nodes in the graph.
+
+        Args:
+            partition (bool): If True, assign colors hierarchically by recursively
+                splitting intervals; otherwise, map nodes by their position in the global order.
+            alphabetical (bool): If True, order nodes alphabetically; otherwise, use a hash-based order.
+            max_depth (Optional[int]): Limit the effective reference name depth; nodes deeper than this
+                inherit the color of their ancestor at that depth.
+            cmap (Any): Colormap identifier provided as a string name or a collection (list/tuple) of colors.
+
+        Returns:
+            Dict[str, str]: Dictionary mapping node IDs to their colors.
+        """
+        from vectorbtpro.utils.colors import map_value_to_cmap
+
+        graph_nodes = list(self.G.nodes())
+        if not graph_nodes:
+            return {}
+        if max_depth is not None and max_depth <= 0:
+            raise ValueError("max_depth must be None or a positive integer")
+        node_set = set(graph_nodes)
+
+        def _hash_key(s):
+            h = hashlib.sha1(s.encode("utf-8")).digest()
+            return int.from_bytes(h[:4], "big")
+
+        if partition:
+            root = {
+                "name": "",
+                "full_path": "",
+                "children": {},
+            }
+            for fqn in node_set:
+                parts = fqn.split(".")
+                current = root
+                full_path = ""
+                for part in parts:
+                    full_path = part if not full_path else full_path + "." + part
+                    children = current["children"]
+                    if part not in children:
+                        children[part] = {
+                            "name": part,
+                            "full_path": full_path,
+                            "children": {},
+                        }
+                    current = children[part]
+
+            values = {}
+
+            def _order_child_keys(children):
+                keys = list(children.keys())
+                if alphabetical:
+                    keys.sort()
+                else:
+                    keys.sort(key=_hash_key)
+                return keys
+
+            def _propagate(node, scalar):
+                if node["full_path"]:
+                    values[node["full_path"]] = scalar
+                for child in node["children"].values():
+                    _propagate(child, scalar)
+
+            def _assign_interval(node, start, end, depth):
+                if node["full_path"]:
+                    values[node["full_path"]] = start
+
+                children = node["children"]
+                if not children:
+                    return
+
+                if max_depth is not None and depth >= max_depth:
+                    scalar = values.get(node["full_path"], start)
+                    _propagate(node, scalar)
+                    return
+
+                keys = _order_child_keys(children)
+                n = len(keys)
+                if n == 0:
+                    return
+
+                width = (end - start) / n
+                for i, key in enumerate(keys):
+                    child_start = start + i * width
+                    child_end = child_start + width
+                    _assign_interval(children[key], child_start, child_end, depth + 1)
+
+            _assign_interval(root, 0.0, 1.0, 0)
+            scalars = [values[node] for node in graph_nodes]
+
+        else:
+
+            def _get_effective_depth(parts):
+                if max_depth is None:
+                    return len(parts)
+                return min(max_depth, len(parts))
+
+            color_keys = set()
+            for fqn in node_set:
+                parts = fqn.split(".")
+                depth = _get_effective_depth(parts)
+                for d in range(1, depth + 1):
+                    color_keys.add(".".join(parts[:d]))
+            if alphabetical:
+                color_keys = sorted(color_keys)
+            else:
+                color_keys = sorted(color_keys, key=_hash_key)
+            n_keys = len(color_keys)
+            if n_keys == 0:
+                return {}
+
+            key_to_scalar = {}
+            for i, key in enumerate(color_keys):
+                key_to_scalar[key] = 0.0 if n_keys == 1 else i / float(n_keys - 1)
+
+            scalars = []
+            for fqn in graph_nodes:
+                parts = fqn.split(".")
+                depth = _get_effective_depth(parts)
+                color_key = ".".join(parts[:depth])
+                scalars.append(key_to_scalar[color_key])
+
+        color_list = map_value_to_cmap(scalars, cmap=cmap, vmin=0.0, vmax=1.0, as_hex=True)
+        return {node: color for node, color in zip(graph_nodes, color_list)}
+
+    def generate_data(
+        self,
+        node_position_kwargs: tp.KwargsLike = None,
+        node_color_kwargs: tp.KwargsLike = None,
+    ) -> dict:
+        """Generate data dictionary representing the graph.
+
+        Args:
+            node_position_kwargs (KwargsLike): Keyword arguments for `RefGraph.generate_node_positions`.
+            node_color_kwargs (KwargsLike): Keyword arguments for `RefGraph.generate_node_colors`.
+
+        Returns:
+            dict: Data dictionary representing the graph.
+        """
+        if node_position_kwargs is None:
+            node_position_kwargs = {}
+        node_positions = self.generate_node_positions(**node_position_kwargs)
+        if node_color_kwargs is None:
+            node_color_kwargs = {}
+        node_colors = self.generate_node_colors(**node_color_kwargs)
+
+        nodes = []
+        for n, d in self.G.nodes(data=True):
+            node = dict(d)
+            node["id"] = n
+            node["x"] = float(node_positions[n][0])
+            node["y"] = float(node_positions[n][1])
+            node["color"] = node_colors[n]
+            nodes.append(node)
+
+        edges = []
+        for u, v, d in self.G.edges(data=True):
+            edge = dict(d)
+            edge["source"] = u
+            edge["target"] = v
+            edges.append(edge)
+
+        return {
+            "is_multigraph": self.is_multigraph,
+            "nodes": nodes,
+            "edges": edges,
+        }
+
+    def export(self, *args, path: tp.Optional[tp.PathLike] = None, **kwargs) -> None:
+        """Export the graph to a JSON file.
+
+        Args:
+            *args: Positional arguments for `RefGraph.generate_data`.
+            path (str): Path to the output JSON file.
+
+                Defaults to "<ClassName>.json".
+            **kwargs: Keyword arguments for `RefGraph.generate_data`.
+
+        Returns:
+            None
+        """
+        if path is None:
+            path = f"{type(self).__name__}.json"
+        data = self.generate_data(*args, **kwargs)
+        for node in data["nodes"]:
+            for k, v in node.items():
+                if isinstance(v, set):
+                    node[k] = sorted(v)
+        for edge in data["edges"]:
+            for k, v in edge.items():
+                if isinstance(v, set):
+                    edge[k] = sorted(v)
+        with open(path, "w") as f:
+            json.dump(data, f)
+
+    def get_container(self, *args, **kwargs) -> tp.Optional[str]:
+        """Get the container of the specified member from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            Optional[str]: Reference name of the container, or None if not found.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        for u, _, d in self.G.in_edges(refname, data=True):
+            if "container" in d.get("kinds", set()):
+                return u
+        return None
+
+    def get_contents(self, *args, **kwargs) -> tp.List[str]:
+        """Get all contents of the specified container from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            List[str]: List of reference names of contents.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        contents = set()
+        for _, v, d in self.G.out_edges(refname, data=True):
+            if "container" in d.get("kinds", set()):
+                contents.add(v)
+        return sorted(contents)
+
+    def get_members(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
+        """Get all members of the specified container from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            relation (str): Relation between references. One of:
+
+                * "direct": References that are connected directly.
+                * "nested": References that are connected through other references.
+                * "all": Both direct and nested references.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            List[str]: List of reference names of members.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        members = set()
+        for _, v, d in self.G.out_edges(refname, data=True):
+            if relation.lower() == "direct":
+                if "direct_member" in d.get("kinds", set()):
+                    members.add(v)
+            elif relation.lower() == "nested":
+                if "nested_member" in d.get("kinds", set()):
+                    members.add(v)
+            elif relation.lower() == "all":
+                if "direct_member" in d.get("kinds", set()) or "nested_member" in d.get("kinds", set()):
+                    members.add(v)
+            else:
+                raise ValueError(f"Invalid relation: {relation!r}")
+        return sorted(members)
+
+    def get_bases(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
+        """Get all base classes of the specified derived class from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            relation (str): Relation between references. One of:
+
+                * "direct": References that are connected directly.
+                * "nested": References that are connected through other references.
+                * "all": Both direct and nested references.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            List[str]: List of reference names of base classes.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        bases = set()
+        for _, v, d in self.G.out_edges(refname, data=True):
+            if relation.lower() == "direct":
+                if "direct_base" in d.get("kinds", set()):
+                    bases.add(v)
+            elif relation.lower() == "nested":
+                if "nested_base" in d.get("kinds", set()):
+                    bases.add(v)
+            elif relation.lower() == "all":
+                if "direct_base" in d.get("kinds", set()) or "nested_base" in d.get("kinds", set()):
+                    bases.add(v)
+            else:
+                raise ValueError(f"Invalid relation: {relation!r}")
+        return sorted(bases)
+
+    def get_derived(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
+        """Get all derived classes of the specified base class from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            relation (str): Relation between references. One of:
+
+                * "direct": References that are connected directly.
+                * "nested": References that are connected through other references.
+                * "all": Both direct and nested references.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            List[str]: List of reference names of derived classes.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        derived = set()
+        for u, _, d in self.G.in_edges(refname, data=True):
+            if relation.lower() == "direct":
+                if "direct_base" in d.get("kinds", set()):
+                    derived.add(u)
+            elif relation.lower() == "nested":
+                if "nested_base" in d.get("kinds", set()):
+                    derived.add(u)
+            elif relation.lower() == "all":
+                if "direct_base" in d.get("kinds", set()) or "nested_base" in d.get("kinds", set()):
+                    derived.add(u)
+            else:
+                raise ValueError(f"Invalid relation: {relation!r}")
+        return sorted(derived)
+
+    def get_dependencies(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
+        """Get all dependencies of the specified reference name from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            relation (str): Relation between references. One of:
+
+                * "direct": References that are connected directly.
+                * "nested": References that are connected through other references.
+                * "all": Both direct and nested references.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            List[str]: List of reference names of dependencies.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        dependencies = set()
+        for _, v, d in self.G.out_edges(refname, data=True):
+            if relation.lower() == "direct":
+                if "direct_dependency" in d.get("kinds", set()):
+                    dependencies.add(v)
+            elif relation.lower() == "nested":
+                if "nested_dependency" in d.get("kinds", set()):
+                    dependencies.add(v)
+            elif relation.lower() == "all":
+                if "direct_dependency" in d.get("kinds", set()) or "nested_dependency" in d.get("kinds", set()):
+                    dependencies.add(v)
+            else:
+                raise ValueError(f"Invalid relation: {relation!r}")
+        return sorted(dependencies)
+
+    def get_dependents(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
+        """Get all dependents of the specified reference name from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            relation (str): Relation between references. One of:
+
+                * "direct": References that are connected directly.
+                * "nested": References that are connected through other references.
+                * "all": Both direct and nested references.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            List[str]: List of reference names of dependents.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        dependents = set()
+        for u, _, d in self.G.in_edges(refname, data=True):
+            if relation.lower() == "direct":
+                if "direct_dependency" in d.get("kinds", set()):
+                    dependents.add(u)
+            elif relation.lower() == "nested":
+                if "nested_dependency" in d.get("kinds", set()):
+                    dependents.add(u)
+            elif relation.lower() == "all":
+                if "direct_dependency" in d.get("kinds", set()) or "nested_dependency" in d.get("kinds", set()):
+                    dependents.add(u)
+            else:
+                raise ValueError(f"Invalid relation: {relation!r}")
+        return sorted(dependents)
+
+    def plot(
+        self,
+        highlight_nodes: tp.Optional[tp.MaybeList] = None,
+        module: tp.Optional[tp.ModuleLike] = None,
+        resolve: bool = True,
+        highlight_neighbors: bool = True,
+        show_dimmed: bool = True,
+        node_position_kwargs: tp.KwargsLike = None,
+        node_color_kwargs: tp.KwargsLike = None,
+        node_trace_kwargs: tp.KwargsLike = None,
+        edge_trace_kwargs: tp.KwargsLike = None,
+        add_trace_kwargs: tp.KwargsLike = None,
+        axes_equal: bool = True,
+        xref: str = "x",
+        yref: str = "y",
+        fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
+        interactive: bool = True,
+        use_webgl: tp.Optional[bool] = None,
+        **layout_kwargs,
+    ) -> tp.BaseFigure:
+        """Plot the reference graph using Plotly.
+        
+        Args:
+            highlight_nodes (Optional[MaybeList]): Reference name(s) of nodes to highlight.
+            module (Optional[ModuleLike]): Module context used in reference resolution.
+            resolve (bool): Whether to resolve the reference names to actual objects.
+            highlight_neighbors (bool): If True, highlight neighbors of highlighted nodes.
+            show_dimmed (bool): If True, show dimmed nodes and edges when some nodes
+                are highlighted; otherwise, hide them.
+            node_position_kwargs (KwargsLike): Keyword arguments for `RefGraph.generate_node_positions`.
+            node_color_kwargs (KwargsLike): Keyword arguments for `RefGraph.generate_node_colors`.
+            node_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the node trace.
+            edge_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the edge trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            axes_equal (bool): If True, set equal scaling for x and y axes.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
+            interactive (bool): If True, create an interactive figure.
+            use_webgl (Optional[bool]): Flag to use `plotly.graph_objects.Scattergl`.
+
+                If the global configuration is True and the data has more than 10,000 points,
+                this flag becomes True.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
+        
+        Returns:
+            BaseFigure: Plotly figure representing the reference graph.
+        """
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("plotly")
+        import plotly.graph_objects as go
+        from vectorbtpro.utils.colors import adjust_opacity, flatten_opacity, get_contrast_color
+        from vectorbtpro.utils.figure import make_figure, get_bgcolor
+        from vectorbtpro._settings import settings
+
+        plotting_cfg = settings["plotting"]
+        layout_cfg = plotting_cfg["layout"]
+
+        data = self.generate_data(
+            node_position_kwargs=node_position_kwargs,
+            node_color_kwargs=node_color_kwargs,
+        )
+        nodes = data["nodes"]
+        edges = data["edges"]
+        pos = {n["id"]: (n["x"], n["y"]) for n in nodes}
+
+        if node_trace_kwargs is None:
+            node_trace_kwargs = {}
+        if edge_trace_kwargs is None:
+            edge_trace_kwargs = {}
+        if add_trace_kwargs is None:
+            add_trace_kwargs = {}
+        if make_figure_kwargs is None:
+            make_figure_kwargs = {}
+
+        if use_webgl is None:
+            use_webgl = plotting_cfg["use_webgl"] and len(nodes) + len(edges) >= 10_000
+        if use_webgl:
+            Scatter = go.Scattergl
+        else:
+            Scatter = go.Scatter
+
+        def _plot(fig, highlight_nodes):
+            if isinstance(highlight_nodes, str):
+                highlight_nodes = [highlight_nodes]
+            highlight_set = set(highlight_nodes or [])
+            highlight_set = {ensure_refname(n, module=module, resolve=resolve) for n in highlight_set}
+            highlight_set &= set(pos.keys())
+            neighbor_set = set()
+            if highlight_set and highlight_neighbors:
+                for e in edges:
+                    u = e["source"]
+                    v = e["target"]
+                    if u in highlight_set and v not in highlight_set:
+                        neighbor_set.add(v)
+                    elif v in highlight_set and u not in highlight_set:
+                        neighbor_set.add(u)
+
+            xaxis = "xaxis" + xref[1:]
+            yaxis = "yaxis" + yref[1:]
+
+            if fig is None:
+                fig = make_figure(**make_figure_kwargs)
+                def_width = layout_cfg.get("width", None)
+                def_height = layout_cfg.get("height", None)
+                width = layout_kwargs.get("width", None)
+                height = layout_kwargs.get("height", None)
+                if width is None or height is None:
+                    if width is not None:
+                        height = width
+                    elif height is not None:
+                        width = height
+                    else:
+                        if def_width is not None and def_height is not None:
+                            width = height = max(def_width, def_height)
+                        elif def_width is not None:
+                            width = height = def_width
+                        elif def_height is not None:
+                            width = height = def_height
+                def_layout_kwargs = {
+                    "width": width,
+                    "height": height,
+                    "hovermode": "closest",
+                    xaxis: dict(showgrid=False, zeroline=False, visible=False),
+                    yaxis: dict(showgrid=False, zeroline=False, visible=False),
+                }
+                if axes_equal:
+                    def_layout_kwargs[yaxis]["scaleanchor"] = xref
+                    def_layout_kwargs[yaxis]["scaleratio"] = 1
+                _layout_kwargs = merge_dicts(def_layout_kwargs, layout_kwargs)
+            else:
+                _layout_kwargs = layout_kwargs
+            fig.update_layout(**_layout_kwargs)
+
+            node_x = [n["x"] for n in nodes]
+            node_y = [n["y"] for n in nodes]
+            node_colors = [n["color"] for n in nodes]
+            if highlight_set:
+                marker_opacity = []
+                for i, n in enumerate(nodes):
+                    nid = n["id"]
+                    if nid in highlight_set:
+                        marker_opacity.append(1.0)
+                    elif nid in neighbor_set:
+                        marker_opacity.append(0.6)
+                    elif highlight_set:
+                        marker_opacity.append(1.0)
+                        node_colors[i] = flatten_opacity(
+                            adjust_opacity(node_colors[i], 0.2),
+                            background_color=get_bgcolor(fig),
+                        )
+                    else:
+                        marker_opacity.append(0.2)
+            else:
+                marker_opacity = [1.0] * len(nodes)
+            node_style_by_kind = {
+                "module": dict(symbol="square", size=6, line=dict(width=0.5)),
+                "class": dict(symbol="diamond", size=6, line=dict(width=0.5)),
+                "callable": dict(symbol="circle", size=6, line=dict(width=0.5)),
+                "data": dict(symbol="triangle-up", size=6, line=dict(width=0.5)),
+                "unknown": dict(symbol="triangle-down", size=6, line=dict(width=0.5)),
+            }
+            node_idxs_by_kind = defaultdict(list)
+            for i, n in enumerate(nodes):
+                k = n.get("kind")
+                if k is None or k not in node_style_by_kind:
+                    k = "unknown"
+                node_idxs_by_kind[k].append(i)
+            node_customdata = [
+                [
+                    n["id"],
+                    n.get("qualname") or "",
+                    n.get("module") or "",
+                    n.get("type") or "",
+                    n.get("kind") or "",
+                ]
+                for n in nodes
+            ]
+            node_hovertemplate = (
+                "qualname: %{customdata[1]}<br>"
+                "module: %{customdata[2]}<br>"
+                "type: %{customdata[3]}<br>"
+                "kind: %{customdata[4]}<extra></extra>"
+            )
+
+            gl_node_trace = None
+            dim_node_traces = []
+            hl_node_traces = []
+            legend_node_traces = []
+
+            if use_webgl:
+                hl_idxs = []
+                for i in range(len(nodes)):
+                    nid = nodes[i]["id"]
+                    if not highlight_set or nid in highlight_set or nid in neighbor_set:
+                        hl_idxs.append(i)
+
+                hit_marker = dict(
+                    symbol="circle",
+                    size=8,
+                    line=dict(width=0),
+                    color="rgba(0,0,0,0)",
+                )
+                nodes_hit_kwargs = merge_dicts(
+                    dict(
+                        x=[node_x[i] for i in hl_idxs],
+                        y=[node_y[i] for i in hl_idxs],
+                        mode="markers",
+                        marker=hit_marker,
+                        customdata=[node_customdata[i] for i in hl_idxs],
+                        name="nodes_hit",
+                        showlegend=False,
+                        hovertemplate=node_hovertemplate,
+                    ),
+                    node_trace_kwargs,
+                )
+                gl_node_trace = Scatter(**nodes_hit_kwargs)
+
+            for kind in node_style_by_kind:
+                node_idxs = node_idxs_by_kind.get(kind, [])
+
+                hl_idxs = []
+                dim_idxs = []
+                for i in node_idxs:
+                    nid = nodes[i]["id"]
+                    if not highlight_set or nid in highlight_set or nid in neighbor_set:
+                        hl_idxs.append(i)
+                    elif show_dimmed:
+                        dim_idxs.append(i)
+
+                marker = dict(node_style_by_kind.get(kind, node_style_by_kind["unknown"]))
+
+                dim_trace_kwargs = merge_dicts(
+                    dict(
+                        x=[node_x[i] for i in dim_idxs],
+                        y=[node_y[i] for i in dim_idxs],
+                        mode="markers",
+                        marker={
+                            **marker,
+                            "color": [node_colors[i] for i in dim_idxs],
+                            "opacity": [marker_opacity[i] for i in dim_idxs],
+                        },
+                        customdata=[node_customdata[i] for i in dim_idxs],
+                        name=f"{kind}_nodes_dim",
+                        legendgroup=f"{kind}_nodes",
+                        showlegend=False,
+                        hoverinfo="skip",
+                    ),
+                    node_trace_kwargs,
+                )
+                dim_node_traces.append(Scatter(**dim_trace_kwargs))
+
+                hl_trace_kwargs = merge_dicts(
+                    dict(
+                        x=[node_x[i] for i in hl_idxs],
+                        y=[node_y[i] for i in hl_idxs],
+                        mode="markers",
+                        marker={
+                            **marker,
+                            "color": [node_colors[i] for i in hl_idxs],
+                            "opacity": [marker_opacity[i] for i in hl_idxs],
+                        },
+                        customdata=[node_customdata[i] for i in hl_idxs],
+                        name=f"{kind}_nodes_hl",
+                        legendgroup=f"{kind}_nodes",
+                        showlegend=False,
+                        hovertemplate=node_hovertemplate,
+                    ),
+                    node_trace_kwargs,
+                )
+                hl_node_traces.append(Scatter(**hl_trace_kwargs))
+
+                legend_marker = dict(marker)
+                legend_marker["size"] = 8
+                legend_marker["color"] = "rgba(0,0,0,0)"
+                legend_marker["line"]["color"] = get_contrast_color(get_bgcolor(fig))
+                legend_trace_kwargs = merge_dicts(
+                    dict(
+                        x=[None],
+                        y=[None],
+                        mode="markers",
+                        marker=legend_marker,
+                        name=f"{kind}_nodes",
+                        legendgroup=f"{kind}_nodes",
+                        showlegend=True,
+                        hoverinfo="skip",
+                    ),
+                    node_trace_kwargs,
+                )
+                legend_node_traces.append(Scatter(**legend_trace_kwargs))
+
+            edge_style_by_kind = {
+                "container": dict(color=plotting_cfg["color_schema"]["orange"], width=2, dash="solid"),
+                "direct_base": dict(color=plotting_cfg["color_schema"]["red"], width=2, dash="solid"),
+                "nested_base": dict(color=plotting_cfg["color_schema"]["red"], width=2, dash="dot"),
+                "direct_member": dict(color=plotting_cfg["color_schema"]["green"], width=1, dash="solid"),
+                "nested_member": dict(color=plotting_cfg["color_schema"]["green"], width=1, dash="dot"),
+                "direct_dependency": dict(color=plotting_cfg["color_schema"]["blue"], width=1, dash="solid"),
+                "nested_dependency": dict(color=plotting_cfg["color_schema"]["blue"], width=1, dash="dot"),
+                "unknown": dict(color=plotting_cfg["color_schema"]["gray"], width=1, dash="dash"),
+            }
+            edges_by_kind = defaultdict(list)
+            for e in edges:
+                if self.is_multigraph:
+                    kind = e.get("kind")
+                    if kind is None or kind not in edge_style_by_kind:
+                        kind = "unknown"
+                    edges_by_kind[kind].append(e)
+                else:
+                    kinds = e.get("kinds", set())
+                    if kinds:
+                        for kind in kinds:
+                            if kind is None or kind not in edge_style_by_kind:
+                                kind = "unknown"
+                            edges_by_kind[kind].append(e)
+                    else:
+                        edges_by_kind["unknown"].append(e)
+
+            dim_edge_traces = []
+            hl_edge_traces = []
+            legend_edge_traces = []
+
+            for kind in edge_style_by_kind:
+                kind_edges = edges_by_kind.get(kind, [])
+
+                hl_edge_x, hl_edge_y = [], []
+                dim_edge_x, dim_edge_y = [], []
+                for e in kind_edges:
+                    u = e["source"]
+                    v = e["target"]
+                    x0, y0 = pos[u]
+                    x1, y1 = pos[v]
+                    is_highlight_edge = (
+                        (u in highlight_set and v in highlight_set)
+                        or (u in highlight_set and v in neighbor_set)
+                        or (u in neighbor_set and v in highlight_set)
+                    )
+                    if highlight_set and is_highlight_edge:
+                        hl_edge_x += [x0, x1, None]
+                        hl_edge_y += [y0, y1, None]
+                    else:
+                        dim_edge_x += [x0, x1, None]
+                        dim_edge_y += [y0, y1, None]
+
+                line = dict(edge_style_by_kind.get(kind, edge_style_by_kind["unknown"]))
+
+                dim_line = dict(line)
+                if highlight_set:
+                    dim_line["color"] = flatten_opacity(
+                        adjust_opacity(dim_line["color"], 0.2),
+                        background_color=get_bgcolor(fig),
+                    )
+                else:
+                    dim_line["color"] = adjust_opacity(dim_line["color"], 0.2)
+                dim_x = dim_edge_x if show_dimmed or not highlight_set else []
+                dim_y = dim_edge_y if show_dimmed or not highlight_set else []
+                dim_trace_kwargs = merge_dicts(
+                    dict(
+                        x=dim_x,
+                        y=dim_y,
+                        mode="lines",
+                        line=dim_line,
+                        name=f"{kind}_edges_dim",
+                        legendgroup=f"{kind}_edges",
+                        showlegend=False,
+                        hoverinfo="none",
+                    ),
+                    edge_trace_kwargs,
+                )
+                dim_edge_traces.append(Scatter(**dim_trace_kwargs))
+
+                hl_line = dict(line)
+                hl_line["width"] = hl_line["width"] + 1
+                hl_line["color"] = adjust_opacity(hl_line["color"], 0.8)
+                hl_x = hl_edge_x if highlight_set else []
+                hl_y = hl_edge_y if highlight_set else []
+                hl_trace_kwargs = merge_dicts(
+                    dict(
+                        x=hl_x,
+                        y=hl_y,
+                        mode="lines",
+                        line=hl_line,
+                        name=f"{kind}_edges_hl",
+                        legendgroup=f"{kind}_edges",
+                        showlegend=False,
+                        hoverinfo="none",
+                    ),
+                    edge_trace_kwargs,
+                )
+                hl_edge_traces.append(Scatter(**hl_trace_kwargs))
+
+                legend_trace_kwargs_kind = merge_dicts(
+                    dict(
+                        x=[None],
+                        y=[None],
+                        mode="lines",
+                        line=line,
+                        name=f"{kind}_edges",
+                        legendgroup=f"{kind}_edges",
+                        showlegend=True,
+                        hoverinfo="skip",
+                    ),
+                    edge_trace_kwargs,
+                )
+                legend_edge_traces.append(Scatter(**legend_trace_kwargs_kind))
+
+            if gl_node_trace is not None:
+                fig.add_trace(gl_node_trace, **add_trace_kwargs)
+            for tr in dim_edge_traces:
+                fig.add_trace(tr, **add_trace_kwargs)
+            for tr in dim_node_traces:
+                fig.add_trace(tr, **add_trace_kwargs)
+            for tr in hl_edge_traces:
+                fig.add_trace(tr, **add_trace_kwargs)
+            for tr in hl_node_traces:
+                fig.add_trace(tr, **add_trace_kwargs)
+            for tr in legend_edge_traces:
+                fig.add_trace(tr, **add_trace_kwargs)
+            for tr in legend_node_traces:
+                fig.add_trace(tr, **add_trace_kwargs)
+
+            return fig
+
+        fig = _plot(fig, highlight_nodes)
+        if not interactive:
+            return fig
+
+        if isinstance(fig, go.FigureWidget):
+            widget = fig
+        else:
+            widget = go.FigureWidget(fig)
+        active_node = None
+
+        def _copy_trace(dst, src):
+            d = src.to_plotly_json()
+            d.pop("uid", None)
+            dst.update(d)
+
+        def _update_highlight(node_id):
+            nonlocal active_node, highlight_nodes
+            if active_node == node_id:
+                active_node = None
+                new_fig = _plot(None, highlight_nodes)
+            else:
+                active_node = node_id
+                new_fig = _plot(None, [node_id])
+            with widget.batch_update():
+                for old_tr, new_tr in zip(widget.data, new_fig.data):
+                    _copy_trace(old_tr, new_tr)
+                widget.layout.update(new_fig.layout)
+            _attach_callbacks(widget)
+
+        def _handle_click(trace, points, state):
+            if not points.point_inds:
+                return
+            idx = points.point_inds[0]
+            customdata = getattr(trace, "customdata", None)
+            if customdata is None or idx >= len(customdata):
+                return
+            node_id = customdata[idx][0]
+            _update_highlight(node_id)
+
+        def _attach_callbacks(widget):
+            for tr in widget.data:
+                mode = getattr(tr, "mode", None)
+                customdata = getattr(tr, "customdata", None)
+                if mode and "markers" in mode and customdata is not None:
+                    tr.on_click(_handle_click)
+
+        _attach_callbacks(widget)
+        return widget
+
+
 DBlock = tp.Literal["decorator", "head", "body"]
 """Literal type representing different parts of a scope where a dependency can occur."""
 
@@ -914,44 +2083,6 @@ class DHitMeta(DefineMixin):
         """
         last_part = self.refname.split(".")[-1]
         return last_part.startswith("_")
-
-
-@define
-class RefInfo(DefineMixin):
-    """Class representing information about a reference."""
-
-    refname: str = define.field()
-    """Fully qualified reference name."""
-
-    type: tp.Optional[str] = define.field(default=None)
-    """Type of the referenced object."""
-
-    kind: tp.Optional[str] = define.field(default=None)
-    """Kind of the referenced object."""
-
-    container: tp.Optional[str] = define.field(default=None)
-    """Reference name of the container."""
-
-    direct_members: tp.List[str] = define.field(factory=list)
-    """List of reference names of the direct members."""
-
-    nested_members: tp.List[str] = define.field(factory=list)
-    """List of reference names of the nested members."""
-
-    direct_bases: tp.List[str] = define.field(factory=list)
-    """List of reference names of the direct base classes."""
-
-    nested_bases: tp.List[str] = define.field(factory=list)
-    """List of reference names of the nested base classes."""
-
-    direct_dependencies: tp.List[str] = define.field(factory=list)
-    """List of reference names of the direct dependencies."""
-
-    nested_dependencies: tp.List[str] = define.field(factory=list)
-    """List of reference names of the nested dependencies."""
-
-    is_shallow: bool = define.field(default=False)
-    """Whether relations are not included."""
 
 
 class RefIndex(Configured):
@@ -1777,18 +2908,22 @@ class RefIndex(Configured):
         Returns:
             RefInfo: `RefInfo` instance containing information about the object.
         """
-        refname = ensure_refname(obj, module=module, resolve=resolve)
+        refname, module, qualname = ensure_refname(obj, module=module, resolve=resolve, return_parts=True)
         obj = get_refname_obj(refname, raise_error=False)
         if incl_private is None:
             incl_private = self.incl_private
 
         ref_info = {}
         ref_info["refname"] = refname
+        if qualname is not None:
+            ref_info["qualname"] = qualname
+        if module is not None:
+            ref_info["module"] = module.__name__
         if obj is not None:
             ref_info["type"], ref_info["kind"] = get_type_and_kind(obj)
-        container = ".".join(refname.split(".")[:-1])
-        if container:
-            ref_info["container"] = container
+        refname_parts = refname.split(".")
+        if len(refname_parts) > 1:
+            ref_info["container"] = ".".join(refname_parts[:-1])
         if incl_relations:
             if obj is not None and self.is_kind_container(ref_info.get("kind")):
                 attr_meta = get_attrs(obj, incl_private=incl_private, return_meta=True)
@@ -1859,7 +2994,7 @@ class RefIndex(Configured):
 
     def build_graph(
         self,
-        obj: tp.Any,
+        obj: tp.Optional[tp.Any] = None,
         module: tp.Optional[tp.ModuleLike] = None,
         resolve: bool = True,
         *,
@@ -1879,9 +3014,10 @@ class RefIndex(Configured):
         Stops when there are no new reference names to visit or when `max_depth` is reached.
 
         Args:
-            obj (Any): Object from which to extract the reference name.
+            obj (Optional[Any]): Object from which to extract the reference name.
 
                 If a string or tuple is provided, it is treated as a reference name.
+                If None, starts from the module specified by `module`.
             module (Optional[ModuleLike]): Module context used in reference resolution.
             resolve (bool): Whether to resolve the reference to an actual object.
             own_only (bool): If True, only visit reference names defined in the same object
@@ -1906,6 +3042,12 @@ class RefIndex(Configured):
         Returns:
             RefGraph: `RefGraph` instance representing the traversed graph.
         """
+        if obj is None:
+            if module is None:
+                obj = "vectorbtpro"
+            else:
+                obj = module
+            module = None
         refname = ensure_refname(obj, module=module, resolve=resolve)
         if incl_keys is None:
             incl_keys = {
@@ -2051,538 +3193,3 @@ class RefIndex(Configured):
 
         ref_infos = list(new_ref_by_name.values())
         return RefGraph.from_ref_infos(ref_infos, merge_edges=merge_edges)
-
-
-RefGraphT = tp.TypeVar("RefGraphT", bound="RefGraph")
-
-
-class RefGraph(Configured):
-    """Class representing a reference graph.
-
-    Args:
-        G (DiGraph): NetworkX directed graph representing the reference relationships.
-    """
-
-    def __init__(self, G: DiGraphT) -> None:
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("networkx")
-
-        Configured.__init__(self, G=G)
-
-        self._G = G
-
-    @property
-    def G(self) -> DiGraphT:
-        """NetworkX directed graph representing the reference relationships.
-
-        Returns:
-            DiGraph: NetworkX directed graph.
-        """
-        return self._G
-
-    @property
-    def is_multigraph(self) -> bool:
-        """Check if the graph is a MultiGraph.
-
-        Returns:
-            bool: True if the graph is a MultiGraph, False otherwise.
-        """
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("networkx")
-        import networkx as nx
-
-        return isinstance(self.G, nx.MultiGraph)
-
-    @classmethod
-    def from_ref_infos(cls: tp.Type[RefGraphT], ref_infos: tp.List[RefInfo], merge_edges: bool = True) -> RefGraphT:
-        """Build a NetworkX directed graph from the provided reference information.
-
-        Args:
-            ref_infos (List[RefInfo]): List of `RefInfo` instances.
-            merge_edges (bool): If True, merge multiple edges between the same nodes
-                into a single edge with a set of kinds.
-
-        Returns:
-            RefGraph: Reference graph built from the reference information.
-        """
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("networkx")
-        import networkx as nx
-
-        G = nx.MultiDiGraph()
-
-        for ref_info in ref_infos:
-            if ref_info.refname not in G:
-                G.add_node(ref_info.refname)
-            G.nodes[ref_info.refname].update(ref_info.asdict())
-
-        for ref_info in ref_infos:
-            src = ref_info.refname
-            if ref_info.container and ref_info.container in G:
-                G.add_edge(ref_info.container, src, kind="container")
-            for m in ref_info.direct_members:
-                if m in G:
-                    G.add_edge(src, m, kind="direct_member")
-            for m in ref_info.nested_members:
-                if m in G:
-                    G.add_edge(src, m, kind="nested_member")
-            for b in ref_info.direct_bases:
-                if b in G:
-                    G.add_edge(src, b, kind="direct_base")
-            for b in ref_info.nested_bases:
-                if b in G:
-                    G.add_edge(src, b, kind="nested_base")
-            for d in ref_info.direct_dependencies:
-                if d in G:
-                    G.add_edge(src, d, kind="direct_dependency")
-            for d in ref_info.nested_dependencies:
-                if d in G:
-                    G.add_edge(src, d, kind="nested_dependency")
-
-        return cls(G=G).merge_edges() if merge_edges else cls(G=G)
-
-    def filter_nodes(self: RefGraphT, predicate: tp.Callable[[str, tp.Dict[str, tp.Any]], bool]) -> RefGraphT:
-        """Filter nodes in the graph based on a predicate function.
-
-        Args:
-            predicate (Callable[[str, Dict[str, Any]], bool]): Function that takes a node ID
-                and a data dictionary, and returns True if the node should be kept, False otherwise.
-
-        Returns:
-            RefGraph: Reference graph with filtered nodes.
-        """
-        new_G = type(self.G)()
-        for n, data in self.G.nodes(data=True):
-            if predicate(n, data):
-                new_G.add_node(n, **data)
-        if self.is_multigraph:
-            for u, v, key, data in self.G.edges(keys=True, data=True):
-                if u in new_G and v in new_G:
-                    new_G.add_edge(u, v, key=key, **data)
-        else:
-            for u, v, data in self.G.edges(data=True):
-                if u in new_G and v in new_G:
-                    new_G.add_edge(u, v, **data)
-        return self.replace(G=new_G)
-
-    def filter_edges(self: RefGraphT, predicate: tp.Callable[[str, str, tp.Dict[str, tp.Any]], bool]) -> RefGraphT:
-        """Filter edges in the graph based on a predicate function.
-
-        Args:
-            predicate (Callable[[str, str, Dict[str, Any]], bool]): Function that takes a source node ID,
-                a target node ID, and a data dictionary, and returns True if the edge should be kept,
-                False otherwise.
-
-        Returns:
-            RefGraph: Reference graph with filtered edges.
-        """
-        new_G = type(self.G)()
-        for n, data in self.G.nodes(data=True):
-            new_G.add_node(n, **data)
-        if self.is_multigraph:
-            for u, v, key, data in self.G.edges(keys=True, data=True):
-                if predicate(u, v, data):
-                    new_G.add_edge(u, v, key=key, **data)
-        else:
-            for u, v, data in self.G.edges(data=True):
-                if predicate(u, v, data):
-                    new_G.add_edge(u, v, **data)
-        return self.replace(G=new_G)
-
-    def merge_edges(self: RefGraphT) -> RefGraphT:
-        """Merge multiple edges between the same nodes into a single edge with a set of kinds.
-
-        Returns:
-            RefGraph: Reference graph with merged edges.
-        """
-        import networkx as nx
-
-        if not self.is_multigraph:
-            return self
-        new_G = nx.DiGraph()
-        for u, v, data in self.G.edges(data=True):
-            if new_G.has_edge(u, v):
-                new_G[u][v]["kinds"].add(data.get("kind"))
-            else:
-                new_G.add_edge(u, v, kinds={data.get("kind")})
-        return self.replace(G=new_G)
-
-    def split_edges(self: RefGraphT) -> RefGraphT:
-        """Split edges with multiple kinds into multiple edges with single kinds.
-
-        Returns:
-            RefGraph: Reference graph with split edges.
-        """
-        import networkx as nx
-
-        if self.is_multigraph:
-            return self
-        new_G = nx.MultiDiGraph()
-        for u, v, data in self.G.edges(data=True):
-            for kind in data.get("kinds", set()):
-                new_G.add_edge(u, v, kind=kind)
-        return self.replace(G=new_G)
-
-    def generate_layout(
-        self,
-        layout_name: str = "spring",
-        add_root: bool = False,
-        **kwargs,
-    ) -> tp.Dict[str, tp.Tuple[float, float]]:
-        """Generate layout for the graph.
-
-        Args:
-            layout_name (str): Name of the layout algorithm to use.
-
-                Will be searched as `networkx.layout.<layout_name>_layout`
-                and used as `prog` in `graphviz_layout` if not found and `graphviz` is installed.
-            add_root (bool): If True, add a root node to the layout computation.
-            **kwargs: Keyword arguments for layout computation.
-
-        Returns:
-            Dict[str, Tuple[float, float]]: Dictionary mapping node IDs to their (x, y) positions.
-        """
-        import networkx as nx
-
-        if self.is_multigraph:
-            self = self.merge_edges()
-        H = self.filter_edges(lambda u, v, d: "container" in d.get("kinds", set())).G
-        if add_root:
-            root_node = "__root__"
-            H.add_node(root_node)
-            for n in H.nodes():
-                if H.in_degree(n) == 0 and n != root_node:
-                    H.add_edge(root_node, n)
-
-        layout_func = getattr(nx.layout, f"{layout_name}_layout", None)
-        if layout_func is not None:
-            return layout_func(H, **kwargs)
-        try:
-            from networkx.drawing.nx_agraph import graphviz_layout
-
-            return graphviz_layout(H, prog=layout_name, **kwargs)
-        except ImportError:
-            raise ValueError(f"Layout {layout_name!r} not found in networkx and graphviz is not installed")
-
-    def generate_colors(self, strategy: str = "partition", cmap: tp.Any = "rainbow") -> tp.Dict[str, str]:
-        """Generate colors for the nodes in the graph.
-
-        Args:
-            strategy (str): Coloring strategy.
-            cmap (Any): Colormap identifier provided as a string name or a collection (list/tuple) of colors.
-
-        Returns:
-            Dict[str, str]: Dictionary mapping node IDs to their colors.
-        """
-        from vectorbtpro.utils.colors import map_value_to_cmap
-
-        if strategy.lower() == "partition":
-            graph_nodes = list(self.G.nodes())
-            node_set = set(graph_nodes)
-            root = {
-                "name": "",
-                "full_path": "",
-                "is_actual_node": False,
-                "children": {},
-            }
-
-            for fqn in node_set:
-                parts = fqn.split(".")
-                current = root
-                full_path = ""
-                for part in parts:
-                    full_path = part if not full_path else full_path + "." + part
-                    children = current["children"]
-                    if part not in children:
-                        children[part] = {
-                            "name": part,
-                            "full_path": full_path,
-                            "is_actual_node": full_path in node_set,
-                            "children": {},
-                        }
-                    else:
-                        if full_path in node_set:
-                            children[part]["is_actual_node"] = True
-                    current = children[part]
-
-            values = {}
-
-            def _assign_interval(node, start, end):
-                if node["is_actual_node"] and node["full_path"]:
-                    values[node["full_path"]] = start
-
-                children = node["children"]
-                if not children:
-                    return
-
-                keys = sorted(children.keys())
-                n = len(keys)
-                if n == 0:
-                    return
-
-                width = (end - start) / n
-                for i, key in enumerate(keys):
-                    child_start = start + i * width
-                    child_end = child_start + width
-                    _assign_interval(children[key], child_start, child_end)
-
-            _assign_interval(root, 0.0, 1.0)
-            color_list = map_value_to_cmap(
-                [values[node] for node in graph_nodes],
-                cmap=cmap,
-                vmin=0.0,
-                vmax=1.0,
-                as_hex=True,
-            )
-            return {node: color for node, color in zip(graph_nodes, color_list)}
-        else:
-            raise ValueError(f"Invalid strategy: {strategy!r}")
-
-    def export(
-        self,
-        path: tp.Optional[str] = None,
-        layout_kwargs: tp.KwargsLike = None,
-        color_kwargs: tp.KwargsLike = None,
-    ) -> None:
-        """Export the graph to a JSON file.
-
-        Args:
-            path (str): Path to the output JSON file.
-
-                Defaults to "<ClassName>.json".
-            layout_kwargs (KwargsLike): Keyword arguments for `RefGraph.generate_layout`.
-            color_kwargs (KwargsLike): Keyword arguments for `RefGraph.generate_colors`.
-
-        Returns:
-            None
-        """
-        if path is None:
-            path = f"{type(self).__name__}.json"
-        if layout_kwargs is None:
-            layout_kwargs = {}
-        layout = self.generate_layout(**layout_kwargs)
-        if color_kwargs is None:
-            color_kwargs = {}
-        colors = self.generate_colors(**color_kwargs)
-
-        if self.is_multigraph:
-            data = {
-                "is_multigraph": True,
-                "nodes": [
-                    {
-                        "id": n,
-                        "type": self.G.nodes[n].get("type"),
-                        "kind": self.G.nodes[n].get("kind"),
-                        "x": float(layout[n][0]),
-                        "y": float(layout[n][1]),
-                        "color": colors.get(n),
-                    }
-                    for n in self.G.nodes()
-                ],
-                "edges": [
-                    {
-                        "source": u,
-                        "target": v,
-                        "kind": d.get("kind"),
-                    }
-                    for u, v, d in self.G.edges(data=True)
-                ],
-            }
-        else:
-            data = {
-                "is_multigraph": False,
-                "nodes": [
-                    {
-                        "id": n,
-                        "type": self.G.nodes[n].get("type"),
-                        "kind": self.G.nodes[n].get("kind"),
-                        "x": float(layout[n][0]),
-                        "y": float(layout[n][1]),
-                        "color": colors.get(n),
-                    }
-                    for n in self.G.nodes()
-                ],
-                "edges": [
-                    {
-                        "source": u,
-                        "target": v,
-                        "kinds": list(d.get("kinds", set())),
-                    }
-                    for u, v, d in self.G.edges(data=True)
-                ],
-            }
-        with open(path, "w") as f:
-            json.dump(data, f)
-
-    def get_members(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
-        """Get all members of the specified container from the graph.
-
-        Args:
-            *args: Positional arguments for `ensure_refname`.
-            relation (str): Relation between references. One of:
-
-                * "direct": References that are connected directly.
-                * "nested": References that are connected through other references.
-                * "all": Both direct and nested references.
-            **kwargs: Keyword arguments for `ensure_refname`.
-
-        Returns:
-            List[str]: List of reference names of members.
-        """
-        refname = ensure_refname(*args, **kwargs)
-        if self.is_multigraph:
-            self = self.merge_edges()
-
-        members = set()
-        for _, dst, data in self.G.out_edges(refname, data=True):
-            if relation.lower() == "direct":
-                if "direct_member" in data.get("kinds", set()):
-                    members.add(dst)
-            elif relation.lower() == "nested":
-                if "nested_member" in data.get("kinds", set()):
-                    members.add(dst)
-            elif relation.lower() == "all":
-                if "direct_member" in data.get("kinds", set()) or "nested_member" in data.get("kinds", set()):
-                    members.add(dst)
-            else:
-                raise ValueError(f"Invalid relation: {relation!r}")
-        return sorted(members)
-
-    def get_bases(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
-        """Get all base classes of the specified derived class from the graph.
-
-        Args:
-            *args: Positional arguments for `ensure_refname`.
-            relation (str): Relation between references. One of:
-
-                * "direct": References that are connected directly.
-                * "nested": References that are connected through other references.
-                * "all": Both direct and nested references.
-            **kwargs: Keyword arguments for `ensure_refname`.
-
-        Returns:
-            List[str]: List of reference names of base classes.
-        """
-        refname = ensure_refname(*args, **kwargs)
-        if self.is_multigraph:
-            self = self.merge_edges()
-
-        bases = set()
-        for _, dst, data in self.G.out_edges(refname, data=True):
-            if relation.lower() == "direct":
-                if "direct_base" in data.get("kinds", set()):
-                    bases.add(dst)
-            elif relation.lower() == "nested":
-                if "nested_base" in data.get("kinds", set()):
-                    bases.add(dst)
-            elif relation.lower() == "all":
-                if "direct_base" in data.get("kinds", set()) or "nested_base" in data.get("kinds", set()):
-                    bases.add(dst)
-            else:
-                raise ValueError(f"Invalid relation: {relation!r}")
-        return sorted(bases)
-
-    def get_derived(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
-        """Get all derived classes of the specified base class from the graph.
-
-        Args:
-            *args: Positional arguments for `ensure_refname`.
-            relation (str): Relation between references. One of:
-
-                * "direct": References that are connected directly.
-                * "nested": References that are connected through other references.
-                * "all": Both direct and nested references.
-            **kwargs: Keyword arguments for `ensure_refname`.
-
-        Returns:
-            List[str]: List of reference names of derived classes.
-        """
-        refname = ensure_refname(*args, **kwargs)
-        if self.is_multigraph:
-            self = self.merge_edges()
-
-        derived = set()
-        for src, _, data in self.G.in_edges(refname, data=True):
-            if relation.lower() == "direct":
-                if "direct_base" in data.get("kinds", set()):
-                    derived.add(src)
-            elif relation.lower() == "nested":
-                if "nested_base" in data.get("kinds", set()):
-                    derived.add(src)
-            elif relation.lower() == "all":
-                if "direct_base" in data.get("kinds", set()) or "nested_base" in data.get("kinds", set()):
-                    derived.add(src)
-            else:
-                raise ValueError(f"Invalid relation: {relation!r}")
-        return sorted(derived)
-
-    def get_dependencies(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
-        """Get all dependencies of the specified reference name from the graph.
-
-        Args:
-            *args: Positional arguments for `ensure_refname`.
-            relation (str): Relation between references. One of:
-
-                * "direct": References that are connected directly.
-                * "nested": References that are connected through other references.
-                * "all": Both direct and nested references.
-            **kwargs: Keyword arguments for `ensure_refname`.
-
-        Returns:
-            List[str]: List of reference names of dependencies.
-        """
-        refname = ensure_refname(*args, **kwargs)
-        if self.is_multigraph:
-            self = self.merge_edges()
-
-        dependencies = set()
-        for _, dst, data in self.G.out_edges(refname, data=True):
-            if relation.lower() == "direct":
-                if "direct_dependency" in data.get("kinds", set()):
-                    dependencies.add(dst)
-            elif relation.lower() == "nested":
-                if "nested_dependency" in data.get("kinds", set()):
-                    dependencies.add(dst)
-            elif relation.lower() == "all":
-                if "direct_dependency" in data.get("kinds", set()) or "nested_dependency" in data.get("kinds", set()):
-                    dependencies.add(dst)
-            else:
-                raise ValueError(f"Invalid relation: {relation!r}")
-        return sorted(dependencies)
-
-    def get_dependents(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
-        """Get all dependents of the specified reference name from the graph.
-
-        Args:
-            *args: Positional arguments for `ensure_refname`.
-            relation (str): Relation between references. One of:
-
-                * "direct": References that are connected directly.
-                * "nested": References that are connected through other references.
-                * "all": Both direct and nested references.
-            **kwargs: Keyword arguments for `ensure_refname`.
-
-        Returns:
-            List[str]: List of reference names of dependents.
-        """
-        refname = ensure_refname(*args, **kwargs)
-        if self.is_multigraph:
-            self = self.merge_edges()
-
-        dependents = set()
-        for src, _, data in self.G.in_edges(refname, data=True):
-            if relation.lower() == "direct":
-                if "direct_dependency" in data.get("kinds", set()):
-                    dependents.add(src)
-            elif relation.lower() == "nested":
-                if "nested_dependency" in data.get("kinds", set()):
-                    dependents.add(src)
-            elif relation.lower() == "all":
-                if "direct_dependency" in data.get("kinds", set()) or "nested_dependency" in data.get("kinds", set()):
-                    dependents.add(src)
-            else:
-                raise ValueError(f"Invalid relation: {relation!r}")
-        return sorted(dependents)

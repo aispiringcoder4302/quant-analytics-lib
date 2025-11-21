@@ -475,6 +475,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot OHLC data.
@@ -490,6 +491,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -511,7 +515,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             add_trace_kwargs = {}
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         if ohlc_type is None:
@@ -561,6 +567,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot volume data.
@@ -573,6 +580,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -593,7 +603,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             add_trace_kwargs = {}
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         marker_colors = np.empty(self.volume.shape, dtype=object)
@@ -625,6 +637,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         add_trace_kwargs: tp.KwargsLike = None,
         volume_add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot OHLC(V) data using Plotly.
@@ -640,6 +653,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
                 for example, `dict(row=1, col=1)`.
             volume_add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for the volume trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -676,7 +692,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
                     row_heights=[0.7, 0.3],
                 )
             else:
-                fig = make_figure()
+                if make_figure_kwargs is None:
+                    make_figure_kwargs = {}
+                fig = make_figure(**make_figure_kwargs)
             fig.update_layout(
                 showlegend=True,
                 xaxis=dict(showgrid=True),
