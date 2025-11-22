@@ -114,11 +114,12 @@ plot-base = [
     "matplotlib>=3.2.0",
     "plotly>=5.0.0",
     "ipywidgets>=7.0.0",
-    "kaleido"
+    "kaleido",
+    "dash",
 ]
 plot = [
     "vectorbtpro[plot-base]",
-    "plotly-resampler"
+    "plotly-resampler",
 ]
 pfopt-base = [
     "PyPortfolioOpt>=1.5.1",

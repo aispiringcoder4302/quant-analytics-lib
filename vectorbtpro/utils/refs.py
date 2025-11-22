@@ -1130,7 +1130,7 @@ class RefGraph(Configured):
         partition: bool = False,
         alphabetical: bool = True,
         max_depth: tp.Optional[int] = None,
-        cmap: tp.Any = "hsv",
+        cmap: tp.Any = "rainbow",
     ) -> tp.Dict[str, str]:
         """Generate colors for the nodes in the graph.
 
@@ -1553,12 +1553,12 @@ class RefGraph(Configured):
         yref: str = "y",
         fig: tp.Optional[tp.BaseFigure] = None,
         make_figure_kwargs: tp.KwargsLike = None,
-        interactive: bool = True,
+        interactive: tp.Union[bool, str] = True,
         use_webgl: tp.Optional[bool] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot the reference graph using Plotly.
-        
+
         Args:
             highlight_nodes (Optional[MaybeList]): Reference name(s) of nodes to highlight.
             module (Optional[ModuleLike]): Module context used in reference resolution.
@@ -1579,13 +1579,16 @@ class RefGraph(Configured):
             make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
 
                 See `vectorbtpro.utils.figure.make_figure`.
-            interactive (bool): If True, create an interactive figure.
+            interactive (Union[bool, str]): If True, create an interactive figure.
+
+                Supports "notebook" (with ipywidgets) and "dash" (with Dash) modes.
+                If True, picks the appropriate mode based on the environment.
             use_webgl (Optional[bool]): Flag to use `plotly.graph_objects.Scattergl`.
 
                 If the global configuration is True and the data has more than 10,000 points,
                 this flag becomes True.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
-        
+
         Returns:
             BaseFigure: Plotly figure representing the reference graph.
         """
@@ -1965,54 +1968,102 @@ class RefGraph(Configured):
 
             return fig
 
-        fig = _plot(fig, highlight_nodes)
-        if not interactive:
-            return fig
-
-        if isinstance(fig, go.FigureWidget):
-            widget = fig
-        else:
-            widget = go.FigureWidget(fig)
-        active_node = None
-
-        def _copy_trace(dst, src):
-            d = src.to_plotly_json()
-            d.pop("uid", None)
-            dst.update(d)
-
-        def _update_highlight(node_id):
-            nonlocal active_node, highlight_nodes
-            if active_node == node_id:
-                active_node = None
-                new_fig = _plot(None, highlight_nodes)
+        if isinstance(interactive, bool):
+            if interactive:
+                if checks.in_notebook():
+                    interactive = "notebook"
+                else:
+                    interactive = "dash"
             else:
-                active_node = node_id
-                new_fig = _plot(None, [node_id])
-            with widget.batch_update():
-                for old_tr, new_tr in zip(widget.data, new_fig.data):
-                    _copy_trace(old_tr, new_tr)
-                widget.layout.update(new_fig.layout)
-            _attach_callbacks(widget)
+                interactive = None
+        if interactive is None:
+            return _plot(fig, highlight_nodes)
+        if isinstance(interactive, str) and interactive.lower() == "notebook":
+            make_figure_kwargs = dict(make_figure_kwargs)
+            make_figure_kwargs["use_widgets"] = True
+            fig = _plot(fig, highlight_nodes)
 
-        def _handle_click(trace, points, state):
-            if not points.point_inds:
-                return
-            idx = points.point_inds[0]
-            customdata = getattr(trace, "customdata", None)
-            if customdata is None or idx >= len(customdata):
-                return
-            node_id = customdata[idx][0]
-            _update_highlight(node_id)
+            active_node = None
 
-        def _attach_callbacks(widget):
-            for tr in widget.data:
-                mode = getattr(tr, "mode", None)
-                customdata = getattr(tr, "customdata", None)
-                if mode and "markers" in mode and customdata is not None:
-                    tr.on_click(_handle_click)
+            def _copy_trace(dst, src):
+                d = src.to_plotly_json()
+                d.pop("uid", None)
+                dst.update(d)
 
-        _attach_callbacks(widget)
-        return widget
+            def _update_highlight(node_id):
+                nonlocal active_node, highlight_nodes
+                if active_node == node_id:
+                    active_node = None
+                    new_fig = _plot(None, highlight_nodes)
+                else:
+                    active_node = node_id
+                    new_fig = _plot(None, [node_id])
+                with fig.batch_update():
+                    for old_tr, new_tr in zip(fig.data, new_fig.data):
+                        _copy_trace(old_tr, new_tr)
+                    fig.layout.update(new_fig.layout)
+                _attach_callbacks(fig)
+
+            def _handle_click(trace, points, state):
+                if not points.point_inds:
+                    return
+                idx = points.point_inds[0]
+                customdata = getattr(trace, "customdata", None)
+                if customdata is None or idx >= len(customdata):
+                    return
+                node_id = customdata[idx][0]
+                _update_highlight(node_id)
+
+            def _attach_callbacks(widget):
+                for tr in widget.data:
+                    mode = getattr(tr, "mode", None)
+                    customdata = getattr(tr, "customdata", None)
+                    if mode and "markers" in mode and customdata is not None:
+                        tr.on_click(_handle_click)
+
+            _attach_callbacks(fig)
+            return fig
+        elif isinstance(interactive, str) and interactive.lower() == "dash":
+            assert_can_import("dash")
+
+            import dash
+
+            base_fig = _plot(None, highlight_nodes)
+
+            app = dash.Dash(__name__)
+
+            app.layout = dash.html.Div(
+                children=[
+                    dash.dcc.Store(id="active-node", data=None),
+                    dash.dcc.Graph(id="graph", figure=base_fig),
+                ],
+            )
+
+            @app.callback(
+                dash.Output("graph", "figure"),
+                dash.Output("active-node", "data"),
+                dash.Input("graph", "clickData"),
+                dash.State("active-node", "data"),
+            )
+            def _update_highlight(click_data, active_node):
+                if click_data is None or "points" not in click_data or not click_data["points"]:
+                    raise dash.exceptions.PreventUpdate
+                pt = click_data["points"][0]
+                customdata = pt.get("customdata")
+                if customdata is None:
+                    raise dash.exceptions.PreventUpdate
+                node_id = customdata[0]
+                if active_node == node_id:
+                    active_node = None
+                    new_fig = _plot(None, highlight_nodes)
+                else:
+                    active_node = node_id
+                    new_fig = _plot(None, [node_id])
+                return new_fig, active_node
+
+            app.run()
+        else:
+            raise ValueError(f"Invalid interactive: {interactive!r}")
 
 
 DBlock = tp.Literal["decorator", "head", "body"]

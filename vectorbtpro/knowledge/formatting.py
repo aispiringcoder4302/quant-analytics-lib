@@ -1602,6 +1602,7 @@ class HTMLFileFormatter(ContentFormatter):
             self._file_handle = open(str(file_path.resolve()), "w", encoding="utf-8")
         else:
             import tempfile
+            from vectorbtpro.utils.refs import get_caller_qualname
 
             self._file_handle = tempfile.NamedTemporaryFile(
                 "w",

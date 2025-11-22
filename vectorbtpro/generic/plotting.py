@@ -232,7 +232,9 @@ class Gauge(TraceType, TraceUpdater):
             add_trace_kwargs = {}
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
             if "width" in layout_cfg:
                 width = layout_cfg.get("width", None)
                 if width is not None:
@@ -407,7 +409,9 @@ class Bar(TraceType, TraceUpdater):
             x_labels = clean_labels(x_labels)
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         for i, trace_name in enumerate(trace_names):
@@ -553,7 +557,9 @@ class Scatter(TraceType, TraceUpdater):
             x_labels = clean_labels(x_labels)
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         for i, trace_name in enumerate(trace_names):
@@ -720,7 +726,9 @@ class Histogram(TraceType, TraceUpdater):
             trace_names = [trace_names]
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
             fig.update_layout(barmode="overlay")
         fig.update_layout(**layout_kwargs)
 
@@ -955,7 +963,9 @@ class Box(TraceType, TraceUpdater):
             trace_names = [trace_names]
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         for i, trace_name in enumerate(trace_names):
@@ -1181,7 +1191,9 @@ class Heatmap(TraceType, TraceUpdater):
             y_labels = clean_labels(y_labels)
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
             max_width = layout_cfg.get("width", None)
             if max_width is not None:
                 if data is not None:
@@ -1362,7 +1374,9 @@ class Volume(TraceType, TraceUpdater):
         z_labels = np.asarray(z_labels)
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
             if "width" in layout_cfg:
                 width = layout_cfg.get("width", None)
                 if width is not None:

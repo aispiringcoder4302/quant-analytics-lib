@@ -30,6 +30,7 @@ opt_dep_config = HybridConfig(
         "dask": {},
         "matplotlib": {"version": ">=3.2.0"},
         "plotly": {"version": ">=5.0.0"},
+        "dash": {},
         "ipywidgets": {"version": ">=7.0.0"},
         "kaleido": {},
         "telegram": {"dist_name": "python-telegram-bot", "version": ">=13.4"},
