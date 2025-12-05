@@ -488,9 +488,9 @@ class CCXTData(RemoteData):
                 for i in range(retries):
                     try:
                         return method(*args, **kwargs)
-                    except ccxt.NetworkError as e:
+                    except ccxt.NetworkError:
                         if i == retries - 1:
-                            raise e
+                            raise
                         if not silence_warnings:
                             warn(traceback.format_exc())
                         if delay is not None:

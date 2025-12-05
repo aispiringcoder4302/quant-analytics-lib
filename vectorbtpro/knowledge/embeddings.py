@@ -904,6 +904,12 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
                 embeddings = "gemini"
             elif check_installed("huggingface_hub") and os.getenv("HF_TOKEN"):
                 embeddings = "hf_inference"
+            elif check_installed("openai"):
+                embeddings = "openai"
+            elif check_installed("google.genai"):
+                embeddings = "gemini"
+            elif check_installed("huggingface_hub"):
+                embeddings = "hf_inference"
             elif check_installed("litellm"):
                 embeddings = "litellm"
             elif check_installed("llama_index"):

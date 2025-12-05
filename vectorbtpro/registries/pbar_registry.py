@@ -18,7 +18,7 @@ from vectorbtpro.utils.base import Base
 if tp.TYPE_CHECKING:
     from vectorbtpro.utils.pbar import ProgressBar as ProgressBarT
 else:
-    ProgressBarT = "ProgressBar"
+    ProgressBarT = "vectorbtpro.utils.pbar.ProgressBar"
 
 __all__ = [
     "PBarRegistry",

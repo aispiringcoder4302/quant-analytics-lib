@@ -604,9 +604,9 @@ class TVClient(Configured):
                     resp = requests.get(url, headers=headers)
                     symbols_data = json.loads(resp.text.replace("</em>", "").replace("<em>", ""))
                     break
-                except json.JSONDecodeError as e:
+                except json.JSONDecodeError:
                     if i == retries - 1:
-                        raise e
+                        raise
                     if delay is not None:
                         time.sleep(delay)
             symbols_remaining = symbols_data.get("symbols_remaining", 0)
@@ -1130,9 +1130,9 @@ class TVData(RemoteData):
                     limit=limit,
                 )
                 break
-            except Exception as e:
+            except Exception:
                 if i == retries - 1:
-                    raise e
+                    raise
                 if delay is not None:
                     time.sleep(delay)
         df.rename(

@@ -117,6 +117,7 @@ class _FSTD(FSTD):
                 make_figure_kwargs = {}
             fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
+
         if fstd_trace_kwargs is None:
             fstd_trace_kwargs = {}
         fstd_trace_kwargs = merge_dicts(

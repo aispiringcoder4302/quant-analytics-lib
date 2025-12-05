@@ -638,6 +638,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         volume_add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
         make_figure_kwargs: tp.KwargsLike = None,
+        make_subplots_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot OHLC(V) data using Plotly.
@@ -656,6 +657,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
 
                 See `vectorbtpro.utils.figure.make_figure`.
+            make_subplots_kwargs (KwargsLike): Keyword arguments for making subplots.
+
+                See `vectorbtpro.utils.figure.make_subplots`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -683,17 +687,24 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             volume_add_trace_kwargs = merge_dicts(dict(row=2, col=1), volume_add_trace_kwargs)
 
         if fig is None:
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
             if plot_volume:
-                fig = make_subplots(
-                    rows=2,
-                    cols=1,
-                    shared_xaxes=True,
-                    vertical_spacing=0,
-                    row_heights=[0.7, 0.3],
+                if make_subplots_kwargs is None:
+                    make_subplots_kwargs = {}
+                make_subplots_kwargs = merge_dicts(
+                    dict(
+                        rows=2,
+                        cols=1,
+                        shared_xaxes=True,
+                        vertical_spacing=0,
+                        row_heights=[0.7, 0.3],
+                        make_figure_kwargs=make_figure_kwargs,
+                    ),
+                    make_subplots_kwargs,
                 )
+                fig = make_subplots(**make_subplots_kwargs)
             else:
-                if make_figure_kwargs is None:
-                    make_figure_kwargs = {}
                 fig = make_figure(**make_figure_kwargs)
             fig.update_layout(
                 showlegend=True,

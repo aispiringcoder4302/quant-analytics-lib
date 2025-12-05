@@ -1283,9 +1283,9 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                 raise IndexingError("Columns only: This instance already contains one column of data")
             try:
                 col_mapper = pd_indexing_func(i_wrapper.wrap_reduced(np.arange(n_cols), columns=columns))
-            except pd.core.indexing.IndexingError as e:
+            except pd.core.indexing.IndexingError:
                 warn("Columns only: Make sure to treat this instance as a Series of columns rather than a DataFrame")
-                raise e
+                raise
             if checks.is_series(col_mapper):
                 new_columns = col_mapper.index
                 col_idxs = col_mapper.values

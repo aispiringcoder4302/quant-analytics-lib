@@ -6052,6 +6052,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         heatmap_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_subplots_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot a Series as a line and overlay it with a heatmap.
@@ -6068,6 +6069,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_subplots_kwargs (KwargsLike): Keyword arguments for making subplots.
+
+                See `vectorbtpro.utils.figure.make_subplots`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -6107,7 +6111,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 other = other.rename("Other")
 
         if fig is None:
-            fig = make_subplots(specs=[[{"secondary_y": True}]])
+            if make_subplots_kwargs is None:
+                make_subplots_kwargs = {}
+            make_subplots_kwargs = merge_dicts(
+                dict(
+                    specs=[[{"secondary_y": True}]],
+                ),
+                make_subplots_kwargs,
+            )
+            fig = make_subplots(**make_subplots_kwargs)
             width = plotting_cfg["layout"].get("width", None)
             if width is not None:
                 fig.update_layout(width=width + 100)

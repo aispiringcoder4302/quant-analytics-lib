@@ -21,6 +21,7 @@ import importlib.util
 import inspect
 import itertools
 import json
+import math
 import sys
 import urllib.request
 import webbrowser
@@ -236,30 +237,33 @@ def annotate_refname_parts(refname: str, allow_partial: bool = False, **kwargs) 
             if i == 0:
                 try:
                     obj = import_module(name)
-                except ImportError as e:
+                except ImportError:
                     if allow_partial:
                         obj = None
                     else:
-                        raise e
+                        raise
         else:
             try:
                 obj = get_attr(obj, name, **kwargs)
-            except AttributeError as e:
-                if refname_so_far.startswith("vectorbtpro.indicators.factory."):
-                    from vectorbtpro.indicators.factory import IndicatorFactory
+            except AttributeError:
+                try:
+                    obj = import_module(refname_so_far + "." + name)
+                except ImportError:
+                    if refname_so_far.startswith("vectorbtpro.indicators.factory."):
+                        from vectorbtpro.indicators.factory import IndicatorFactory
 
-                    if inspect.isfunction(obj) and obj.__name__ in IndicatorFactory.list_builtin_locations():
-                        obj = obj(name)
+                        if inspect.isfunction(obj) and obj.__name__ in IndicatorFactory.list_builtin_locations():
+                            obj = obj(name)
+                        else:
+                            if allow_partial:
+                                obj = None
+                            else:
+                                raise
                     else:
                         if allow_partial:
                             obj = None
                         else:
-                            raise e
-                else:
-                    if allow_partial:
-                        obj = None
-                    else:
-                        raise e
+                            raise
             else:
                 shadow_modname = refname_so_far + "." + name
                 try:
@@ -277,7 +281,7 @@ def annotate_refname_parts(refname: str, allow_partial: bool = False, **kwargs) 
     return tuple(annotated_parts)
 
 
-def get_refname_obj(refname: str, raise_error: bool = False, **kwargs) -> tp.Any:
+def get_refname_obj(refname: str, raise_error: bool = True, **kwargs) -> tp.Any:
     """Return the object corresponding to the provided reference name.
 
     Args:
@@ -292,6 +296,23 @@ def get_refname_obj(refname: str, raise_error: bool = False, **kwargs) -> tp.Any
     if not refname_parts:
         return None
     return refname_parts[-1]["obj"]
+
+
+def refname_exists(refname: str, static_only: bool = False) -> bool:
+    """Check if the provided reference name corresponds to an existing object.
+
+    Args:
+        refname (str): Fully-qualified dotted name (e.g. "pkg.mod.Class.attr").
+        static_only (bool): If True, only use static attribute retrieval without calling `getattr`.
+
+    Returns:
+        bool: True if the object exists, False otherwise.
+    """
+    if get_refname_obj(refname, raise_error=False, static_only=True) is not None:
+        return True
+    if not static_only and get_refname_obj(refname, raise_error=False, static_only=False) is not None:
+        return True
+    return False
 
 
 def split_refname(
@@ -315,9 +336,9 @@ def split_refname(
     if module is None:
         try:
             module = import_module(refname_parts[0])
-        except ImportError as e:
+        except ImportError:
             if raise_error:
-                raise e
+                raise
             return None, refname
         refname_parts = refname_parts[1:]
         if len(refname_parts) == 0:
@@ -362,7 +383,7 @@ def resolve_refname(
     """
 
     def _resolve_refname(refname, module=None, _refname_stack=None, _alias_stack=None, _test_no_module=True):
-        from vectorbtpro.utils.source import get_import_alias_map, get_defined_names
+        from vectorbtpro.utils.source import get_import_alias_map, get_defined_names, resolve_name_origin
 
         if _refname_stack is None:
             _refname_stack = []
@@ -472,7 +493,15 @@ def resolve_refname(
         if len(refname_parts) == 1:
             defined_names = get_defined_names(module, raise_error=False)
             if refname_parts[0] in defined_names:
+                if obj is not None:
+                    obj_refname = get_obj_refname(obj, allow_type_fallback=False)
+                    if obj_refname is not None:
+                        obj_root = obj_refname.split(".", 1)[0]
+                        module_root = module.__name__.split(".", 1)[0]
+                        if obj_root == module_root:
+                            return obj_refname
                 return f"{module.__name__}.{refname_parts[0]}"
+
             alias_map = get_import_alias_map(module, raise_error=False)
             if refname_parts[0] in alias_map:
                 target = alias_map[refname_parts[0]]
@@ -483,6 +512,17 @@ def resolve_refname(
                     return None
                 _alias_stack.append(alias_key)
                 return _resolve(target)
+
+            origin_mod = resolve_name_origin(module, refname_parts[0], raise_error=False)
+            if origin_mod is not None:
+                if obj is not None:
+                    obj_refname = get_obj_refname(obj, allow_type_fallback=False)
+                    if obj_refname is not None:
+                        obj_root = obj_refname.split(".", 1)[0]
+                        module_root = origin_mod.split(".", 1)[0]
+                        if obj_root == module_root:
+                            return obj_refname
+                return f"{origin_mod}.{refname_parts[0]}"
 
         if obj is not None:
             obj_refname = get_obj_refname(obj, allow_type_fallback=False)
@@ -499,7 +539,7 @@ def resolve_refname(
                             return obj_refname
                         tail = ".".join(refname_parts[1:])
                         candidate = obj_refname + "." + tail
-                        if get_refname_obj(candidate, raise_error=False, static_only=True) is None:
+                        if not refname_exists(candidate, static_only=True):
                             return None
                         return _resolve(candidate)
 
@@ -538,6 +578,17 @@ def resolve_refname(
                         owner = super_cls
                         break
                 if owner is None:
+                    for super_cls in inspect.getmro(cls):
+                        attrs_attrs = getattr(super_cls, "__attrs_attrs__", None)
+                        if not attrs_attrs:
+                            continue
+                        for a in attrs_attrs:
+                            if getattr(a, "name", None) == k:
+                                owner = super_cls
+                                break
+                        if owner is not None:
+                            break
+                if owner is None:
                     return None
                 owner_module = get_attr(owner, "__module__", None)
                 owner_name = get_attr(owner, "__name__", None)
@@ -548,7 +599,7 @@ def resolve_refname(
                 cls_path = owner_module + "." + owner_name
                 tail = ".".join(refname_parts[1:])
                 candidate = cls_path + "." + tail
-                if get_refname_obj(candidate, raise_error=False, static_only=True) is None:
+                if not refname_exists(candidate, static_only=True):
                     return None
                 return candidate
 
@@ -585,7 +636,7 @@ def resolve_refname(
                             if r not in refnames:
                                 refnames.append(r)
         if len(refnames) > 1:
-            pairs = [(r, get_refname_obj(r, static_only=True)) for r in refnames]
+            pairs = [(r, get_refname_obj(r, raise_error=False, static_only=True)) for r in refnames]
             pairs = [(r, o) for (r, o) in pairs if o is not None]
             if not pairs:
                 return refnames
@@ -655,13 +706,10 @@ def get_refname(
             obj = first_refname + "." + ".".join(obj[1:])
     if can_be_refname and isinstance(obj, str):
         refname = obj
-    else:
-        refname = get_obj_refname(obj, allow_type_fallback=allow_type_fallback)
-        if refname is None:
-            return None
-    if resolve:
-        return resolve_refname(refname, module=module, **kwargs)
-    return refname
+        if resolve:
+            return resolve_refname(refname, module=module, **kwargs)
+        return refname
+    return get_obj_refname(obj, allow_type_fallback=allow_type_fallback)
 
 
 def get_obj(
@@ -669,6 +717,7 @@ def get_obj(
     module: tp.Optional[tp.ModuleLike] = None,
     resolve: bool = True,
     allow_multiple: bool = False,
+    raise_error: bool = True,
     **kwargs,
 ) -> tp.Optional[tp.MaybeList]:
     """Return the object by its reference name.
@@ -681,6 +730,7 @@ def get_obj(
         resolve (bool): Whether to resolve the reference to an actual object.
         allow_multiple (bool): Whether to allow returning multiple objects
             if more than one reference name is found.
+        raise_error (bool): Whether to raise an error if the object cannot be found.
         **kwargs: Keyword arguments for `get_refname`.
 
     Returns:
@@ -692,7 +742,7 @@ def get_obj(
     if isinstance(refname, list):
         obj = None
         for _refname in refname:
-            _obj = get_refname_obj(_refname)
+            _obj = get_refname_obj(_refname, raise_error=raise_error)
             if obj is None:
                 obj = _obj
             elif not isinstance(obj, list):
@@ -705,7 +755,7 @@ def get_obj(
                 if _obj not in obj:
                     obj.append(_obj)
         return obj
-    return get_refname_obj(refname)
+    return get_refname_obj(refname, raise_error=raise_error)
 
 
 def ensure_refname(
@@ -907,16 +957,19 @@ class RefGraph(Configured):
 
     Args:
         G (DiGraph): NetworkX directed graph representing the reference relationships.
+        root (Optional[str]): Fully qualified reference name of the root node.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
 
-    def __init__(self, G: DiGraphT) -> None:
+    def __init__(self, G: DiGraphT, root: tp.Optional[str] = None, **kwargs) -> None:
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("networkx")
 
-        Configured.__init__(self, G=G)
+        Configured.__init__(self, G=G, root=root, **kwargs)
 
         self._G = G
+        self._root = root
 
     @property
     def G(self) -> DiGraphT:
@@ -926,6 +979,15 @@ class RefGraph(Configured):
             DiGraph: NetworkX directed graph.
         """
         return self._G
+
+    @property
+    def root(self) -> tp.Optional[str]:
+        """Fully qualified reference name of the root node.
+
+        Returns:
+            Optional[str]: Root node reference name, or None if not specified.
+        """
+        return self._root
 
     @property
     def is_multigraph(self) -> bool:
@@ -942,13 +1004,19 @@ class RefGraph(Configured):
         return isinstance(self.G, nx.MultiGraph)
 
     @classmethod
-    def from_ref_infos(cls: tp.Type[RefGraphT], ref_infos: tp.List[RefInfo], merge_edges: bool = True) -> RefGraphT:
+    def from_ref_infos(
+        cls: tp.Type[RefGraphT],
+        ref_infos: tp.List[RefInfo],
+        merge_edges: bool = True,
+        **kwargs,
+    ) -> RefGraphT:
         """Build a NetworkX directed graph from the provided reference information.
 
         Args:
             ref_infos (List[RefInfo]): List of `RefInfo` instances.
             merge_edges (bool): If True, merge multiple edges between the same nodes
                 into a single edge with a set of kinds.
+            **kwargs: Keyword arguments for `RefGraph`.
 
         Returns:
             RefGraph: Reference graph built from the reference information.
@@ -964,35 +1032,35 @@ class RefGraph(Configured):
             if ref_info.refname not in G:
                 G.add_node(ref_info.refname)
             G.nodes[ref_info.refname].update(
-                qualname=ref_info.qualname,
-                module=ref_info.module,
-                type=ref_info.type,
-                kind=ref_info.kind,
+                obj_qualname=ref_info.qualname,
+                obj_module=ref_info.module,
+                obj_type=ref_info.type,
+                obj_kind=ref_info.kind,
             )
 
         for ref_info in ref_infos:
             if ref_info.container is not None and ref_info.container in G:
-                G.add_edge(ref_info.container, ref_info.refname, kind="container")
+                G.add_edge(ref_info.container, ref_info.refname, rel_kind="container")
             for m in ref_info.direct_members:
                 if m in G:
-                    G.add_edge(ref_info.refname, m, kind="direct_member")
+                    G.add_edge(ref_info.refname, m, rel_kind="direct_member")
             for m in ref_info.nested_members:
                 if m in G:
-                    G.add_edge(ref_info.refname, m, kind="nested_member")
+                    G.add_edge(ref_info.refname, m, rel_kind="nested_member")
             for b in ref_info.direct_bases:
                 if b in G:
-                    G.add_edge(ref_info.refname, b, kind="direct_base")
+                    G.add_edge(ref_info.refname, b, rel_kind="direct_base")
             for b in ref_info.nested_bases:
                 if b in G:
-                    G.add_edge(ref_info.refname, b, kind="nested_base")
+                    G.add_edge(ref_info.refname, b, rel_kind="nested_base")
             for d in ref_info.direct_dependencies:
                 if d in G:
-                    G.add_edge(ref_info.refname, d, kind="direct_dependency")
+                    G.add_edge(ref_info.refname, d, rel_kind="direct_dependency")
             for d in ref_info.nested_dependencies:
                 if d in G:
-                    G.add_edge(ref_info.refname, d, kind="nested_dependency")
+                    G.add_edge(ref_info.refname, d, rel_kind="nested_dependency")
 
-        return cls(G=G).merge_edges() if merge_edges else cls(G=G)
+        return cls(G=G, **kwargs).merge_edges() if merge_edges else cls(G=G, **kwargs)
 
     def filter_nodes(self: RefGraphT, predicate: tp.Callable[[str, tp.Dict[str, tp.Any]], bool]) -> RefGraphT:
         """Filter nodes in the graph based on a predicate function.
@@ -1043,7 +1111,7 @@ class RefGraph(Configured):
         return self.replace(G=new_G)
 
     def merge_edges(self: RefGraphT) -> RefGraphT:
-        """Merge multiple edges between the same nodes into a single edge with a set of kinds.
+        """Merge multiple edges with a single relationship kind into a single edge with multiple relationship kinds.
 
         Returns:
             RefGraph: Reference graph with merged edges.
@@ -1057,15 +1125,15 @@ class RefGraph(Configured):
             new_G.add_node(n, **d)
         for u, v, d in self.G.edges(data=True):
             if new_G.has_edge(u, v):
-                new_G[u][v]["kinds"].add(d.get("kind"))
+                new_G[u][v]["rel_kinds"].add(d.get("rel_kind"))
             else:
                 new_d = dict(d)
-                kinds = {new_d.pop("kind")}
-                new_G.add_edge(u, v, kinds=kinds, **new_d)
+                rel_kinds = {new_d.pop("rel_kind")}
+                new_G.add_edge(u, v, rel_kinds=rel_kinds, **new_d)
         return self.replace(G=new_G)
 
     def split_edges(self: RefGraphT) -> RefGraphT:
-        """Split edges with multiple kinds into multiple edges with single kinds.
+        """Split each edge with multiple relationship kinds into multiple edges with a single relationship kind.
 
         Returns:
             RefGraph: Reference graph with split edges.
@@ -1079,25 +1147,263 @@ class RefGraph(Configured):
             new_G.add_node(n, **d)
         for u, v, d in self.G.edges(data=True):
             new_d = dict(d)
-            kinds = new_d.pop("kinds", set())
-            for kind in kinds:
-                new_G.add_edge(u, v, kind=kind, **new_d)
+            rel_kinds = new_d.pop("rel_kinds", set())
+            for rel_kind in rel_kinds:
+                new_G.add_edge(u, v, rel_kind=rel_kind, **new_d)
         return self.replace(G=new_G)
+
+    @classmethod
+    def get_roots(cls, G: DiGraphT) -> tp.Set[tp.Hashable]:
+        """Get root nodes in the graph.
+
+        Args:
+            G (DiGraph): NetworkX directed graph.
+
+        Returns:
+            Set[Hashable]: Set of root node IDs.
+        """
+        import networkx as nx
+
+        if G.number_of_nodes() == 0:
+            return set()
+        cG = nx.condensation(G)
+        roots = set()
+        for comp in cG.nodes():
+            if cG.in_degree(comp) == 0:
+                roots.update(cG.nodes[comp]["members"])
+        return roots
+
+    @classmethod
+    def radial_layout(
+        cls,
+        G: DiGraphT,
+        root: tp.Optional[str] = None,
+        layer_spacing: tp.Union[float, tp.Sequence[float]] = 1.0,
+        ring_spacing: tp.Union[float, tp.Sequence[float]] = 0.15,
+        distribute: tp.Union[bool, tp.Sequence[bool]] = False,
+        start_angle: float = 0.0,
+        clockwise: bool = True,
+    ) -> tp.Dict[str, tp.Tuple[float, float]]:
+        """Compute a radial layout for the graph.
+
+        Args:
+            G (DiGraph): NetworkX directed graph.
+            root (Optional[str]): Root node to start the layout from.
+
+                If None, the first root node in sorted order is chosen.
+            layer_spacing (Union[float, Sequence[float]]): Spacing between layers (depths).
+
+                If a sequence is provided, it specifies spacing for each layer.
+            ring_spacing (Union[float, Sequence[float]]): Spacing between rings for different object kinds.
+
+                If a sequence is provided, it specifies spacing for each layer.
+            distribute (Union[bool, Sequence[bool]]): Whether to distribute nodes evenly at each layer.
+
+                If a sequence is provided, it specifies the flag for each layer.
+            start_angle (float): Starting angle in degrees for the first leaf node.
+
+                0 degrees is at the top (12 o'clock position). Depends on the `clockwise` parameter.
+            clockwise (bool): Whether to arrange nodes in a clockwise direction.
+
+        Returns:
+            Dict[str, Tuple[float, float]]: Dictionary mapping node IDs to (x, y) coordinates.
+        """
+        import networkx as nx
+
+        if root is None:
+            roots = cls.get_roots(G)
+            if len(roots) == 1:
+                root = next(iter(roots))
+            else:
+                G = G.copy()
+                root = "__root__"
+                G.add_node(root)
+                for n in roots or G.nodes:
+                    if n != root:
+                        G.add_edge(root, n)
+        if root not in G:
+            raise ValueError(f"Root {root!r} is not in the graph")
+
+        if isinstance(G, nx.DiGraph):
+            G_tree = G.to_undirected()
+        else:
+            G_tree = G
+
+        T = nx.dfs_tree(G_tree, root)
+        if T.number_of_nodes() == 1:
+            return {root: (0.0, 0.0)}
+
+        leaves = [n for n in T.nodes if T.out_degree(n) == 0]
+        if not leaves:
+            return {root: (0.0, 0.0)}
+
+        n_leaves = len(leaves)
+        direction = -1.0 if clockwise else 1.0
+        start_angle_rad = math.radians(start_angle)
+        base_start = math.pi / 2.0 + direction * start_angle_rad
+        leaf_step = 2 * math.pi / n_leaves
+
+        angles = {}
+        depths = {}
+        parents = {}
+        next_leaf_idx = 0
+
+        def dfs(node, depth, parent):
+            nonlocal next_leaf_idx
+            depths[node] = depth
+            parents[node] = parent
+            children = list(T.successors(node))
+            try:
+                children.sort(key=str)
+            except Exception:
+                pass
+            if not children:
+                angles[node] = base_start + direction * next_leaf_idx * leaf_step
+                next_leaf_idx += 1
+            else:
+                for child in children:
+                    dfs(child, depth + 1, node)
+                child_angles = [angles[ch] for ch in children]
+                angles[node] = sum(child_angles) / len(child_angles)
+
+        dfs(root, 0, None)
+        max_depth = max(depths.values())
+
+        if isinstance(layer_spacing, (int, float)):
+            layer_spacings = [float(layer_spacing)] * max_depth
+        else:
+            layer_spacings = []
+            for d in range(max_depth):
+                if d < len(layer_spacing):
+                    layer_spacings.append(float(layer_spacing[d]))
+                else:
+                    layer_spacings.append(float(layer_spacing[-1]))
+
+        if isinstance(ring_spacing, (int, float)):
+            ring_spacings = [float(ring_spacing)] * max_depth
+        else:
+            ring_spacings = []
+            for d in range(max_depth):
+                if d < len(ring_spacing):
+                    ring_spacings.append(float(ring_spacing[d]))
+                else:
+                    ring_spacings.append(float(ring_spacing[-1]))
+
+        if isinstance(distribute, bool):
+            distribute_flags = [distribute] * max_depth
+        else:
+            distribute_flags = []
+            for d in range(max_depth):
+                if d < len(distribute):
+                    distribute_flags.append(bool(distribute[d]))
+                else:
+                    distribute_flags.append(bool(distribute[-1]))
+
+        depth_nodes = {d: [] for d in range(max_depth + 1)}
+        for n, d in depths.items():
+            depth_nodes[d].append(n)
+
+        depth_radius = {0: 0.0}
+        acc = 0.0
+        for d in range(1, max_depth + 1):
+            acc += layer_spacings[d - 1]
+            depth_radius[d] = acc
+
+        kind_to_index = {
+            "module": 0,
+            "class": 1,
+            "callable": 2,
+            "data": 3,
+            "unknown": 4,
+        }
+
+        r = {}
+        for n, d in depths.items():
+            if d == 0:
+                r[n] = 0.0
+                continue
+            base_r = depth_radius[d]
+            rs = ring_spacings[d - 1]
+            raw_kind = G.nodes[n].get("obj_kind")
+            kind = raw_kind if raw_kind in kind_to_index else "unknown"
+            idx = kind_to_index[kind]
+            offset = (idx - 2.0) * rs
+            r[n] = base_r + offset
+
+        for d in range(1, max_depth + 1):
+            if not distribute_flags[d - 1]:
+                continue
+            nodes_d = depth_nodes[d]
+            if len(nodes_d) <= 1:
+                continue
+            nodes_d = sorted(nodes_d, key=str)
+            k = len(nodes_d)
+            if d == 1:
+                base = base_start
+            else:
+                base = 0.0
+            step = direction * 2 * math.pi / k
+            for i, n in enumerate(nodes_d):
+                angles[n] = base + i * step
+
+        for d in range(2, max_depth + 1):
+            nodes_d = depth_nodes[d]
+            if not nodes_d:
+                continue
+            C = 0.0
+            S = 0.0
+            has_weight = False
+            for n in nodes_d:
+                p = parents[n]
+                if p is None:
+                    continue
+                w = r[n] * r.get(p, 0.0)
+                if w == 0.0:
+                    continue
+                has_weight = True
+                delta = angles[n] - angles[p]
+                C += w * math.cos(delta)
+                S += w * math.sin(delta)
+            if not has_weight:
+                continue
+            phi = -math.atan2(S, C)
+            for n in nodes_d:
+                angles[n] += phi
+
+        pos = {}
+        for n in G.nodes:
+            if n in depths:
+                a = angles[n]
+                rr = r.get(n, 0.0)
+                pos[n] = (rr * math.cos(a), rr * math.sin(a))
+            else:
+                pos[n] = (0.0, 0.0)
+
+        return pos
 
     def generate_node_positions(
         self,
-        layout: str = "spring",
+        layout: tp.Union[None, str, tp.Callable] = None,
+        root: tp.Optional[str] = None,
         add_root: bool = False,
+        add_sibling_edges: bool = False,
         **kwargs,
     ) -> tp.Dict[str, tp.Tuple[float, float]]:
         """Generate positions for the nodes in the graph.
 
         Args:
-            layout (str): Layout algorithm to use.
+            layout (Union[None, str, Callable]): Layout algorithm to use.
 
-                Will be searched as `networkx.layout.<layout>_layout`
-                and used as `prog` in `graphviz_layout` if not found and `graphviz` is installed.
+                If a string, will be first searched as `RefGraph.<layout>`; if not found,
+                it will be searched as `networkx.layout.<layout>_layout`; if still not found,
+                it will be used as `prog` in `graphviz_layout` if `graphviz` is installed.
+                If a callable, it will be called with the graph and `**kwargs`.
+                If None, defaults to `RefGraph.radial_layout`.
+            root (Optional[str]): Root node for the layout computation.
             add_root (bool): If True, add a root node to the layout computation.
+
+                Added only if there are multiple root nodes in the graph.
+            add_sibling_edges (bool): If True, add sibling edges to the layout computation.
             **kwargs: Keyword arguments for layout computation.
 
         Returns:
@@ -1107,23 +1413,48 @@ class RefGraph(Configured):
 
         if self.is_multigraph:
             self = self.merge_edges()
-        H = self.filter_edges(lambda u, v, d: "container" in d.get("kinds", set())).G
-        if add_root:
-            root_node = "__root__"
-            H.add_node(root_node)
-            for n in H.nodes():
-                if H.in_degree(n) == 0 and n != root_node:
-                    H.add_edge(root_node, n)
+        H = self.filter_edges(lambda u, v, d: "container" in d.get("rel_kinds", set())).G
+        roots = self.get_roots(H)
 
-        layout_func = getattr(nx.layout, f"{layout}_layout", None)
-        if layout_func is not None:
-            return layout_func(H, **kwargs)
-        try:
-            from networkx.drawing.nx_agraph import graphviz_layout
+        if add_root and len(roots) != 1:
+            root = "__root__"
+            H.add_node(root)
+            for n in roots or H.nodes:
+                if n != root:
+                    H.add_edge(root, n)
 
-            return graphviz_layout(H, prog=layout, **kwargs)
-        except ImportError:
-            raise ValueError(f"Layout {layout!r} not found in networkx and graphviz is not installed")
+        if add_sibling_edges:
+            parent_to_children = {p: list(H.successors(p)) for p in H.nodes()}
+            for children in parent_to_children.values():
+                if len(children) < 2:
+                    continue
+                for i in range(len(children)):
+                    for j in range(i + 1, len(children)):
+                        u, v = children[i], children[j]
+                        if not H.has_edge(u, v):
+                            H.add_edge(u, v)
+                        if not H.has_edge(v, u):
+                            H.add_edge(v, u)
+
+        if layout is None:
+            return self.radial_layout(H, root=root, **kwargs)
+        if isinstance(layout, str):
+            layout_func = getattr(nx.layout, f"{layout}_layout", None)
+            if layout_func is not None:
+                return layout_func(H, **kwargs)
+            try:
+                from networkx.drawing.nx_agraph import graphviz_layout
+
+                if root is None:
+                    if "__root__" in H.nodes:
+                        root = "__root__"
+                    else:
+                        root = self.root
+                return graphviz_layout(H, prog=layout, root=root, **kwargs)
+            except ImportError:
+                raise ValueError(f"Layout {layout!r} not found in networkx and graphviz is not installed")
+        else:
+            return layout(H, **kwargs)
 
     def generate_node_colors(
         self,
@@ -1131,6 +1462,7 @@ class RefGraph(Configured):
         alphabetical: bool = True,
         max_depth: tp.Optional[int] = None,
         cmap: tp.Any = "rainbow",
+        predicate: tp.Optional[tp.Callable[[str, tp.Dict[str, tp.Any]], bool]] = None,
     ) -> tp.Dict[str, str]:
         """Generate colors for the nodes in the graph.
 
@@ -1141,6 +1473,10 @@ class RefGraph(Configured):
             max_depth (Optional[int]): Limit the effective reference name depth; nodes deeper than this
                 inherit the color of their ancestor at that depth.
             cmap (Any): Colormap identifier provided as a string name or a collection (list/tuple) of colors.
+            predicate (Optional[Callable[[str, Dict[str, Any]], bool]]):
+                If provided, only nodes for which this predicate returns True
+                participate in color distribution; all other nodes inherit the
+                color of the closest matching ancestor in their dotted name.
 
         Returns:
             Dict[str, str]: Dictionary mapping node IDs to their colors.
@@ -1152,11 +1488,34 @@ class RefGraph(Configured):
             return {}
         if max_depth is not None and max_depth <= 0:
             raise ValueError("max_depth must be None or a positive integer")
+
         node_set = set(graph_nodes)
 
         def _hash_key(s):
             h = hashlib.sha1(s.encode("utf-8")).digest()
             return int.from_bytes(h[:4], "big")
+
+        def _get_effective_depth(parts):
+            if max_depth is None:
+                return len(parts)
+            return min(max_depth, len(parts))
+
+        selected_nodes = None
+        if predicate is not None:
+            selected_nodes = {n for n in node_set if predicate(n, self.G.nodes[n])}
+            if not selected_nodes:
+                selected_nodes = None
+                predicate = None
+
+        def _lookup_by_prefix(name, values):
+            if name in values:
+                return values[name]
+            parts = name.split(".")
+            for d in range(len(parts), 0, -1):
+                prefix = ".".join(parts[:d])
+                if prefix in values:
+                    return values[prefix]
+            return 0.0
 
         if partition:
             root = {
@@ -1164,7 +1523,10 @@ class RefGraph(Configured):
                 "full_path": "",
                 "children": {},
             }
-            for fqn in node_set:
+
+            sources = selected_nodes if predicate is not None else node_set
+
+            for fqn in sources:
                 parts = fqn.split(".")
                 current = root
                 full_path = ""
@@ -1195,6 +1557,19 @@ class RefGraph(Configured):
                 for child in node["children"].values():
                     _propagate(child, scalar)
 
+            def _compute_weight(node):
+                children = node["children"]
+                if not children:
+                    w = 1
+                else:
+                    w = 0
+                    for child in children.values():
+                        w += _compute_weight(child)
+                node["weight"] = w
+                return w
+
+            _compute_weight(root)
+
             def _assign_interval(node, start, end, depth):
                 if node["full_path"]:
                     values[node["full_path"]] = start
@@ -1209,36 +1584,56 @@ class RefGraph(Configured):
                     return
 
                 keys = _order_child_keys(children)
-                n = len(keys)
-                if n == 0:
+                total_weight = sum(children[k]["weight"] for k in keys)
+                if total_weight <= 0:
+                    n = len(keys)
+                    if n == 0:
+                        return
+                    width = (end - start) / n
+                    for i, key in enumerate(keys):
+                        child_start = start + i * width
+                        child_end = child_start + width
+                        _assign_interval(children[key], child_start, child_end, depth + 1)
                     return
 
-                width = (end - start) / n
-                for i, key in enumerate(keys):
-                    child_start = start + i * width
-                    child_end = child_start + width
-                    _assign_interval(children[key], child_start, child_end, depth + 1)
+                cur = start
+                length = end - start
+                for key in keys:
+                    child = children[key]
+                    child_width = length * (child["weight"] / float(total_weight))
+                    child_start = cur
+                    child_end = child_start + child_width
+                    _assign_interval(child, child_start, child_end, depth + 1)
+                    cur = child_end
 
             _assign_interval(root, 0.0, 1.0, 0)
-            scalars = [values[node] for node in graph_nodes]
+
+            if predicate is None:
+                scalars = [values[node] for node in graph_nodes]
+            else:
+                scalars = [_lookup_by_prefix(node, values) for node in graph_nodes]
 
         else:
+            if predicate is None:
+                color_keys = set()
+                for fqn in node_set:
+                    parts = fqn.split(".")
+                    depth = _get_effective_depth(parts)
+                    for d in range(1, depth + 1):
+                        color_keys.add(".".join(parts[:d]))
+            else:
+                color_keys = set()
+                for fqn in selected_nodes:
+                    parts = fqn.split(".")
+                    depth = _get_effective_depth(parts)
+                    for d in range(1, depth + 1):
+                        color_keys.add(".".join(parts[:d]))
 
-            def _get_effective_depth(parts):
-                if max_depth is None:
-                    return len(parts)
-                return min(max_depth, len(parts))
-
-            color_keys = set()
-            for fqn in node_set:
-                parts = fqn.split(".")
-                depth = _get_effective_depth(parts)
-                for d in range(1, depth + 1):
-                    color_keys.add(".".join(parts[:d]))
             if alphabetical:
                 color_keys = sorted(color_keys)
             else:
                 color_keys = sorted(color_keys, key=_hash_key)
+
             n_keys = len(color_keys)
             if n_keys == 0:
                 return {}
@@ -1248,43 +1643,77 @@ class RefGraph(Configured):
                 key_to_scalar[key] = 0.0 if n_keys == 1 else i / float(n_keys - 1)
 
             scalars = []
-            for fqn in graph_nodes:
-                parts = fqn.split(".")
-                depth = _get_effective_depth(parts)
-                color_key = ".".join(parts[:depth])
-                scalars.append(key_to_scalar[color_key])
 
-        color_list = map_value_to_cmap(scalars, cmap=cmap, vmin=0.0, vmax=1.0, as_hex=True)
+            if predicate is None:
+                for fqn in graph_nodes:
+                    parts = fqn.split(".")
+                    depth = _get_effective_depth(parts)
+                    color_key = ".".join(parts[:depth])
+                    scalars.append(key_to_scalar[color_key])
+            else:
+                color_key_set = set(color_keys)
+
+                def _lookup_scalar_for_node(fqn):
+                    parts = fqn.split(".")
+                    depth = _get_effective_depth(parts)
+                    for d in range(depth, 0, -1):
+                        key = ".".join(parts[:d])
+                        if key in color_key_set:
+                            return key_to_scalar[key]
+                    return 0.0
+
+                for fqn in graph_nodes:
+                    scalars.append(_lookup_scalar_for_node(fqn))
+
+        color_list = map_value_to_cmap(
+            scalars,
+            cmap=cmap,
+            vmin=0.0,
+            vmax=1.0,
+            as_hex=True,
+        )
         return {node: color for node, color in zip(graph_nodes, color_list)}
 
     def generate_data(
         self,
+        incl_node_positions: bool = True,
+        incl_node_colors: bool = True,
         node_position_kwargs: tp.KwargsLike = None,
         node_color_kwargs: tp.KwargsLike = None,
     ) -> dict:
         """Generate data dictionary representing the graph.
 
         Args:
+            incl_node_positions (bool): If True, include node positions in the data.
+            incl_node_colors (bool): If True, include node colors in the data.
             node_position_kwargs (KwargsLike): Keyword arguments for `RefGraph.generate_node_positions`.
             node_color_kwargs (KwargsLike): Keyword arguments for `RefGraph.generate_node_colors`.
 
         Returns:
             dict: Data dictionary representing the graph.
         """
-        if node_position_kwargs is None:
-            node_position_kwargs = {}
-        node_positions = self.generate_node_positions(**node_position_kwargs)
-        if node_color_kwargs is None:
-            node_color_kwargs = {}
-        node_colors = self.generate_node_colors(**node_color_kwargs)
+        if incl_node_positions:
+            if node_position_kwargs is None:
+                node_position_kwargs = {}
+            node_positions = self.generate_node_positions(**node_position_kwargs)
+        else:
+            node_positions = None
+        if incl_node_colors:
+            if node_color_kwargs is None:
+                node_color_kwargs = {}
+            node_colors = self.generate_node_colors(**node_color_kwargs)
+        else:
+            node_colors = None
 
         nodes = []
         for n, d in self.G.nodes(data=True):
             node = dict(d)
             node["id"] = n
-            node["x"] = float(node_positions[n][0])
-            node["y"] = float(node_positions[n][1])
-            node["color"] = node_colors[n]
+            if node_positions:
+                node["x"] = float(node_positions[n][0])
+                node["y"] = float(node_positions[n][1])
+            if node_colors:
+                node["color"] = node_colors[n]
             nodes.append(node)
 
         edges = []
@@ -1300,14 +1729,27 @@ class RefGraph(Configured):
             "edges": edges,
         }
 
-    def export(self, *args, path: tp.Optional[tp.PathLike] = None, **kwargs) -> None:
+    def export(
+        self,
+        *args,
+        path: tp.Optional[tp.PathLike] = None,
+        node_fields: tp.Optional[tp.List[str]] = None,
+        edges_fields: tp.Optional[tp.List[str]] = None,
+        **kwargs,
+    ) -> None:
         """Export the graph to a JSON file.
 
         Args:
             *args: Positional arguments for `RefGraph.generate_data`.
-            path (str): Path to the output JSON file.
+            path (Optional[PathLike]): Path to the output JSON file.
 
                 Defaults to "<ClassName>.json".
+            node_fields (Optional[List[str]]): List of node fields to include in the export.
+
+                If None, include all node fields.
+            edges_fields (Optional[List[str]]): List of edge fields to include in the export.
+
+                If None, include all edge fields.
             **kwargs: Keyword arguments for `RefGraph.generate_data`.
 
         Returns:
@@ -1318,10 +1760,14 @@ class RefGraph(Configured):
         data = self.generate_data(*args, **kwargs)
         for node in data["nodes"]:
             for k, v in node.items():
+                if node_fields is not None and k not in node_fields:
+                    continue
                 if isinstance(v, set):
                     node[k] = sorted(v)
         for edge in data["edges"]:
             for k, v in edge.items():
+                if edges_fields is not None and k not in edges_fields:
+                    continue
                 if isinstance(v, set):
                     edge[k] = sorted(v)
         with open(path, "w") as f:
@@ -1342,7 +1788,7 @@ class RefGraph(Configured):
             self = self.merge_edges()
 
         for u, _, d in self.G.in_edges(refname, data=True):
-            if "container" in d.get("kinds", set()):
+            if "container" in d.get("rel_kinds", set()):
                 return u
         return None
 
@@ -1362,7 +1808,7 @@ class RefGraph(Configured):
 
         contents = set()
         for _, v, d in self.G.out_edges(refname, data=True):
-            if "container" in d.get("kinds", set()):
+            if "container" in d.get("rel_kinds", set()):
                 contents.add(v)
         return sorted(contents)
 
@@ -1388,13 +1834,13 @@ class RefGraph(Configured):
         members = set()
         for _, v, d in self.G.out_edges(refname, data=True):
             if relation.lower() == "direct":
-                if "direct_member" in d.get("kinds", set()):
+                if "direct_member" in d.get("rel_kinds", set()):
                     members.add(v)
             elif relation.lower() == "nested":
-                if "nested_member" in d.get("kinds", set()):
+                if "nested_member" in d.get("rel_kinds", set()):
                     members.add(v)
             elif relation.lower() == "all":
-                if "direct_member" in d.get("kinds", set()) or "nested_member" in d.get("kinds", set()):
+                if "direct_member" in d.get("rel_kinds", set()) or "nested_member" in d.get("rel_kinds", set()):
                     members.add(v)
             else:
                 raise ValueError(f"Invalid relation: {relation!r}")
@@ -1422,13 +1868,13 @@ class RefGraph(Configured):
         bases = set()
         for _, v, d in self.G.out_edges(refname, data=True):
             if relation.lower() == "direct":
-                if "direct_base" in d.get("kinds", set()):
+                if "direct_base" in d.get("rel_kinds", set()):
                     bases.add(v)
             elif relation.lower() == "nested":
-                if "nested_base" in d.get("kinds", set()):
+                if "nested_base" in d.get("rel_kinds", set()):
                     bases.add(v)
             elif relation.lower() == "all":
-                if "direct_base" in d.get("kinds", set()) or "nested_base" in d.get("kinds", set()):
+                if "direct_base" in d.get("rel_kinds", set()) or "nested_base" in d.get("rel_kinds", set()):
                     bases.add(v)
             else:
                 raise ValueError(f"Invalid relation: {relation!r}")
@@ -1456,13 +1902,13 @@ class RefGraph(Configured):
         derived = set()
         for u, _, d in self.G.in_edges(refname, data=True):
             if relation.lower() == "direct":
-                if "direct_base" in d.get("kinds", set()):
+                if "direct_base" in d.get("rel_kinds", set()):
                     derived.add(u)
             elif relation.lower() == "nested":
-                if "nested_base" in d.get("kinds", set()):
+                if "nested_base" in d.get("rel_kinds", set()):
                     derived.add(u)
             elif relation.lower() == "all":
-                if "direct_base" in d.get("kinds", set()) or "nested_base" in d.get("kinds", set()):
+                if "direct_base" in d.get("rel_kinds", set()) or "nested_base" in d.get("rel_kinds", set()):
                     derived.add(u)
             else:
                 raise ValueError(f"Invalid relation: {relation!r}")
@@ -1490,13 +1936,13 @@ class RefGraph(Configured):
         dependencies = set()
         for _, v, d in self.G.out_edges(refname, data=True):
             if relation.lower() == "direct":
-                if "direct_dependency" in d.get("kinds", set()):
+                if "direct_dependency" in d.get("rel_kinds", set()):
                     dependencies.add(v)
             elif relation.lower() == "nested":
-                if "nested_dependency" in d.get("kinds", set()):
+                if "nested_dependency" in d.get("rel_kinds", set()):
                     dependencies.add(v)
             elif relation.lower() == "all":
-                if "direct_dependency" in d.get("kinds", set()) or "nested_dependency" in d.get("kinds", set()):
+                if "direct_dependency" in d.get("rel_kinds", set()) or "nested_dependency" in d.get("rel_kinds", set()):
                     dependencies.add(v)
             else:
                 raise ValueError(f"Invalid relation: {relation!r}")
@@ -1524,13 +1970,13 @@ class RefGraph(Configured):
         dependents = set()
         for u, _, d in self.G.in_edges(refname, data=True):
             if relation.lower() == "direct":
-                if "direct_dependency" in d.get("kinds", set()):
+                if "direct_dependency" in d.get("rel_kinds", set()):
                     dependents.add(u)
             elif relation.lower() == "nested":
-                if "nested_dependency" in d.get("kinds", set()):
+                if "nested_dependency" in d.get("rel_kinds", set()):
                     dependents.add(u)
             elif relation.lower() == "all":
-                if "direct_dependency" in d.get("kinds", set()) or "nested_dependency" in d.get("kinds", set()):
+                if "direct_dependency" in d.get("rel_kinds", set()) or "nested_dependency" in d.get("rel_kinds", set()):
                     dependents.add(u)
             else:
                 raise ValueError(f"Invalid relation: {relation!r}")
@@ -1541,8 +1987,8 @@ class RefGraph(Configured):
         highlight_nodes: tp.Optional[tp.MaybeList] = None,
         module: tp.Optional[tp.ModuleLike] = None,
         resolve: bool = True,
-        highlight_neighbors: bool = True,
         show_dimmed: bool = True,
+        highlight_neighbors: tp.Union[bool, str] = True,
         node_position_kwargs: tp.KwargsLike = None,
         node_color_kwargs: tp.KwargsLike = None,
         node_trace_kwargs: tp.KwargsLike = None,
@@ -1554,6 +2000,8 @@ class RefGraph(Configured):
         fig: tp.Optional[tp.BaseFigure] = None,
         make_figure_kwargs: tp.KwargsLike = None,
         interactive: tp.Union[bool, str] = True,
+        to_dash_kwargs: tp.KwargsLike = None,
+        dash_run_kwargs: tp.KwargsLike = None,
         use_webgl: tp.Optional[bool] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
@@ -1563,9 +2011,11 @@ class RefGraph(Configured):
             highlight_nodes (Optional[MaybeList]): Reference name(s) of nodes to highlight.
             module (Optional[ModuleLike]): Module context used in reference resolution.
             resolve (bool): Whether to resolve the reference names to actual objects.
-            highlight_neighbors (bool): If True, highlight neighbors of highlighted nodes.
             show_dimmed (bool): If True, show dimmed nodes and edges when some nodes
                 are highlighted; otherwise, hide them.
+            highlight_neighbors (Union[bool, str]): If True, highlight neighbors of highlighted nodes.
+
+                Supports "none" (False), "incoming", "outgoing", and "both" (True) modes.
             node_position_kwargs (KwargsLike): Keyword arguments for `RefGraph.generate_node_positions`.
             node_color_kwargs (KwargsLike): Keyword arguments for `RefGraph.generate_node_colors`.
             node_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the node trace.
@@ -1583,6 +2033,10 @@ class RefGraph(Configured):
 
                 Supports "notebook" (with ipywidgets) and "dash" (with Dash) modes.
                 If True, picks the appropriate mode based on the environment.
+            to_dash_kwargs (KwargsLike): Keyword arguments for converting to a Dash app.
+
+                See `vectorbtpro.utils.figure.FigureMixin.to_dash_app`.
+            dash_run_kwargs (KwargsLike): Keyword arguments for `dash.Dash.run`.
             use_webgl (Optional[bool]): Flag to use `plotly.graph_objects.Scattergl`.
 
                 If the global configuration is True and the data has more than 10,000 points,
@@ -1611,6 +2065,12 @@ class RefGraph(Configured):
         edges = data["edges"]
         pos = {n["id"]: (n["x"], n["y"]) for n in nodes}
 
+        if isinstance(highlight_neighbors, bool):
+            if highlight_neighbors:
+                highlight_neighbors = "both"
+            else:
+                highlight_neighbors = "none"
+
         if node_trace_kwargs is None:
             node_trace_kwargs = {}
         if edge_trace_kwargs is None:
@@ -1633,15 +2093,20 @@ class RefGraph(Configured):
             highlight_set = set(highlight_nodes or [])
             highlight_set = {ensure_refname(n, module=module, resolve=resolve) for n in highlight_set}
             highlight_set &= set(pos.keys())
-            neighbor_set = set()
-            if highlight_set and highlight_neighbors:
+            neighbor_set = dict(
+                incoming=set(),
+                outgoing=set(),
+            )
+            if highlight_set and highlight_neighbors.lower() != "none":
                 for e in edges:
                     u = e["source"]
                     v = e["target"]
-                    if u in highlight_set and v not in highlight_set:
-                        neighbor_set.add(v)
-                    elif v in highlight_set and u not in highlight_set:
-                        neighbor_set.add(u)
+                    if highlight_neighbors.lower() in ("both", "outgoing"):
+                        if u in highlight_set and v not in highlight_set:
+                            neighbor_set["outgoing"].add(v)
+                    if highlight_neighbors.lower() in ("both", "incoming"):
+                        if v in highlight_set and u not in highlight_set:
+                            neighbor_set["incoming"].add(u)
 
             xaxis = "xaxis" + xref[1:]
             yaxis = "yaxis" + yref[1:]
@@ -1688,7 +2153,7 @@ class RefGraph(Configured):
                     nid = n["id"]
                     if nid in highlight_set:
                         marker_opacity.append(1.0)
-                    elif nid in neighbor_set:
+                    elif nid in neighbor_set["incoming"] or nid in neighbor_set["outgoing"]:
                         marker_opacity.append(0.6)
                     elif highlight_set:
                         marker_opacity.append(1.0)
@@ -1709,17 +2174,17 @@ class RefGraph(Configured):
             }
             node_idxs_by_kind = defaultdict(list)
             for i, n in enumerate(nodes):
-                k = n.get("kind")
+                k = n.get("obj_kind")
                 if k is None or k not in node_style_by_kind:
                     k = "unknown"
                 node_idxs_by_kind[k].append(i)
             node_customdata = [
                 [
                     n["id"],
-                    n.get("qualname") or "",
-                    n.get("module") or "",
-                    n.get("type") or "",
-                    n.get("kind") or "",
+                    n.get("obj_qualname") or "",
+                    n.get("obj_module") or "",
+                    n.get("obj_type") or "",
+                    n.get("obj_kind") or "",
                 ]
                 for n in nodes
             ]
@@ -1739,7 +2204,12 @@ class RefGraph(Configured):
                 hl_idxs = []
                 for i in range(len(nodes)):
                     nid = nodes[i]["id"]
-                    if not highlight_set or nid in highlight_set or nid in neighbor_set:
+                    if (
+                        not highlight_set
+                        or nid in highlight_set
+                        or nid in neighbor_set["incoming"]
+                        or nid in neighbor_set["outgoing"]
+                    ):
                         hl_idxs.append(i)
 
                 hit_marker = dict(
@@ -1770,7 +2240,12 @@ class RefGraph(Configured):
                 dim_idxs = []
                 for i in node_idxs:
                     nid = nodes[i]["id"]
-                    if not highlight_set or nid in highlight_set or nid in neighbor_set:
+                    if (
+                        not highlight_set
+                        or nid in highlight_set
+                        or nid in neighbor_set["incoming"]
+                        or nid in neighbor_set["outgoing"]
+                    ):
                         hl_idxs.append(i)
                     elif show_dimmed:
                         dim_idxs.append(i)
@@ -1849,12 +2324,12 @@ class RefGraph(Configured):
             edges_by_kind = defaultdict(list)
             for e in edges:
                 if self.is_multigraph:
-                    kind = e.get("kind")
+                    kind = e.get("rel_kind")
                     if kind is None or kind not in edge_style_by_kind:
                         kind = "unknown"
                     edges_by_kind[kind].append(e)
                 else:
-                    kinds = e.get("kinds", set())
+                    kinds = e.get("rel_kinds", set())
                     if kinds:
                         for kind in kinds:
                             if kind is None or kind not in edge_style_by_kind:
@@ -1872,19 +2347,26 @@ class RefGraph(Configured):
 
                 hl_edge_x, hl_edge_y = [], []
                 dim_edge_x, dim_edge_y = [], []
+                hl_dir_x, hl_dir_y = [], []
                 for e in kind_edges:
                     u = e["source"]
                     v = e["target"]
                     x0, y0 = pos[u]
                     x1, y1 = pos[v]
-                    is_highlight_edge = (
+                    highlight_edge = (
                         (u in highlight_set and v in highlight_set)
-                        or (u in highlight_set and v in neighbor_set)
-                        or (u in neighbor_set and v in highlight_set)
+                        or (u in highlight_set and v in neighbor_set["outgoing"])
+                        or (u in neighbor_set["incoming"] and v in highlight_set)
                     )
-                    if highlight_set and is_highlight_edge:
+                    if highlight_set and highlight_edge:
                         hl_edge_x += [x0, x1, None]
                         hl_edge_y += [y0, y1, None]
+
+                        sx = x0 + (x1 - x0) * 0.9
+                        sy = y0 + (y1 - y0) * 0.9
+                        ex, ey = x1, y1
+                        hl_dir_x += [sx, ex, None]
+                        hl_dir_y += [sy, ey, None]
                     else:
                         dim_edge_x += [x0, x1, None]
                         dim_edge_y += [y0, y1, None]
@@ -1935,6 +2417,25 @@ class RefGraph(Configured):
                     edge_trace_kwargs,
                 )
                 hl_edge_traces.append(Scatter(**hl_trace_kwargs))
+
+                dir_line = dict(hl_line)
+                dir_line["width"] = hl_line["width"] * 2
+                dir_x = hl_dir_x if highlight_set else []
+                dir_y = hl_dir_y if highlight_set else []
+                dir_trace_kwargs = merge_dicts(
+                    dict(
+                        x=dir_x,
+                        y=dir_y,
+                        mode="lines",
+                        line=dir_line,
+                        name=f"{kind}_edges_dir",
+                        legendgroup=f"{kind}_edges",
+                        showlegend=False,
+                        hoverinfo="skip",
+                    ),
+                    edge_trace_kwargs,
+                )
+                hl_edge_traces.append(Scatter(**dir_trace_kwargs))
 
                 legend_trace_kwargs_kind = merge_dicts(
                     dict(
@@ -2028,16 +2529,14 @@ class RefGraph(Configured):
 
             import dash
 
+            if to_dash_kwargs is None:
+                to_dash_kwargs = {}
+            if dash_run_kwargs is None:
+                dash_run_kwargs = {}
+
             base_fig = _plot(None, highlight_nodes)
-
-            app = dash.Dash(__name__)
-
-            app.layout = dash.html.Div(
-                children=[
-                    dash.dcc.Store(id="active-node", data=None),
-                    dash.dcc.Graph(id="graph", figure=base_fig),
-                ],
-            )
+            app = base_fig.to_dash_app(**to_dash_kwargs)
+            app.layout.children.insert(0, dash.dcc.Store(id="active-node", data=None))
 
             @app.callback(
                 dash.Output("graph", "figure"),
@@ -2061,7 +2560,7 @@ class RefGraph(Configured):
                     new_fig = _plot(None, [node_id])
                 return new_fig, active_node
 
-            app.run()
+            app.run(**dash_run_kwargs)
         else:
             raise ValueError(f"Invalid interactive: {interactive!r}")
 
@@ -2148,6 +2647,13 @@ class RefIndex(Configured):
         incl_unreachable (bool): Whether to allow visiting reference names from unreachable scopes.
         incl_builtins (bool): Whether to allow visiting reference names from builtins.
         incl_private (bool): Whether to allow visiting private reference names.
+        incl_predicate (Optional[Callable[[str], bool]]): Predicate function to include reference names.
+
+            Called before other checks; if it returns True, the name is included.
+        excl_predicate (Optional[Callable[[str], bool]]): Predicate function to exclude reference names.
+
+            Called after other checks; if it returns True, the name is excluded.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
 
     def __init__(
@@ -2159,6 +2665,9 @@ class RefIndex(Configured):
         incl_unreachable: bool = False,
         incl_builtins: bool = False,
         incl_private: bool = False,
+        incl_predicate: tp.Optional[tp.Callable[[str], bool]] = None,
+        excl_predicate: tp.Optional[tp.Callable[[str], bool]] = None,
+        **kwargs,
     ) -> None:
         Configured.__init__(
             self,
@@ -2169,6 +2678,9 @@ class RefIndex(Configured):
             incl_unreachable=incl_unreachable,
             incl_builtins=incl_builtins,
             incl_private=incl_private,
+            incl_predicate=incl_predicate,
+            excl_predicate=excl_predicate,
+            **kwargs,
         )
 
         if incl_modules is None:
@@ -2189,6 +2701,8 @@ class RefIndex(Configured):
         self._incl_unreachable = incl_unreachable
         self._incl_builtins = incl_builtins
         self._incl_private = incl_private
+        self._incl_predicate = incl_predicate
+        self._excl_predicate = excl_predicate
 
         self._dependencies = {}
 
@@ -2257,6 +2771,28 @@ class RefIndex(Configured):
         return self._incl_private
 
     @property
+    def incl_predicate(self) -> tp.Optional[tp.Callable[[str], bool]]:
+        """Predicate function to include reference names.
+
+        Called before other checks; if it returns True, the name is included.
+
+        Returns:
+            Optional[Callable[[str], bool]]: Predicate function to include reference names.
+        """
+        return self._incl_predicate
+
+    @property
+    def excl_predicate(self) -> tp.Optional[tp.Callable[[str], bool]]:
+        """Predicate function to exclude reference names.
+
+        Called after other checks; if it returns True, the name is excluded.
+
+        Returns:
+            Optional[Callable[[str], bool]]: Predicate function to exclude reference names.
+        """
+        return self._excl_predicate
+
+    @property
     def dependencies(self) -> tp.Dict[str, tp.List[DHitMeta]]:
         """Dependencies for all modules in the index.
 
@@ -2309,7 +2845,7 @@ class RefIndex(Configured):
         from vectorbtpro.utils.source import get_source, absolutize_import
 
         module = resolve_module(module)
-        source = get_source(module.__name__)
+        source = get_source(module)
         source_lines = source.splitlines()
         n_lines = len(source_lines)
         tree = ast.parse(source, type_comments=True)
@@ -3055,7 +3591,8 @@ class RefIndex(Configured):
         max_depth: tp.Optional[int] = None,
         visit_containers: bool = True,
         incl_keys: tp.Optional[tp.Set[str]] = None,
-        merge_edges: bool = True,
+        ref_graph_cls: tp.Optional[tp.Type[RefGraph]] = None,
+        ref_graph_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> RefGraph:
         """Traverse the graph of reference names reachable from the object and build a `RefGraph`.
@@ -3086,8 +3623,10 @@ class RefIndex(Configured):
             max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal, None = unlimited).
             visit_containers (bool): If True, visit the container of each reference name regardless of `own_only`.
             incl_keys (Optional[Set[str]]): Which fields of `RefInfo` to traverse from.
-            merge_edges (bool): If True, merge multiple edges between the same nodes
-                into a single edge with a set of kinds.
+            ref_graph_cls (Optional[Type[RefGraph]]): `RefGraph` subclass to use for building the graph.
+            ref_graph_kwargs (KwargsLike): Keyword arguments for `RefGraph`.
+
+                By default, sets `root` to the starting reference name.
             **kwargs: Keyword arguments for `RefIndex.get_info`.
 
         Returns:
@@ -3134,6 +3673,8 @@ class RefIndex(Configured):
                     yield d, "nested_dependencies"
 
         def _passes_base_filters(name, is_container=False):
+            if self.incl_predicate is not None and self.incl_predicate(name):
+                return True
             if not self.incl_builtins and (name == "builtins" or name.startswith("builtins.")):
                 return False
             if not self.incl_unreachable and "::" in name:
@@ -3147,6 +3688,8 @@ class RefIndex(Configured):
             if self.excl_modules and any(
                 name == mod.__name__ or name.startswith(mod.__name__ + ".") for mod in self.excl_modules
             ):
+                return False
+            if self.excl_predicate is not None and self.excl_predicate(name):
                 return False
             return True
 
@@ -3243,4 +3786,10 @@ class RefIndex(Configured):
             new_ref_by_name[name] = new_info
 
         ref_infos = list(new_ref_by_name.values())
-        return RefGraph.from_ref_infos(ref_infos, merge_edges=merge_edges)
+        if ref_graph_cls is None:
+            ref_graph_cls = RefGraph
+        if ref_graph_kwargs is None:
+            ref_graph_kwargs = {}
+        if "root" not in ref_graph_kwargs:
+            ref_graph_kwargs["root"] = refname
+        return ref_graph_cls.from_ref_infos(ref_infos, **ref_graph_kwargs)

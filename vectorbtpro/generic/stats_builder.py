@@ -733,9 +733,9 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                         if not _silence_warnings:
                             warn(f"Duplicate metric title {t!r}")
                     stats_dct[t] = v
-            except Exception as e:
+            except Exception:
                 warn(f"Metric {metric_name!r} raised an exception")
-                raise e
+                raise
 
         if reself.wrapper.get_ndim(group_by=group_by) == 1:
             sr = pd.Series(

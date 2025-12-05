@@ -2348,9 +2348,9 @@ class Parameterizer(Configured):
                     results,
                     keys=template_context["param_index"],
                 )
-            except NoResultsException as e:
+            except NoResultsException:
                 if raise_no_results:
-                    raise e
+                    raise
                 if return_param_index:
                     return NoResult, None
                 return NoResult

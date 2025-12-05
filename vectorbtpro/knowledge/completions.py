@@ -1379,6 +1379,19 @@ class Completions(ThoughtProcessor):
                         cache_dir = self.get_setting("cache_dir", default=None)
                         if cache_dir is not None:
                             if isinstance(cache_dir, CustomTemplate):
+                                try:
+                                    if "cache_dir" in cache_dir.get_context_vars():
+                                        from vectorbtpro._settings import settings
+
+                                        _cache_dir = settings["knowledge"]["cache_dir"]
+                                        if isinstance(_cache_dir, CustomTemplate):
+                                            _cache_dir = _cache_dir.substitute(template_context, eval_id="cache_dir")
+                                        template_context = flat_merge_dicts(
+                                            dict(cache_dir=_cache_dir),
+                                            template_context,
+                                        )
+                                except NotImplementedError:
+                                    pass
                                 cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
                             template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
                         release_dir = self.get_setting("release_dir", default=None)
@@ -3448,6 +3461,14 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
             elif check_installed("google.genai") and os.getenv("GEMINI_API_KEY"):
                 completions = "gemini"
             elif check_installed("huggingface_hub") and os.getenv("HF_TOKEN"):
+                completions = "hf_inference"
+            elif check_installed("openai"):
+                completions = "openai"
+            elif check_installed("anthropic"):
+                completions = "anthropic"
+            elif check_installed("google.genai"):
+                completions = "gemini"
+            elif check_installed("huggingface_hub"):
                 completions = "hf_inference"
             elif check_installed("litellm"):
                 completions = "litellm"

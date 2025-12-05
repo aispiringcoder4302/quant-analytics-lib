@@ -215,9 +215,9 @@ class TextDocument(StoreDocument, DefineMixin):
         if self.text_path is not None:
             try:
                 text = get_pathlike_key(self.data, self.text_path, keep_path=False)
-            except (KeyError, IndexError, AttributeError) as e:
+            except (KeyError, IndexError, AttributeError):
                 if not self.skip_missing:
-                    raise e
+                    raise
                 return None
             if text is None:
                 return None
@@ -243,9 +243,9 @@ class TextDocument(StoreDocument, DefineMixin):
         data = self.data
         try:
             data = remove_pathlike_key(data, self.text_path, make_copy=True, prev_keys=prev_keys)
-        except (KeyError, IndexError, AttributeError) as e:
+        except (KeyError, IndexError, AttributeError):
             if not self.skip_missing:
-                raise e
+                raise
         excl_metadata = self.excl_metadata
         if for_embed:
             excl_embed_metadata = self.excl_embed_metadata
@@ -749,6 +749,19 @@ class FileStore(DictStore):
             cache_dir = self.get_setting("cache_dir", default=None)
             if cache_dir is not None:
                 if isinstance(cache_dir, CustomTemplate):
+                    try:
+                        if "cache_dir" in cache_dir.get_context_vars():
+                            from vectorbtpro._settings import settings
+
+                            _cache_dir = settings["knowledge"]["cache_dir"]
+                            if isinstance(_cache_dir, CustomTemplate):
+                                _cache_dir = _cache_dir.substitute(template_context, eval_id="cache_dir")
+                            template_context = flat_merge_dicts(
+                                dict(cache_dir=_cache_dir),
+                                template_context,
+                            )
+                    except NotImplementedError:
+                        pass
                     cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
                 template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
             release_dir = self.get_setting("release_dir", default=None)
@@ -1066,6 +1079,19 @@ class LMDBStore(ObjectStore):
             cache_dir = self.get_setting("cache_dir", default=None)
             if cache_dir is not None:
                 if isinstance(cache_dir, CustomTemplate):
+                    try:
+                        if "cache_dir" in cache_dir.get_context_vars():
+                            from vectorbtpro._settings import settings
+
+                            _cache_dir = settings["knowledge"]["cache_dir"]
+                            if isinstance(_cache_dir, CustomTemplate):
+                                _cache_dir = _cache_dir.substitute(template_context, eval_id="cache_dir")
+                            template_context = flat_merge_dicts(
+                                dict(cache_dir=_cache_dir),
+                                template_context,
+                            )
+                    except NotImplementedError:
+                        pass
                     cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
                 template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
             release_dir = self.get_setting("release_dir", default=None)

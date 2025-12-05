@@ -2573,9 +2573,9 @@ class Executor(Configured):
         if filter_results:
             try:
                 results, keys = filter_out_no_results(results, keys=keys)
-            except NoResultsException as e:
+            except NoResultsException:
                 if raise_no_results:
-                    raise e
+                    raise
                 return NoResult
             no_results_filtered = True
         else:

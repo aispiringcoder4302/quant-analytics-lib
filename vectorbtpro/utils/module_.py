@@ -136,7 +136,7 @@ def resolve_module(module: tp.ModuleLike) -> ModuleType:
             return import_module(module)
         except ImportError:
             pass
-        obj = get_obj(module)
+        obj = get_obj(module, raise_error=False)
         if obj is None:
             raise ModuleNotFoundError(f"Module {module!r} not found")
         if not isinstance(obj, ModuleType):

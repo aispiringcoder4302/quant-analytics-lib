@@ -4797,9 +4797,9 @@ class Splitter(Analyzable):
             if filter_results:
                 try:
                     results, keys = filter_out_no_results(results, keys=keys)
-                except NoResultsException as e:
+                except NoResultsException:
                     if raise_no_results:
-                        raise e
+                        raise
                     return NoResult
                 no_results_filtered = True
             else:
@@ -4974,9 +4974,9 @@ class Splitter(Analyzable):
                     if filter_results:
                         try:
                             _results, major_keys_wbounds = filter_out_no_results(_results, keys=major_keys_wbounds)
-                        except NoResultsException as e:
+                        except NoResultsException:
                             if raise_no_results:
-                                raise e
+                                raise
                             return NoResult
                     try:
                         return pd.Series(_results, index=major_keys_wbounds)
@@ -4990,9 +4990,9 @@ class Splitter(Analyzable):
                     if filter_results:
                         try:
                             _results, major_keys_wbounds = filter_out_no_results(_results, keys=minor_keys_wbounds)
-                        except NoResultsException as e:
+                        except NoResultsException:
                             if raise_no_results:
-                                raise e
+                                raise
                             return NoResult
                     try:
                         return pd.Series(_results, index=minor_keys_wbounds)
@@ -5074,9 +5074,9 @@ class Splitter(Analyzable):
         if filter_results:
             try:
                 results = filter_out_no_results(results)
-            except NoResultsException as e:
+            except NoResultsException:
                 if raise_no_results:
-                    raise e
+                    raise
                 return NoResult
         return results
 

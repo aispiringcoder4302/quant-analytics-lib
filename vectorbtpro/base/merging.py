@@ -189,9 +189,9 @@ def concat_merge(
     if filter_results:
         try:
             objs, keys = filter_out_no_results(objs, keys=keys)
-        except NoResultsException as e:
+        except NoResultsException:
             if raise_no_results:
-                raise e
+                raise
             return NoResult
 
     if isinstance(objs[0], Wrapping):
@@ -350,9 +350,9 @@ def row_stack_merge(
     if filter_results:
         try:
             objs, keys = filter_out_no_results(objs, keys=keys)
-        except NoResultsException as e:
+        except NoResultsException:
             if raise_no_results:
-                raise e
+                raise
             return NoResult
 
     if isinstance(objs[0], Wrapping):
@@ -530,9 +530,9 @@ def column_stack_merge(
     if filter_results:
         try:
             objs, keys = filter_out_no_results(objs, keys=keys)
-        except NoResultsException as e:
+        except NoResultsException:
             if raise_no_results:
-                raise e
+                raise
             return NoResult
 
     if isinstance(objs[0], Wrapping):
@@ -738,9 +738,9 @@ def imageio_merge(
     if filter_results:
         try:
             objs, keys = filter_out_no_results(objs, keys=keys)
-        except NoResultsException as e:
+        except NoResultsException:
             if raise_no_results:
-                raise e
+                raise
             return NoResult
 
     if imread_kwargs is None:

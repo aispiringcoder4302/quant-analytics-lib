@@ -576,7 +576,7 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
     """Obtain the reconstruction identifier for a class or instance.
 
     If the object is an instance or subclass of `Pickleable` with a defined `_rec_id`, that value is returned.
-    Otherwise, returns the reference name derived using `vectorbtpro.utils.refs.get_refname_obj`.
+    Otherwise, returns the fully qualified reference name.
 
     Args:
         obj (Any): Class or instance to evaluate.
@@ -584,7 +584,7 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
     Returns:
         Optional[str]: Reconstruction identifier or class reference name, or None if not found.
     """
-    from vectorbtpro.utils.refs import get_refname_obj
+    from vectorbtpro.utils.refs import refname_exists
 
     if isinstance(obj, type):
         cls = obj
@@ -596,7 +596,7 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
                 raise TypeError(f"Reconstructing id of class {cls} must be a string")
             return cls._rec_id
     refname = cls.__module__ + "." + cls.__name__
-    if get_refname_obj(refname, raise_error=False) is not None:
+    if refname_exists(refname):
         return refname
     return None
 
@@ -614,7 +614,7 @@ def get_class_from_id(class_id: str) -> tp.Optional[tp.Type]:
 
     if class_id in rec_info_registry:
         return rec_info_registry[class_id].cls
-    cls = get_obj(class_id)
+    cls = get_obj(class_id, raise_error=False)
     if cls is not None:
         return cls
     raise ValueError(f"Please register an instance of RecInfo for {class_id!r}")
@@ -649,7 +649,7 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
     if not isinstance(cls, type):
         if isinstance(cls, str):
             cls_name = cls
-            cls = get_obj(cls_name)
+            cls = get_obj(cls_name, raise_error=False)
             if cls is None:
                 cls = cls_name
     if not isinstance(cls, type):

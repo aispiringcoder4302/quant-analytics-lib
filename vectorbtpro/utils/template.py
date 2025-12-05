@@ -192,9 +192,9 @@ class Sub(CustomTemplate):
 
         try:
             return Template(self.template).substitute(context)
-        except KeyError as e:
+        except KeyError:
             if strict:
-                raise e
+                raise
         return self
 
 
@@ -229,9 +229,9 @@ class SafeSub(CustomTemplate):
 
         try:
             return Template(self.template).safe_substitute(context)
-        except KeyError as e:
+        except KeyError:
             if strict:
-                raise e
+                raise
         return self
 
 
@@ -254,9 +254,9 @@ class Rep(CustomTemplate):
 
         try:
             return context[self.template]
-        except KeyError as e:
+        except KeyError:
             if strict:
-                raise e
+                raise
         return self
 
 
@@ -280,9 +280,9 @@ class RepEval(CustomTemplate):
 
         try:
             return evaluate(self.template, context)
-        except NameError as e:
+        except NameError:
             if strict:
-                raise e
+                raise
         return self
 
 
@@ -311,9 +311,9 @@ class RepFunc(CustomTemplate):
 
         try:
             return self.template(**func_kwargs)
-        except TypeError as e:
+        except TypeError:
             if strict:
-                raise e
+                raise
         return self
 
 

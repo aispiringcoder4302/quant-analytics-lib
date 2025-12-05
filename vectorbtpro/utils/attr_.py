@@ -722,20 +722,24 @@ def get_attr(
     """
     try:
         value = inspect.getattr_static(obj, attr_name)
-    except AttributeError as e:
+    except AttributeError:
         if safe:
             cls = type(obj)
             if any("__getattr__" in get_attr(c, "__dict__", {}) for c in cls.__mro__):
                 if default is not MISSING:
                     return default
-                raise e
+                raise
         if static_only:
+            if isinstance(obj, type) and hasattr(obj, "__attrs_attrs__"):
+                for a in getattr(obj, "__attrs_attrs__", ()):
+                    if getattr(a, "name", None) == attr_name:
+                        return a
             if default is not MISSING:
                 return default
-            raise e
+            raise
         value = getattr(obj, attr_name, default)
         if value is MISSING:
-            raise e
+            raise
         return value
     else:
         is_descriptor = (
@@ -801,24 +805,45 @@ def iter_attr_names(obj: tp.Any) -> tp.Generator[str, None, None]:
     Yields:
         str: Attribute names.
     """
-    if inspect.ismodule(obj):
-        for n, _ in inspect.getmembers_static(obj):
-            yield n
-        return
-    if inspect.isclass(obj):
-        for c in inspect.getmro(obj):
+
+    def _iter_class_like(cls, seen):
+        for c in inspect.getmro(cls):
             for n, _ in inspect.getmembers_static(c):
+                if n not in seen:
+                    seen.add(n)
+                    yield n
+            attrs_attrs = getattr(c, "__attrs_attrs__", None)
+            if attrs_attrs:
+                for a in attrs_attrs:
+                    name = getattr(a, "name", None)
+                    if isinstance(name, str) and name not in seen:
+                        seen.add(name)
+                        yield name
+
+    if inspect.ismodule(obj):
+        seen = set()
+        for n, _ in inspect.getmembers_static(obj):
+            if n not in seen:
+                seen.add(n)
                 yield n
         return
+    if inspect.isclass(obj):
+        seen = set()
+        yield from _iter_class_like(obj, seen)
+        return
+    seen = set()
     dct = get_attr(obj, "__dict__", {})
     if isinstance(dct, dict):
         for n in dct:
-            yield n
+            if n not in seen:
+                seen.add(n)
+                yield n
     slots = get_attr(type(obj), "__slots__", ())
     for n in iter_slot_names(slots):
-        yield n
-    for n, _ in inspect.getmembers_static(type(obj)):
-        yield n
+        if n not in seen:
+            seen.add(n)
+            yield n
+    yield from _iter_class_like(type(obj), seen)
 
 
 @define

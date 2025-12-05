@@ -11,7 +11,6 @@
 """Module providing utilities for validation during runtime."""
 
 import datetime
-from operator import is_
 import traceback
 from collections.abc import Collection, Iterable, Sequence, Hashable, Mapping
 from functools import partial
@@ -745,9 +744,9 @@ def is_deep_equal(
         elif isinstance(obj1, np.ndarray):
             try:
                 _check_array(np.testing.assert_array_equal)
-            except Exception as e:
+            except Exception:
                 if check_exact:
-                    raise e
+                    raise
                 _check_array(np.testing.assert_allclose)
         elif isinstance(obj1, (tuple, list)):
             if len(obj1) != len(obj2):

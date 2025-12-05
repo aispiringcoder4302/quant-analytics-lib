@@ -419,86 +419,66 @@ class FigureMixin(Base):
         """
         self.show(renderer="svg", **kwargs)
 
-    def show_full_window(
+    def to_dash_app(
         self: FigureMixinT,
         inplace: bool = False,
-        open_browser: bool = True,
-        include_plotlyjs: tp.Union[bool, str] = "cdn",
-        use_dash: tp.Optional[bool] = None,
+        fit_to_window: bool = False,
+        keep_aspect_ratio: bool = False,
         dash_app_kwargs: tp.KwargsLike = None,
         dash_div_kwargs: tp.KwargsLike = None,
         dash_graph_kwargs: tp.KwargsLike = None,
-        dash_run_kwargs: tp.KwargsLike = None,
-        keep_aspect_ratio: bool = False,
         **kwargs,
-    ) -> tp.Optional[tp.Path]:
-        """Show the figure in a separate browser tab using the entire window.
-
-        If Dash is installed (and `use_dash` is not False), this starts a small Dash
-        app with a full-window `dcc.Graph` and blocks until the server stops.
-        Otherwise, it falls back to writing a standalone HTML file (original behavior).
+    ) -> tp.Any:
+        """Convert the figure into a Dash app.
 
         Args:
             inplace (bool): Whether to update the figure in place.
-            open_browser (Optional[bool]): Flag indicating whether to open the web browser.
-            include_plotlyjs (Union[bool, str]): Determines how to include Plotly.js in the HTML file.
-            use_dash (Optional[bool]): Use Dash, otherwise fallback to static HTML.
-
-                If None, use Dash if installed.
+            fit_to_window (bool): Whether to fit the figure to the window size.
+            keep_aspect_ratio (bool): Whether to keep the original aspect ratio of the figure.
             dash_app_kwargs (KwargsLike): Keyword arguments for `dash.Dash`.
             dash_div_kwargs (KwargsLike): Keyword arguments for `dash.html.Div`.
             dash_graph_kwargs (KwargsLike): Keyword arguments for `dash.dcc.Graph`.
-            dash_run_kwargs (KwargsLike): Keyword arguments for `dash.Dash.run`.
-            keep_aspect_ratio (bool): Whether to keep the original aspect ratio of the figure.
             **kwargs: Keyword arguments for `FigureMixin.resolve_show_args`.
 
         Returns:
-            Optional[Path]: Path to the temporary HTML file, or None if Dash is used.
+            Any: Dash app instance.
         """
-        from vectorbtpro.utils.module_ import check_installed
-        from vectorbtpro.utils.parsing import get_func_arg_names
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("dash")
+        import dash
 
         fig = self if inplace else self.copy()
         _, show_kwargs = fig.resolve_show_args(**kwargs)
-        bgcolor = get_bgcolor(fig)
-        orig_width = show_kwargs.get("width", fig.layout.width)
-        orig_height = show_kwargs.get("height", fig.layout.height)
-        aspect_ratio = None
-        if orig_width and orig_height:
-            try:
-                aspect_ratio = float(orig_height) / float(orig_width)
-            except (TypeError, ValueError):
-                aspect_ratio = None
-        if keep_aspect_ratio and aspect_ratio is not None:
-            outer_height = f"calc(100vw * {aspect_ratio})"
-        else:
-            outer_height = "100vh"
-        
-        fig.update_layout(autosize=True, width=None, height=None)
         config = show_kwargs.pop("config", {}) or {}
         if not isinstance(config, dict):
             config = {}
         config.setdefault("responsive", True)
+        bgcolor = get_bgcolor(fig)
+        width = show_kwargs.get("width", fig.layout.width)
+        height = show_kwargs.get("height", fig.layout.height)
+        if width and height and checks.is_number(width) and checks.is_number(height):
+            aspect_ratio = height / width
+        else:
+            aspect_ratio = None
+        if keep_aspect_ratio and aspect_ratio is not None:
+            outer_height = f"calc(100vw * {aspect_ratio})"
+        else:
+            outer_height = "100vh"
 
-        if use_dash is None:
-            use_dash = check_installed("dash")
-        if use_dash:
-            from vectorbtpro.utils.module_ import assert_can_import
+        if fit_to_window:
+            fig.update_layout(autosize=True, width=None, height=None)
 
-            assert_can_import("dash")
-            import dash
+        if dash_app_kwargs is None:
+            dash_app_kwargs = {}
+        if dash_div_kwargs is None:
+            dash_div_kwargs = {}
+        if dash_graph_kwargs is None:
+            dash_graph_kwargs = {}
 
-            if dash_app_kwargs is None:
-                dash_app_kwargs = {}
-            if dash_div_kwargs is None:
-                dash_div_kwargs = {}
-            if dash_graph_kwargs is None:
-                dash_graph_kwargs = {}
-            if dash_run_kwargs is None:
-                dash_run_kwargs = {}
+        app = dash.Dash(__name__, **dash_app_kwargs)
 
-            app = dash.Dash(__name__, **dash_app_kwargs)
-
+        if fit_to_window:
             app.index_string = f"""
 <!DOCTYPE html>
 <html>
@@ -526,46 +506,99 @@ class FigureMixin(Base):
 </html>
 """
 
-            dash_graph_kwargs = merge_dicts(
-                dict(
-                    id="graph",
-                    figure=fig,
-                    style=dict(
-                        height="100%",
-                        width="100%",
-                    ),
-                    config=config,
+        dash_graph_kwargs = merge_dicts(
+            dict(
+                id="graph",
+                figure=fig,
+                style=dict(
+                    height="100%",
+                    width="100%",
                 ),
-                dash_graph_kwargs,
-            )
-            dash_div_kwargs = merge_dicts(
-                dict(
-                    style=dict(
-                        width="100vw",
-                        height=outer_height,
-                    ),
-                    children=[dash.dcc.Graph(**dash_graph_kwargs)],
+                config=dict(
+                    responsive=True,
                 ),
-                dash_div_kwargs,
+            ),
+            dash_graph_kwargs,
+        )
+        if fit_to_window:
+            style = dict(
+                width="100vw",
+                height=outer_height,
             )
-            app.layout = dash.html.Div(**dash_div_kwargs)
-            app.run(**dash_run_kwargs)
         else:
-            to_html_kwargs = {}
-            for name in get_func_arg_names(to_html):
-                if name in show_kwargs:
-                    to_html_kwargs[name] = show_kwargs.pop(name)
-            to_html_kwargs = merge_dicts(
-                dict(
-                    full_html=True,
-                    include_plotlyjs=include_plotlyjs,
-                    default_width="100vw",
-                    default_height=outer_height,
-                ),
-                to_html_kwargs,
-            )
-            html = to_html(fig, config=config, **to_html_kwargs)
-            style = f"""
+            style = dict()
+            if width is not None:
+                style["width"] = f"{width}px"
+            if height is not None:
+                style["height"] = f"{height}px"
+        dash_div_kwargs = merge_dicts(
+            dict(
+                style=style,
+                children=[dash.dcc.Graph(**dash_graph_kwargs)],
+            ),
+            dash_div_kwargs,
+        )
+        app.layout = dash.html.Div(**dash_div_kwargs)
+        return app
+
+    def to_html_str(
+        self: FigureMixinT,
+        inplace: bool = False,
+        fit_to_window: bool = False,
+        keep_aspect_ratio: bool = False,
+        include_plotlyjs: tp.Union[bool, str] = "cdn",
+        **kwargs,
+    ) -> str:
+        """Convert the figure to a standalone HTML string.
+
+        Args:
+            inplace (bool): Whether to update the figure in place.
+            fit_to_window (bool): Whether to fit the figure to the window size.
+            keep_aspect_ratio (bool): Whether to keep the original aspect ratio of the figure.
+            include_plotlyjs (Union[bool, str]): Determines how to include Plotly.js in the HTML file.
+            **kwargs: Keyword arguments for `FigureMixin.resolve_show_args`.
+
+        Returns:
+            str: Standalone HTML string representing the figure.
+        """
+        from vectorbtpro.utils.parsing import get_func_arg_names
+
+        fig = self if inplace else self.copy()
+        _, show_kwargs = fig.resolve_show_args(**kwargs)
+        config = show_kwargs.pop("config", {}) or {}
+        if not isinstance(config, dict):
+            config = {}
+        config.setdefault("responsive", True)
+        bgcolor = get_bgcolor(fig)
+        width = show_kwargs.get("width", fig.layout.width)
+        height = show_kwargs.get("height", fig.layout.height)
+        if width and height and checks.is_number(width) and checks.is_number(height):
+            aspect_ratio = height / width
+        else:
+            aspect_ratio = None
+        if keep_aspect_ratio and aspect_ratio is not None:
+            outer_height = f"calc(100vw * {aspect_ratio})"
+        else:
+            outer_height = "100vh"
+
+        if fit_to_window:
+            fig.update_layout(autosize=True, width=None, height=None)
+
+        to_html_kwargs = {}
+        for name in get_func_arg_names(to_html):
+            if name in show_kwargs:
+                to_html_kwargs[name] = show_kwargs.pop(name)
+        to_html_kwargs = merge_dicts(
+            dict(
+                full_html=True,
+                include_plotlyjs=include_plotlyjs,
+                default_width="100vw",
+                default_height=outer_height,
+            ),
+            to_html_kwargs,
+        )
+        html = to_html(fig, config=config, **to_html_kwargs)
+        style = f"""
 <style>
 html, body {{
     margin: 0;
@@ -574,7 +607,71 @@ html, body {{
 }}
 </style>
 """
-            html = html.replace("</head>", style + "</head>", 1)
+        html = html.replace("</head>", style + "</head>", 1)
+        return html
+
+    def show_full_window(
+        self: FigureMixinT,
+        inplace: bool = False,
+        keep_aspect_ratio: bool = False,
+        use_dash: tp.Optional[bool] = None,
+        dash_app_kwargs: tp.KwargsLike = None,
+        dash_div_kwargs: tp.KwargsLike = None,
+        dash_graph_kwargs: tp.KwargsLike = None,
+        dash_run_kwargs: tp.KwargsLike = None,
+        include_plotlyjs: tp.Union[bool, str] = "cdn",
+        open_browser: bool = True,
+        **kwargs,
+    ) -> tp.Optional[tp.Path]:
+        """Show the figure in a separate browser tab using the entire window.
+
+        If Dash is installed (and `use_dash` is not False), this starts a small Dash
+        app with a full-window `dcc.Graph` and blocks until the server stops.
+        Otherwise, it falls back to writing a standalone HTML file (original behavior).
+
+        Args:
+            inplace (bool): Whether to update the figure in place.
+            keep_aspect_ratio (bool): Whether to keep the original aspect ratio of the figure.
+            use_dash (Optional[bool]): Use Dash, otherwise fallback to static HTML.
+
+                If None, use Dash if installed.
+            dash_app_kwargs (KwargsLike): Keyword arguments for `dash.Dash`.
+            dash_div_kwargs (KwargsLike): Keyword arguments for `dash.html.Div`.
+            dash_graph_kwargs (KwargsLike): Keyword arguments for `dash.dcc.Graph`.
+            dash_run_kwargs (KwargsLike): Keyword arguments for `dash.Dash.run`.
+            include_plotlyjs (Union[bool, str]): Determines how to include Plotly.js in the HTML file.
+            open_browser (bool): Flag indicating whether to open the web browser.
+            **kwargs: Keyword arguments for `FigureMixin.resolve_show_args`.
+
+        Returns:
+            Optional[Path]: Path to the temporary HTML file, or None if Dash is used.
+        """
+        if use_dash is None:
+            from vectorbtpro.utils.module_ import check_installed
+
+            use_dash = check_installed("dash")
+        if use_dash:
+            if dash_run_kwargs is None:
+                dash_run_kwargs = {}
+
+            app = self.to_dash_app(
+                inplace=inplace,
+                fit_to_window=True,
+                keep_aspect_ratio=keep_aspect_ratio,
+                dash_app_kwargs=dash_app_kwargs,
+                dash_div_kwargs=dash_div_kwargs,
+                dash_graph_kwargs=dash_graph_kwargs,
+                **kwargs,
+            )
+            app.run(**dash_run_kwargs)
+        else:
+            html = self.to_html_str(
+                inplace=inplace,
+                fit_to_window=True,
+                keep_aspect_ratio=keep_aspect_ratio,
+                include_plotlyjs=include_plotlyjs,
+                **kwargs,
+            )
             with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False, encoding="utf-8") as f:
                 f.write(html)
                 file_path = Path(f.name)
@@ -646,9 +743,11 @@ class Figure(_Figure, FigureMixin):
 
             plotting_cfg = settings["plotting"]
 
+            def_layout = kwargs.pop("def_layout", {})
             layout = kwargs.pop("layout", {})
             super().__init__(*args, **kwargs)
-            self.update_layout(**merge_dicts(plotting_cfg["layout"], layout))
+            new_layout = merge_dicts(def_layout, plotting_cfg["layout"], layout)
+            self.update_layout(**new_layout)
 
     def show(self, *args, **kwargs) -> None:
         args, kwargs = self.resolve_show_args(*args, **kwargs)
@@ -691,9 +790,11 @@ class FigureWidget(_FigureWidget, FigureMixin):
 
             plotting_cfg = settings["plotting"]
 
+            def_layout = kwargs.pop("def_layout", {})
             layout = kwargs.pop("layout", {})
             super().__init__(*args, **kwargs)
-            self.update_layout(**merge_dicts(plotting_cfg["layout"], layout))
+            new_layout = merge_dicts(def_layout, plotting_cfg["layout"], layout)
+            self.update_layout(**new_layout)
 
     def show(self, *args, **kwargs) -> None:
         args, kwargs = self.resolve_show_args(*args, **kwargs)
@@ -739,9 +840,11 @@ try:
 
                 plotting_cfg = settings["plotting"]
 
+                def_layout = kwargs.pop("def_layout", {})
                 layout = kwargs.pop("layout", {})
                 super().__init__(*args, **kwargs)
-                self.update_layout(**merge_dicts(plotting_cfg["layout"], layout))
+                new_layout = merge_dicts(def_layout, plotting_cfg["layout"], layout)
+                self.update_layout(**new_layout)
 
         def show(self, *args, **kwargs) -> None:
             args, kwargs = self.resolve_show_args(*args, **kwargs)
@@ -782,9 +885,11 @@ try:
 
                 plotting_cfg = settings["plotting"]
 
+                def_layout = kwargs.pop("def_layout", {})
                 layout = kwargs.pop("layout", {})
                 super().__init__(*args, **kwargs)
-                self.update_layout(**merge_dicts(plotting_cfg["layout"], layout))
+                new_layout = merge_dicts(def_layout, plotting_cfg["layout"], layout)
+                self.update_layout(**new_layout)
 
         def show(self, *args, **kwargs) -> None:
             args, kwargs = self.resolve_show_args(*args, **kwargs)
@@ -856,21 +961,17 @@ def make_figure(
     return Figure(*args, **kwargs)
 
 
-def make_subplots(
-    *args,
-    use_widgets: tp.Optional[bool] = None,
-    use_resampler: tp.Optional[bool] = None,
-    **kwargs,
-) -> tp.BaseFigure:
+def make_subplots(*args, make_figure_kwargs: tp.KwargsLike = None, **kwargs) -> tp.BaseFigure:
     """Create Plotly subplots using `make_figure`.
 
     Args:
         *args: Positional arguments for `plotly.subplots.make_subplots`.
-        use_widgets (Optional[bool]): Determines whether to use a widget-based figure.
-        use_resampler (Optional[bool]): Determines whether to enable resampling functionality.
+        make_figure_kwargs (KwargsLike): Keyword arguments for `make_figure`.
         **kwargs: Keyword arguments for `plotly.subplots.make_subplots`.
 
     Returns:
         BaseFigure: Plotly figure containing subplots.
     """
-    return make_figure(_make_subplots(*args, **kwargs), use_widgets=use_widgets, use_resampler=use_resampler)
+    if make_figure_kwargs is None:
+        make_figure_kwargs = {}
+    return make_figure(_make_subplots(*args, **kwargs), **make_figure_kwargs)

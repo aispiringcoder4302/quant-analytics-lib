@@ -2713,7 +2713,7 @@ $chunk_text""",
     ),
     assets=flex_cfg(
         vbt=flex_cfg(
-            cache_dir=RepEval("vbt.get_platform_dir('user_cache_dir') / 'knowledge' / 'vbt'"),
+            cache_dir=RepEval("Path(cache_dir) / 'vbt'"),
             release_dir=RepEval("(Path(cache_dir) / release_name) if release_name else cache_dir"),
             assets_dir=RepEval("Path(release_dir) / 'assets'"),
             markdown_dir=RepEval("Path(release_dir) / 'markdown'"),
@@ -3078,9 +3078,9 @@ class SettingsConfig(Config):
 
         try:
             return get_pathlike_key(self, key)
-        except (KeyError, IndexError, AttributeError) as e:
+        except (KeyError, IndexError, AttributeError):
             if default is MISSING:
-                raise e
+                raise
             return default
 
     def set(self, key: tp.PathLikeKey, value: tp.Any, default_config_type: tp.Type[Config] = flex_cfg) -> None:

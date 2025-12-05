@@ -864,10 +864,10 @@ def pypfopt_optimize(
                 weights = {k: 1 if v >= 1 else v for k, v in weights.items()}
 
         return dict(weights)
-    except Exception as e:
+    except Exception:
         if ignore_errors:
             return {}
-        raise e
+        raise
 
 
 # ############# Riskfolio-Lib ############# #
@@ -1817,10 +1817,10 @@ def riskfolio_optimize(
         if return_port:
             return dict(weights), port
         return dict(weights)
-    except Exception as e:
+    except Exception:
         if ignore_errors:
             return {}
-        raise e
+        raise
 
 
 # ############# PortfolioOptimizer ############# #

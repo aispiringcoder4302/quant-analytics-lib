@@ -209,7 +209,7 @@ def search(
 
 @register_tool
 def resolve_refnames(refnames: tp.List[str]) -> str:
-    """Resolve reference names to their fully-qualified names.
+    """Resolve reference names to their fully qualified names.
 
     Output format:
 

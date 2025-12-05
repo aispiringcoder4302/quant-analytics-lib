@@ -3916,9 +3916,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if not silence_warnings:
                     warn(f"Feature {feature!r} returned None. Skipping.")
             return out
-        except Exception as e:
+        except Exception:
             if not skip_on_error:
-                raise e
+                raise
             if not silence_warnings:
                 warn(traceback.format_exc())
                 warn(f"Feature {feature!r} raised an exception. Skipping.")
@@ -3978,9 +3978,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if not silence_warnings:
                     warn(f"Symbol {symbol!r} returned None. Skipping.")
             return out
-        except Exception as e:
+        except Exception:
             if not skip_on_error:
-                raise e
+                raise
             if not silence_warnings:
                 warn(traceback.format_exc())
                 warn(f"Symbol {symbol!r} raised an exception. Skipping.")
@@ -4421,9 +4421,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if not silence_warnings:
                     warn(f"Feature {feature!r} returned None. Skipping.")
             return out
-        except Exception as e:
+        except Exception:
             if not skip_on_error:
-                raise e
+                raise
             if not silence_warnings:
                 warn(traceback.format_exc())
                 warn(f"Feature {feature!r} raised an exception. Skipping.")
@@ -4474,9 +4474,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if not silence_warnings:
                     warn(f"Symbol {symbol!r} returned None. Skipping.")
             return out
-        except Exception as e:
+        except Exception:
             if not skip_on_error:
-                raise e
+                raise
             if not silence_warnings:
                 warn(traceback.format_exc())
                 warn(f"Symbol {symbol!r} raised an exception. Skipping.")
@@ -5483,9 +5483,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             if filter_results:
                 try:
                     results, keys = filter_out_no_results(results, keys=keys)
-                except NoResultsException as e:
+                except NoResultsException:
                     if raise_no_results:
-                        raise e
+                        raise
                     return NoResult
                 no_results_filtered = True
             else:

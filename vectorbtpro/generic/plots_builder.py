@@ -235,7 +235,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
             hide_id_labels (bool): Whether to hide duplicate legend labels (duplicates have the same name,
                 marker style, and line style).
             group_id_labels (bool): Whether to group identical legend labels.
-            make_subplots_kwargs (KwargsLike): Keyword arguments for creating subplots.
+            make_subplots_kwargs (KwargsLike): Keyword arguments for making subplots.
 
                 See `vectorbtpro.utils.figure.make_subplots`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
@@ -799,9 +799,9 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 subplot_layout[xaxis] = merge_dicts(dict(title="Index"), xaxis_kwargs)
                 subplot_layout[yaxis] = merge_dicts(dict(), yaxis_kwargs)
                 fig.update_layout(**subplot_layout)
-            except Exception as e:
+            except Exception:
                 warn(f"Subplot {subplot_name!r} raised an exception")
-                raise e
+                raise
 
         if not show_legend:
             for i in range(trace_start_idx, len(fig.data)):

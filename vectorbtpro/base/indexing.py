@@ -1063,7 +1063,7 @@ class LabelIdxr(UniIdxr, DefineMixin):
         return idxs
 
 
-@define
+
 class DatetimeIdxr(UniIdxr, DefineMixin):
     """Class for resolving indices provided as datetime-like objects."""
 
