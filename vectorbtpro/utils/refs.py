@@ -85,7 +85,7 @@ def get_caller_qualname() -> tp.Optional[str]:
         else:
             module = inspect.getmodule(caller_frame)
             if module:
-                func = module.__dict__.get(func_name)
+                func = module.__dict__.get(func_name, None)
                 if func:
                     qualname = get_attr(func, "__qualname__", None)
                     if qualname is not None and isinstance(qualname, str):
@@ -1125,7 +1125,7 @@ class RefGraph(Configured):
             new_G.add_node(n, **d)
         for u, v, d in self.G.edges(data=True):
             if new_G.has_edge(u, v):
-                new_G[u][v]["rel_kinds"].add(d.get("rel_kind"))
+                new_G[u][v]["rel_kinds"].add(d.get("rel_kind", None))
             else:
                 new_d = dict(d)
                 rel_kinds = {new_d.pop("rel_kind")}
@@ -1151,6 +1151,215 @@ class RefGraph(Configured):
             for rel_kind in rel_kinds:
                 new_G.add_edge(u, v, rel_kind=rel_kind, **new_d)
         return self.replace(G=new_G)
+
+    def get_container(self, *args, **kwargs) -> tp.Optional[str]:
+        """Get the container of the specified member from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            Optional[str]: Reference name of the container, or None if not found.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        for u, _, d in self.G.in_edges(refname, data=True):
+            if "container" in d.get("rel_kinds", set()):
+                return u
+        return None
+
+    def get_contents(self, *args, **kwargs) -> tp.List[str]:
+        """Get all contents of the specified container from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            List[str]: List of reference names of contents.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        contents = set()
+        for _, v, d in self.G.out_edges(refname, data=True):
+            if "container" in d.get("rel_kinds", set()):
+                contents.add(v)
+        return sorted(contents)
+
+    def get_members(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
+        """Get all members of the specified container from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            relation (str): Relation between references. One of:
+
+                * "direct": References that are connected directly.
+                * "nested": References that are connected through other references.
+                * "all": Both direct and nested references.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            List[str]: List of reference names of members.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        members = set()
+        for _, v, d in self.G.out_edges(refname, data=True):
+            if relation.lower() == "direct":
+                if "direct_member" in d.get("rel_kinds", set()):
+                    members.add(v)
+            elif relation.lower() == "nested":
+                if "nested_member" in d.get("rel_kinds", set()):
+                    members.add(v)
+            elif relation.lower() == "all":
+                if "direct_member" in d.get("rel_kinds", set()) or "nested_member" in d.get("rel_kinds", set()):
+                    members.add(v)
+            else:
+                raise ValueError(f"Invalid relation: {relation!r}")
+        return sorted(members)
+
+    def get_bases(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
+        """Get all base classes of the specified derived class from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            relation (str): Relation between references. One of:
+
+                * "direct": References that are connected directly.
+                * "nested": References that are connected through other references.
+                * "all": Both direct and nested references.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            List[str]: List of reference names of base classes.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        bases = set()
+        for _, v, d in self.G.out_edges(refname, data=True):
+            if relation.lower() == "direct":
+                if "direct_base" in d.get("rel_kinds", set()):
+                    bases.add(v)
+            elif relation.lower() == "nested":
+                if "nested_base" in d.get("rel_kinds", set()):
+                    bases.add(v)
+            elif relation.lower() == "all":
+                if "direct_base" in d.get("rel_kinds", set()) or "nested_base" in d.get("rel_kinds", set()):
+                    bases.add(v)
+            else:
+                raise ValueError(f"Invalid relation: {relation!r}")
+        return sorted(bases)
+
+    def get_derived(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
+        """Get all derived classes of the specified base class from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            relation (str): Relation between references. One of:
+
+                * "direct": References that are connected directly.
+                * "nested": References that are connected through other references.
+                * "all": Both direct and nested references.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            List[str]: List of reference names of derived classes.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        derived = set()
+        for u, _, d in self.G.in_edges(refname, data=True):
+            if relation.lower() == "direct":
+                if "direct_base" in d.get("rel_kinds", set()):
+                    derived.add(u)
+            elif relation.lower() == "nested":
+                if "nested_base" in d.get("rel_kinds", set()):
+                    derived.add(u)
+            elif relation.lower() == "all":
+                if "direct_base" in d.get("rel_kinds", set()) or "nested_base" in d.get("rel_kinds", set()):
+                    derived.add(u)
+            else:
+                raise ValueError(f"Invalid relation: {relation!r}")
+        return sorted(derived)
+
+    def get_dependencies(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
+        """Get all dependencies of the specified reference name from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            relation (str): Relation between references. One of:
+
+                * "direct": References that are connected directly.
+                * "nested": References that are connected through other references.
+                * "all": Both direct and nested references.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            List[str]: List of reference names of dependencies.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        dependencies = set()
+        for _, v, d in self.G.out_edges(refname, data=True):
+            if relation.lower() == "direct":
+                if "direct_dependency" in d.get("rel_kinds", set()):
+                    dependencies.add(v)
+            elif relation.lower() == "nested":
+                if "nested_dependency" in d.get("rel_kinds", set()):
+                    dependencies.add(v)
+            elif relation.lower() == "all":
+                if "direct_dependency" in d.get("rel_kinds", set()) or "nested_dependency" in d.get("rel_kinds", set()):
+                    dependencies.add(v)
+            else:
+                raise ValueError(f"Invalid relation: {relation!r}")
+        return sorted(dependencies)
+
+    def get_dependents(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
+        """Get all dependents of the specified reference name from the graph.
+
+        Args:
+            *args: Positional arguments for `ensure_refname`.
+            relation (str): Relation between references. One of:
+
+                * "direct": References that are connected directly.
+                * "nested": References that are connected through other references.
+                * "all": Both direct and nested references.
+            **kwargs: Keyword arguments for `ensure_refname`.
+
+        Returns:
+            List[str]: List of reference names of dependents.
+        """
+        refname = ensure_refname(*args, **kwargs)
+        if self.is_multigraph:
+            self = self.merge_edges()
+
+        dependents = set()
+        for u, _, d in self.G.in_edges(refname, data=True):
+            if relation.lower() == "direct":
+                if "direct_dependency" in d.get("rel_kinds", set()):
+                    dependents.add(u)
+            elif relation.lower() == "nested":
+                if "nested_dependency" in d.get("rel_kinds", set()):
+                    dependents.add(u)
+            elif relation.lower() == "all":
+                if "direct_dependency" in d.get("rel_kinds", set()) or "nested_dependency" in d.get("rel_kinds", set()):
+                    dependents.add(u)
+            else:
+                raise ValueError(f"Invalid relation: {relation!r}")
+        return sorted(dependents)
 
     @classmethod
     def get_roots(cls, G: DiGraphT) -> tp.Set[tp.Hashable]:
@@ -1324,8 +1533,8 @@ class RefGraph(Configured):
                 continue
             base_r = depth_radius[d]
             rs = ring_spacings[d - 1]
-            raw_kind = G.nodes[n].get("obj_kind")
-            kind = raw_kind if raw_kind in kind_to_index else "unknown"
+            raw_kind = G.nodes[n].get("obj_kind", None)
+            kind = raw_kind if raw_kind is not None and raw_kind in kind_to_index else "unknown"
             idx = kind_to_index[kind]
             offset = (idx - 2.0) * rs
             r[n] = base_r + offset
@@ -1773,215 +1982,6 @@ class RefGraph(Configured):
         with open(path, "w") as f:
             json.dump(data, f)
 
-    def get_container(self, *args, **kwargs) -> tp.Optional[str]:
-        """Get the container of the specified member from the graph.
-
-        Args:
-            *args: Positional arguments for `ensure_refname`.
-            **kwargs: Keyword arguments for `ensure_refname`.
-
-        Returns:
-            Optional[str]: Reference name of the container, or None if not found.
-        """
-        refname = ensure_refname(*args, **kwargs)
-        if self.is_multigraph:
-            self = self.merge_edges()
-
-        for u, _, d in self.G.in_edges(refname, data=True):
-            if "container" in d.get("rel_kinds", set()):
-                return u
-        return None
-
-    def get_contents(self, *args, **kwargs) -> tp.List[str]:
-        """Get all contents of the specified container from the graph.
-
-        Args:
-            *args: Positional arguments for `ensure_refname`.
-            **kwargs: Keyword arguments for `ensure_refname`.
-
-        Returns:
-            List[str]: List of reference names of contents.
-        """
-        refname = ensure_refname(*args, **kwargs)
-        if self.is_multigraph:
-            self = self.merge_edges()
-
-        contents = set()
-        for _, v, d in self.G.out_edges(refname, data=True):
-            if "container" in d.get("rel_kinds", set()):
-                contents.add(v)
-        return sorted(contents)
-
-    def get_members(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
-        """Get all members of the specified container from the graph.
-
-        Args:
-            *args: Positional arguments for `ensure_refname`.
-            relation (str): Relation between references. One of:
-
-                * "direct": References that are connected directly.
-                * "nested": References that are connected through other references.
-                * "all": Both direct and nested references.
-            **kwargs: Keyword arguments for `ensure_refname`.
-
-        Returns:
-            List[str]: List of reference names of members.
-        """
-        refname = ensure_refname(*args, **kwargs)
-        if self.is_multigraph:
-            self = self.merge_edges()
-
-        members = set()
-        for _, v, d in self.G.out_edges(refname, data=True):
-            if relation.lower() == "direct":
-                if "direct_member" in d.get("rel_kinds", set()):
-                    members.add(v)
-            elif relation.lower() == "nested":
-                if "nested_member" in d.get("rel_kinds", set()):
-                    members.add(v)
-            elif relation.lower() == "all":
-                if "direct_member" in d.get("rel_kinds", set()) or "nested_member" in d.get("rel_kinds", set()):
-                    members.add(v)
-            else:
-                raise ValueError(f"Invalid relation: {relation!r}")
-        return sorted(members)
-
-    def get_bases(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
-        """Get all base classes of the specified derived class from the graph.
-
-        Args:
-            *args: Positional arguments for `ensure_refname`.
-            relation (str): Relation between references. One of:
-
-                * "direct": References that are connected directly.
-                * "nested": References that are connected through other references.
-                * "all": Both direct and nested references.
-            **kwargs: Keyword arguments for `ensure_refname`.
-
-        Returns:
-            List[str]: List of reference names of base classes.
-        """
-        refname = ensure_refname(*args, **kwargs)
-        if self.is_multigraph:
-            self = self.merge_edges()
-
-        bases = set()
-        for _, v, d in self.G.out_edges(refname, data=True):
-            if relation.lower() == "direct":
-                if "direct_base" in d.get("rel_kinds", set()):
-                    bases.add(v)
-            elif relation.lower() == "nested":
-                if "nested_base" in d.get("rel_kinds", set()):
-                    bases.add(v)
-            elif relation.lower() == "all":
-                if "direct_base" in d.get("rel_kinds", set()) or "nested_base" in d.get("rel_kinds", set()):
-                    bases.add(v)
-            else:
-                raise ValueError(f"Invalid relation: {relation!r}")
-        return sorted(bases)
-
-    def get_derived(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
-        """Get all derived classes of the specified base class from the graph.
-
-        Args:
-            *args: Positional arguments for `ensure_refname`.
-            relation (str): Relation between references. One of:
-
-                * "direct": References that are connected directly.
-                * "nested": References that are connected through other references.
-                * "all": Both direct and nested references.
-            **kwargs: Keyword arguments for `ensure_refname`.
-
-        Returns:
-            List[str]: List of reference names of derived classes.
-        """
-        refname = ensure_refname(*args, **kwargs)
-        if self.is_multigraph:
-            self = self.merge_edges()
-
-        derived = set()
-        for u, _, d in self.G.in_edges(refname, data=True):
-            if relation.lower() == "direct":
-                if "direct_base" in d.get("rel_kinds", set()):
-                    derived.add(u)
-            elif relation.lower() == "nested":
-                if "nested_base" in d.get("rel_kinds", set()):
-                    derived.add(u)
-            elif relation.lower() == "all":
-                if "direct_base" in d.get("rel_kinds", set()) or "nested_base" in d.get("rel_kinds", set()):
-                    derived.add(u)
-            else:
-                raise ValueError(f"Invalid relation: {relation!r}")
-        return sorted(derived)
-
-    def get_dependencies(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
-        """Get all dependencies of the specified reference name from the graph.
-
-        Args:
-            *args: Positional arguments for `ensure_refname`.
-            relation (str): Relation between references. One of:
-
-                * "direct": References that are connected directly.
-                * "nested": References that are connected through other references.
-                * "all": Both direct and nested references.
-            **kwargs: Keyword arguments for `ensure_refname`.
-
-        Returns:
-            List[str]: List of reference names of dependencies.
-        """
-        refname = ensure_refname(*args, **kwargs)
-        if self.is_multigraph:
-            self = self.merge_edges()
-
-        dependencies = set()
-        for _, v, d in self.G.out_edges(refname, data=True):
-            if relation.lower() == "direct":
-                if "direct_dependency" in d.get("rel_kinds", set()):
-                    dependencies.add(v)
-            elif relation.lower() == "nested":
-                if "nested_dependency" in d.get("rel_kinds", set()):
-                    dependencies.add(v)
-            elif relation.lower() == "all":
-                if "direct_dependency" in d.get("rel_kinds", set()) or "nested_dependency" in d.get("rel_kinds", set()):
-                    dependencies.add(v)
-            else:
-                raise ValueError(f"Invalid relation: {relation!r}")
-        return sorted(dependencies)
-
-    def get_dependents(self, *args, relation: str = "all", **kwargs) -> tp.List[str]:
-        """Get all dependents of the specified reference name from the graph.
-
-        Args:
-            *args: Positional arguments for `ensure_refname`.
-            relation (str): Relation between references. One of:
-
-                * "direct": References that are connected directly.
-                * "nested": References that are connected through other references.
-                * "all": Both direct and nested references.
-            **kwargs: Keyword arguments for `ensure_refname`.
-
-        Returns:
-            List[str]: List of reference names of dependents.
-        """
-        refname = ensure_refname(*args, **kwargs)
-        if self.is_multigraph:
-            self = self.merge_edges()
-
-        dependents = set()
-        for u, _, d in self.G.in_edges(refname, data=True):
-            if relation.lower() == "direct":
-                if "direct_dependency" in d.get("rel_kinds", set()):
-                    dependents.add(u)
-            elif relation.lower() == "nested":
-                if "nested_dependency" in d.get("rel_kinds", set()):
-                    dependents.add(u)
-            elif relation.lower() == "all":
-                if "direct_dependency" in d.get("rel_kinds", set()) or "nested_dependency" in d.get("rel_kinds", set()):
-                    dependents.add(u)
-            else:
-                raise ValueError(f"Invalid relation: {relation!r}")
-        return sorted(dependents)
-
     def plot(
         self,
         highlight_nodes: tp.Optional[tp.MaybeList] = None,
@@ -2174,17 +2174,17 @@ class RefGraph(Configured):
             }
             node_idxs_by_kind = defaultdict(list)
             for i, n in enumerate(nodes):
-                k = n.get("obj_kind")
+                k = n.get("obj_kind", None)
                 if k is None or k not in node_style_by_kind:
                     k = "unknown"
                 node_idxs_by_kind[k].append(i)
             node_customdata = [
                 [
                     n["id"],
-                    n.get("obj_qualname") or "",
-                    n.get("obj_module") or "",
-                    n.get("obj_type") or "",
-                    n.get("obj_kind") or "",
+                    n.get("obj_qualname", None) or "",
+                    n.get("obj_module", None) or "",
+                    n.get("obj_type", None) or "",
+                    n.get("obj_kind", None) or "",
                 ]
                 for n in nodes
             ]
@@ -2324,7 +2324,7 @@ class RefGraph(Configured):
             edges_by_kind = defaultdict(list)
             for e in edges:
                 if self.is_multigraph:
-                    kind = e.get("rel_kind")
+                    kind = e.get("rel_kind", None)
                     if kind is None or kind not in edge_style_by_kind:
                         kind = "unknown"
                     edges_by_kind[kind].append(e)
@@ -2548,7 +2548,7 @@ class RefGraph(Configured):
                 if click_data is None or "points" not in click_data or not click_data["points"]:
                     raise dash.exceptions.PreventUpdate
                 pt = click_data["points"][0]
-                customdata = pt.get("customdata")
+                customdata = pt.get("customdata", None)
                 if customdata is None:
                     raise dash.exceptions.PreventUpdate
                 node_id = customdata[0]
@@ -3073,7 +3073,7 @@ class RefIndex(Configured):
                 sc.star_imports.clear()
 
         builtin_names = set(dir(builtins))
-        module_scope = scope_infos.get(tree)
+        module_scope = scope_infos.get(tree, None)
 
         def _is_plain_segment(seg):
             return seg and not seg.startswith("<") and seg.isidentifier()
@@ -3512,7 +3512,7 @@ class RefIndex(Configured):
         if len(refname_parts) > 1:
             ref_info["container"] = ".".join(refname_parts[:-1])
         if incl_relations:
-            if obj is not None and self.is_kind_container(ref_info.get("kind")):
+            if obj is not None and self.is_kind_container(ref_info.get("kind", None)):
                 attr_meta = get_attrs(obj, incl_private=incl_private, return_meta=True)
                 direct_members = []
                 for m in attr_meta:
@@ -3710,7 +3710,7 @@ class RefIndex(Configured):
                 current, depth, incl_relations = to_visit.popleft()
             else:
                 raise ValueError(f"Invalid traversal: {traversal!r}")
-            existing = ref_by_name.get(current)
+            existing = ref_by_name.get(current, None)
             if existing is not None:
                 if not existing.is_shallow:
                     continue
@@ -3732,7 +3732,7 @@ class RefIndex(Configured):
                 if not _passes_base_filters(child, is_container=is_container):
                     continue
                 within_depth = (max_depth is None) or (next_depth <= max_depth)
-                existing_child = ref_by_name.get(child)
+                existing_child = ref_by_name.get(child, None)
                 if _passes_own_only(child):
                     if within_depth and (existing_child is None or existing_child.is_shallow):
                         to_visit.append((child, next_depth, True))
