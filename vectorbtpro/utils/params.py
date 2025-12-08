@@ -45,6 +45,7 @@ __all__ = [
     "Paramable",
     "ItemParamable",
     "combine_params",
+    "MonoIndex",
     "Parameterizer",
     "parameterized",
 ]
@@ -1106,6 +1107,26 @@ def combine_params(
     if build_index:
         return param_product, param_index
     return param_product
+
+
+@define
+class MonoIndex(DefineMixin):
+    """Class that represents a hashable index for mono-chunking."""
+
+    index: pd.Index = define.field()
+    """Index."""
+
+    def __attrs_post_init__(self) -> None:
+        if not isinstance(self.index, pd.Index):
+            from vectorbtpro.base.indexes import to_any_index
+
+            object.__setattr__(self, "index", to_any_index(self.index))
+
+    def __hash__(self) -> int:
+        return hash(tuple(self.index.tolist()))
+
+    def __str__(self) -> str:
+        return type(self).__name__ + f"[{len(self.index)}]"
 
 
 class Parameterizer(Configured):
@@ -2298,7 +2319,8 @@ class Parameterizer(Configured):
                     )
                 )
                 if template_context["param_index"] is not None:
-                    new_param_index.append(template_context["param_index"][chunk_indices])
+                    new_param_index.append(MonoIndex(template_context["param_index"][chunk_indices]))
+            new_param_index = pd.Index(new_param_index)
             template_context["param_configs"] = new_param_configs
             if template_context["param_index"] is not None:
                 template_context["param_index"] = new_param_index

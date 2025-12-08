@@ -23,6 +23,7 @@ from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import resolve_dict, merge_dicts, HybridConfig
 from vectorbtpro.utils.execution import NoResult, NoResultsException, filter_out_no_results
 from vectorbtpro.utils.merging import MergeFunc
+from vectorbtpro.utils.params import MonoIndex
 
 __all__ = [
     "concat_arrays",
@@ -203,12 +204,12 @@ def concat_merge(
         wrap = isinstance(objs[0], pd.Series) or wrapper is not None or keys is not None or len(wrap_kwargs) > 0
     if not checks.is_complex_iterable(objs[0]):
         if wrap:
-            if keys is not None and isinstance(keys[0], pd.Index):
+            if keys is not None and isinstance(keys[0], MonoIndex):
                 if len(keys) == 1:
-                    keys = keys[0]
+                    keys = keys[0].index
                 else:
                     keys = concat_indexes(
-                        *keys,
+                        *map(lambda x: x.index, keys),
                         index_concat_method="append",
                         clean_index_kwargs=clean_index_kwargs,
                         verify_integrity=False,
@@ -241,13 +242,13 @@ def concat_merge(
     if not wrap:
         return concat_arrays(objs)
 
-    if keys is not None and isinstance(keys[0], pd.Index):
+    if keys is not None and isinstance(keys[0], MonoIndex):
         new_obj = pd.concat(objs, axis=0, **kwargs)
         if len(keys) == 1:
-            keys = keys[0]
+            keys = keys[0].index
         else:
             keys = concat_indexes(
-                *keys,
+                *map(lambda x: x.index, keys),
                 index_concat_method="append",
                 verify_integrity=False,
                 axis=0,
@@ -402,13 +403,13 @@ def row_stack_merge(
     if not wrap:
         return row_stack_arrays(objs)
 
-    if keys is not None and isinstance(keys[0], pd.Index):
+    if keys is not None and isinstance(keys[0], MonoIndex):
         new_obj = pd.concat(objs, axis=0, **kwargs)
         if len(keys) == 1:
-            keys = keys[0]
+            keys = keys[0].index
         else:
             keys = concat_indexes(
-                *keys,
+                *map(lambda x: x.index, keys),
                 index_concat_method="append",
                 verify_integrity=False,
                 axis=0,
@@ -642,13 +643,13 @@ def column_stack_merge(
         objs = new_objs
         kwargs = merge_dicts(dict(sort=True), kwargs)
 
-    if keys is not None and isinstance(keys[0], pd.Index):
+    if keys is not None and isinstance(keys[0], MonoIndex):
         new_obj = pd.concat(objs, axis=1, **kwargs)
         if len(keys) == 1:
-            keys = keys[0]
+            keys = keys[0].index
         else:
             keys = concat_indexes(
-                *keys,
+                *map(lambda x: x.index, keys),
                 index_concat_method="append",
                 verify_integrity=False,
                 axis=1,

@@ -2039,10 +2039,10 @@ class PSC(DefineMixin):
     name: tp.Optional[str] = define.field(default=None)
     """Optional name assigned to the configuration."""
 
-    def __eq__(self, other):
+    def __eq__(self, other: tp.Any) -> bool:
         return checks.is_deep_equal(self, other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         dct = self.asdict()
         if isinstance(dct["pattern"], np.ndarray):
             dct["pattern"] = tuple(dct["pattern"])

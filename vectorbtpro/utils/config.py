@@ -48,7 +48,7 @@ class hdict(dict, Base):
     """Hashable dictionary subclass that computes its hash based on its items,
     enabling its use in sets or as dictionary keys."""
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(frozenset(self.items()))
 
 

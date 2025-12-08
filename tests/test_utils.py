@@ -2392,11 +2392,11 @@ class TestParams:
             ([2, 2], (), [3, 4], {}),
         ]
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0].index,
             pd.MultiIndex.from_tuples([(1, 0), (1, 1)], names=["a", "param_config"]),
         )
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1].index,
             pd.MultiIndex.from_tuples([(2, 0), (2, 1)], names=["a", "param_config"]),
         )
         assert fp(vbt.Param([1, 2], mono_reduce=True), param_configs=param_configs, _mono_chunk_len=2)[0] == [
@@ -2404,11 +2404,11 @@ class TestParams:
             (2, (), [3, 4], {}),
         ]
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0].index,
             pd.MultiIndex.from_tuples([(1, 0), (1, 1)], names=["a", "param_config"]),
         )
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1].index,
             pd.MultiIndex.from_tuples([(2, 0), (2, 1)], names=["a", "param_config"]),
         )
         assert fp(vbt.Param([1, 2]), hello="world", param_configs=param_configs, _mono_chunk_len=2)[0] == [
@@ -2416,11 +2416,11 @@ class TestParams:
             ([2, 2], (), [3, 4], {"hello": "world"}),
         ]
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0].index,
             pd.MultiIndex.from_tuples([(1, 0), (1, 1)], names=["a", "param_config"]),
         )
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1].index,
             pd.MultiIndex.from_tuples([(2, 0), (2, 1)], names=["a", "param_config"]),
         )
         assert fp(
@@ -2434,11 +2434,11 @@ class TestParams:
             ([2, 2], (), [3, 4], {"hello": ["world", "world"]}),
         ]
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0].index,
             pd.MultiIndex.from_tuples([(1, 0), (1, 1)], names=["a", "param_config"]),
         )
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1].index,
             pd.MultiIndex.from_tuples([(2, 0), (2, 1)], names=["a", "param_config"]),
         )
         assert fp(
@@ -2452,11 +2452,11 @@ class TestParams:
             (2, (), [3, 4], {"hello": "world"}),
         ]
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0].index,
             pd.MultiIndex.from_tuples([(1, 0), (1, 1)], names=["a", "param_config"]),
         )
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1].index,
             pd.MultiIndex.from_tuples([(2, 0), (2, 1)], names=["a", "param_config"]),
         )
         assert fp(
@@ -2469,11 +2469,11 @@ class TestParams:
             (4, (), 7, {}),
         ]
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0].index,
             pd.MultiIndex.from_tuples([(1, 0), (1, 1)], names=["a", "param_config"]),
         )
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1].index,
             pd.MultiIndex.from_tuples([(2, 0), (2, 1)], names=["a", "param_config"]),
         )
         assert (
