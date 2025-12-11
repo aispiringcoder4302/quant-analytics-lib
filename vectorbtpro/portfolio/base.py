@@ -3174,12 +3174,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         long_exits: tp.Optional[tp.ArrayLike] = None,
         short_entries: tp.Optional[tp.ArrayLike] = None,
         short_exits: tp.Optional[tp.ArrayLike] = None,
+        pre_segment_func_nb: tp.Union[None, tp.PathLike, tp.PreSignalSegmentFunc] = None,
+        pre_segment_args: tp.ArgsLike = (),
         adjust_func_nb: tp.Union[None, tp.PathLike, tp.AdjustFunc] = None,
         adjust_args: tp.Args = (),
         signal_func_nb: tp.Union[None, tp.PathLike, tp.SignalFunc] = None,
         signal_args: tp.ArgsLike = (),
-        post_signal_func_nb: tp.Union[None, tp.PathLike, tp.PostSignalFunc] = None,
-        post_signal_args: tp.ArgsLike = (),
+        post_order_func_nb: tp.Union[None, tp.PathLike, tp.PostSignalOrderFunc] = None,
+        post_order_args: tp.ArgsLike = (),
         post_segment_func_nb: tp.Union[None, tp.PathLike, tp.PostSignalSegmentFunc] = None,
         post_segment_args: tp.ArgsLike = (),
         order_mode: bool = False,
@@ -3365,6 +3367,12 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             short_exits (Optional[ArrayLike]): Boolean array of short exit signals.
 
                 Broadcasts.
+            pre_segment_func_nb (Union[None, PathLike, PreSignalSegmentFunc]):
+                Callback function to be called before processing a segment.
+
+                See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
+                Can be provided as a module path when staticizing.
+            pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
             adjust_func_nb (Union[None, PathLike, AdjustFunc]):
                 Callback function to be called to adjust the context before signal generation.
 
@@ -3378,12 +3386,12 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be given as a module path when staticizing.
             signal_args (Args): Positional arguments for `signal_func_nb`.
-            post_signal_func_nb (Union[None, PathLike, PostSignalFunc]):
+            post_order_func_nb (Union[None, PathLike, PostSignalOrderFunc]):
                 Callback function to be called after processing an order.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be given as a module path when staticizing.
-            post_signal_args (Args): Positional arguments for `post_signal_func_nb`.
+            post_order_args (Args): Positional arguments for `post_order_func_nb`.
             post_segment_func_nb (Union[None, PathLike, PostSignalSegmentFunc]):
                 Callback function to be called after processing a segment.
 
@@ -4668,7 +4676,6 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         broadcast_named_args: tp.KwargsLike = None,
         broadcast_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
-        keep_inout_flex: tp.Optional[bool] = None,
         jitted: tp.JittedOption = None,
         chunked: tp.ChunkedOption = None,
         staticized: tp.StaticizedOption = None,
@@ -4881,10 +4888,6 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
-            keep_inout_flex (Optional[bool]): Whether to preserve raw, editable arrays during
-                broadcasting for in-place outputs.
-
-                Disable to allow editing of `segment_mask`, `cash_deposits`, and `cash_earnings` during simulation.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

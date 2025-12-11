@@ -1076,9 +1076,9 @@ class TestFromOrderFunc:
             jitted=False,
             group_by=[0, 0, 1],
             cash_sharing=True,
-            keep_inout_flex=False,
             max_log_records=price_wide.shape[0],
             flexible=test_flexible,
+            arg_config=dict(segment_mask=dict(full_shape=True)),
         )
 
         c = lst[-1]

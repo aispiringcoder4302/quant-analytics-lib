@@ -76,6 +76,31 @@ def select_from_col_nb(
 
 
 @register_jitted
+def select_from_group_nb(
+    c: tp.NamedTuple,
+    group: int,
+    arr: tp.FlexArray2d,
+    i: tp.Optional[int] = None,
+) -> tp.Scalar:
+    """Get the current element from a specified group using flexible indexing.
+
+    Args:
+        c (NamedTuple): Context.
+        group (int): Group index.
+        arr (FlexArray2d): Array from which to select the element.
+        i (Optional[int]): Row index; if None, uses `c.i`.
+
+    Returns:
+        Scalar: Selected element from the array.
+    """
+    if i is None:
+        _i = c.i
+    else:
+        _i = i
+    return flex_select_nb(arr, _i, group)
+
+
+@register_jitted
 def iter_above_nb(
     c: tp.NamedTuple,
     arr1: tp.FlexArray2d,

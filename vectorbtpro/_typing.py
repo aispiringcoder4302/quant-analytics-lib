@@ -103,7 +103,7 @@ if TYPE_CHECKING:
     from vectorbtpro.indicators.factory import IndicatorBase
     from vectorbtpro.portfolio.enums import (
         SignalContext,
-        PostSignalContext,
+        PostSignalOrderContext,
         SignalSegmentContext,
         SimulationContext,
         GroupContext,
@@ -156,7 +156,7 @@ else:
     RelRange = "RelRange"
     IndicatorBase = "IndicatorBase"
     SignalContext = "SignalContext"
-    PostSignalContext = "PostSignalContext"
+    PostSignalOrderContext = "PostSignalOrderContext"
     SignalSegmentContext = "SignalSegmentContext"
     SimulationContext = "SimulationContext"
     GroupContext = "GroupContext"
@@ -549,10 +549,6 @@ RefactorSourceOutputs = List[Tuple[Any, RefactorSourceOutput]]
 MaybeRefactorSourceOutput = Union[RefactorSourceOutput, RefactorSourceOutputs]
 
 # Simulation
-SignalFunc = Callable[[SignalContext, VarArg()], Tuple[bool, bool, bool, bool]]
-PostSignalFunc = Callable[[PostSignalContext, VarArg()], None]
-PostSignalSegmentFunc = Callable[[SignalSegmentContext, VarArg()], None]
-AdjustFunc = Callable[[SignalContext, VarArg()], None]
 PreSimFunc = Callable[[SimulationContext, VarArg()], Args]
 PostSimFunc = Callable[[SimulationContext, VarArg()], None]
 PreGroupFunc = Callable[[GroupContext, VarArg()], Args]
@@ -564,6 +560,12 @@ PostSegmentFunc = Callable[[SegmentContext, VarArg()], None]
 OrderFunc = Callable[[OrderContext, VarArg()], Order]
 FlexOrderFunc = Callable[[FlexOrderContext, VarArg()], Tuple[int, Order]]
 PostOrderFunc = Callable[[PostOrderContext, VarArg()], None]
+
+PreSignalSegmentFunc = Callable[[SignalSegmentContext, VarArg()], Args]
+SignalFunc = Callable[[SignalContext, VarArg()], Tuple[bool, bool, bool, bool]]
+AdjustFunc = Callable[[SignalContext, VarArg()], None]
+PostSignalOrderFunc = Callable[[PostSignalOrderContext, VarArg()], None]
+PostSignalSegmentFunc = Callable[[SignalSegmentContext, VarArg()], None]
 
 # Portfolio optimization
 AllocateFunc = Callable[[int, int, VarArg()], MaybeArray]

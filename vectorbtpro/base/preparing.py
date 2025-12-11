@@ -678,7 +678,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """
         return dict(
             to_pd=False,
-            keep_flex=dict(cash_earnings=self.keep_inout_flex, _def=True),
+            keep_flex=dict(_def=True),
             wrapper_kwargs=dict(
                 freq=self.pre__freq,
                 group_by=self.group_by,
@@ -699,6 +699,20 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """
         arg_broadcast_kwargs = defaultdict(dict)
         for k, v in self.arg_config.items():
+            if v.get("full_shape", False):
+                if "keep_flex" not in arg_broadcast_kwargs:
+                    arg_broadcast_kwargs["keep_flex"] = {}
+                arg_broadcast_kwargs["keep_flex"][k] = False
+            if v.get("rows_only", False):
+                if "axis" not in arg_broadcast_kwargs:
+                    arg_broadcast_kwargs["axis"] = {}
+                arg_broadcast_kwargs["keep_flex"][k] = False
+                arg_broadcast_kwargs["axis"][k] = 0
+            if v.get("cols_only", False):
+                if "axis" not in arg_broadcast_kwargs:
+                    arg_broadcast_kwargs["axis"] = {}
+                arg_broadcast_kwargs["keep_flex"][k] = False
+                arg_broadcast_kwargs["axis"][k] = 1
             if v.get("broadcast", False):
                 broadcast_kwargs = v.get("broadcast_kwargs", None)
                 if broadcast_kwargs is None:

@@ -17,7 +17,7 @@ from vectorbtpro.base.reshaping import to_1d_array_nb, to_2d_array_nb
 from vectorbtpro.generic.enums import BarZone
 from vectorbtpro.portfolio import chunking as portfolio_ch
 from vectorbtpro.portfolio.nb.core import *
-from vectorbtpro.portfolio.nb.from_order_func import no_post_func_nb
+from vectorbtpro.portfolio.nb.from_order_func import no_pre_func_nb, no_post_func_nb
 from vectorbtpro.registries.ch_registry import register_chunkable
 from vectorbtpro.returns.nb import get_return_nb
 from vectorbtpro.signals.enums import StopType
@@ -4122,17 +4122,43 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
     return False, False, False, False
 
 
+# % <block pre_segment_func_nb>
+# % <skip? skip_func(out_lines, "pre_segment_func_nb")>
+# % <uncomment>
+# @register_jitted
+# def pre_segment_func_nb(
+#     c: SignalSegmentContext,
+#     *args,
+# ) -> tp.Args:
+#     """Custom segment pre-processing function.
+#
+#     Args:
+#         c (SignalSegmentContext): Signal segment context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         Args: Forwarded positional arguments.
+#     """
+#     return args
+#
+#
+# % </uncomment>
+# % </skip>
+# % </block>
+
 # % <block signal_func_nb>
 # % <skip? skip_func(out_lines, "signal_func_nb")>
 # % <uncomment>
 # @register_jitted
 # def signal_func_nb(
 #     c: SignalContext,
+#     *args,
 # ) -> tp.Tuple[bool, bool, bool, bool]:
 #     """Custom signal processing function.
 #
 #     Args:
 #         c (SignalContext): Signal context.
+#         *args: Additional positional arguments.
 #
 #     Returns:
 #         Tuple[bool, bool, bool, bool]: Tuple containing booleans representing:
@@ -4149,17 +4175,19 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
 # % </skip>
 # % </block>
 
-# % <block post_signal_func_nb>
-# % <skip? skip_func(out_lines, "post_signal_func_nb")>
+# % <block post_order_func_nb>
+# % <skip? skip_func(out_lines, "post_order_func_nb")>
 # % <uncomment>
 # @register_jitted
-# def post_signal_func_nb(
-#     c: PostSignalContext,
+# def post_order_func_nb(
+#     c: PostSignalOrderContext,
+#     *args,
 # ) -> None:
 #     """Custom signal post-processing function.
 #
 #     Args:
-#         c (PostSignalContext): Post-signal context.
+#         c (PostSignalOrderContext): Post-signal context.
+#         *args: Additional positional arguments.
 #
 #     Returns:
 #         None
@@ -4177,11 +4205,13 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
 # @register_jitted
 # def post_segment_func_nb(
 #     c: SignalSegmentContext,
+#     *args,
 # ) -> None:
 #     """Custom segment post-processing function.
 #
 #     Args:
 #         c (SignalSegmentContext): Signal segment context.
+#         *args: Additional positional arguments.
 #
 #     Returns:
 #         None
@@ -4202,10 +4232,12 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
 #
 #
 # % </uncomment>
+# %? blocks[pre_segment_func_nb_block]
+# % blocks["pre_segment_func_nb"]
 # %? blocks[signal_func_nb_block]
 # % blocks["signal_func_nb"]
-# %? blocks[post_signal_func_nb_block]
-# % blocks["post_signal_func_nb"]
+# %? blocks[post_order_func_nb_block]
+# % blocks["post_order_func_nb"]
 # %? blocks[post_segment_func_nb_block]
 # % blocks["post_segment_func_nb"]
 @register_chunkable(
@@ -4226,10 +4258,12 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
         cash_deposits=RepFunc(portfolio_ch.get_cash_deposits_slicer),
         cash_earnings=base_ch.flex_array_gl_slicer,
         cash_dividends=base_ch.flex_array_gl_slicer,
+        pre_segment_func_nb=None,  # % None
+        pre_segment_args=ch.ArgsTaker(),
         signal_func_nb=None,  # % None
         signal_args=ch.ArgsTaker(),
-        post_signal_func_nb=None,  # % None
-        post_signal_args=ch.ArgsTaker(),
+        post_order_func_nb=None,  # % None
+        post_order_args=ch.ArgsTaker(),
         post_segment_func_nb=None,  # % None
         post_segment_args=ch.ArgsTaker(),
         size=base_ch.flex_array_gl_slicer,
@@ -4319,10 +4353,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     cash_deposits: tp.FlexArray2dLike = 0.0,
     cash_earnings: tp.FlexArray2dLike = 0.0,
     cash_dividends: tp.FlexArray2dLike = 0.0,
+    pre_segment_func_nb: tp.PreSignalSegmentFunc = no_pre_func_nb,  # % None
+    pre_segment_args: tp.Args = (),
     signal_func_nb: tp.SignalFunc = no_signal_func_nb,  # % None
     signal_args: tp.ArgsLike = (),
-    post_signal_func_nb: tp.PostSignalFunc = no_post_func_nb,  # % None
-    post_signal_args: tp.ArgsLike = (),
+    post_order_func_nb: tp.PostSignalOrderFunc = no_post_func_nb,  # % None
+    post_order_args: tp.ArgsLike = (),
     post_segment_func_nb: tp.PostSignalSegmentFunc = no_post_func_nb,  # % None
     post_segment_args: tp.ArgsLike = (),
     size: tp.FlexArray2dLike = np.inf,
@@ -4440,16 +4476,21 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         cash_dividends (FlexArray2dLike): Cash dividends or interest at the end of each bar.
 
             Provided as a scalar, or per row, column, or element.
+        pre_segment_func_nb (PreSegmentFunc): Callback function to be called before processing a segment.
+
+            Accepts `vectorbtpro.portfolio.enums.SignalSegmentContext` and `*pre_segment_args`,
+            and returns a tuple that is passed to `signal_func_nb` and `post_order_func_nb`.
+        pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
         signal_func_nb (SignalFunc): Callback function to be called to generate signals.
 
             Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*signal_args`,
             and returns four signals: long entry, long exit, short entry, and short exit.
         signal_args (ArgsLike): Positional arguments for `signal_func_nb`
-        post_signal_func_nb (PostSignalFunc): Callback function to be called after processing an order.
+        post_order_func_nb (PostSignalOrderFunc): Callback function to be called after processing an order.
 
-            Accepts `vectorbtpro.portfolio.enums.PostSignalContext` and `*post_signal_args`,
+            Accepts `vectorbtpro.portfolio.enums.PostSignalOrderContext` and `*post_order_args`,
             and returns nothing.
-        post_signal_args (ArgsLike): Positional arguments for `post_signal_func_nb`
+        post_order_args (ArgsLike): Positional arguments for `post_order_func_nb`
         post_segment_func_nb (PostSignalSegmentFunc): Callback function to be called after processing a segment.
 
             Accepts `vectorbtpro.portfolio.enums.SignalSegmentContext` and `*post_segment_args`,
@@ -5010,6 +5051,84 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         _sim_end = sim_end_[group]
         for i in range(_sim_start, _sim_end):
 
+            for ci in range(group_len):
+                col = from_col + ci
+                _open = flex_select_nb(open_, i, col)
+                if not np.isnan(_open) or not ffill_val_price:
+                    last_val_price[col] = _open
+
+            if cash_sharing:
+                group_value = last_cash[group]
+                for col in range(from_col, to_col):
+                    if last_position[col] != 0:
+                        group_value += last_position[col] * last_val_price[col]
+                last_value[group] = group_value
+                last_return[group] = get_return_nb(
+                    input_value=prev_close_value[group],
+                    output_value=last_value[group],
+                )
+            else:
+                for col in range(from_col, to_col):
+                    group_value = last_cash[col]
+                    if last_position[col] != 0:
+                        group_value += last_position[col] * last_val_price[col]
+                    last_value[col] = group_value
+                    last_return[col] = get_return_nb(
+                        input_value=prev_close_value[col],
+                        output_value=last_value[col],
+                    )
+
+            if fill_pos_info:
+                for col in range(from_col, to_col):
+                    update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
+
+            pre_segment_ctx = SignalSegmentContext(
+                target_shape=target_shape,
+                group_lens=group_lens,
+                cash_sharing=cash_sharing,
+                index=index,
+                freq=freq,
+                open=open_,
+                high=high_,
+                low=low_,
+                close=close_,
+                init_cash=init_cash_,
+                init_position=init_position_,
+                init_price=init_price_,
+                order_records=order_records,
+                order_counts=order_counts,
+                log_records=log_records,
+                log_counts=log_counts,
+                track_cash_deposits=track_cash_deposits,
+                cash_deposits_out=cash_deposits_out,
+                track_cash_earnings=track_cash_earnings,
+                cash_earnings_out=cash_earnings_out,
+                in_outputs=in_outputs,
+                last_cash=last_cash,
+                last_position=last_position,
+                last_debt=last_debt,
+                last_locked_cash=last_locked_cash,
+                last_free_cash=last_free_cash,
+                last_val_price=last_val_price,
+                last_value=last_value,
+                last_return=last_return,
+                last_pos_info=last_pos_info,
+                last_limit_info=last_limit_info,
+                last_sl_info=last_sl_info,
+                last_tsl_info=last_tsl_info,
+                last_tp_info=last_tp_info,
+                last_td_info=last_td_info,
+                last_dt_info=last_dt_info,
+                sim_start=sim_start_,
+                sim_end=sim_end_,
+                group=group,
+                group_len=group_len,
+                from_col=from_col,
+                to_col=to_col,
+                i=i,
+            )
+            pre_segment_out = pre_segment_func_nb(pre_segment_ctx, *pre_segment_args)
+
             if cash_sharing:
                 _cash_deposits = flex_select_nb(cash_deposits_, i, group)
                 if _cash_deposits < 0:
@@ -5029,12 +5148,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     last_cash_deposits[col] = _cash_deposits
                     if track_cash_deposits:
                         cash_deposits_out[i, col] += _cash_deposits
-
-            for ci in range(group_len):
-                col = from_col + ci
-                _open = flex_select_nb(open_, i, col)
-                if not np.isnan(_open) or not ffill_val_price:
-                    last_val_price[col] = _open
 
             if cash_sharing:
                 group_value = last_cash[group]
@@ -5111,7 +5224,11 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     i=i,
                     col=col,
                 )
-                is_long_entry, is_long_exit, is_short_entry, is_short_exit = signal_func_nb(signal_ctx, *signal_args)
+                is_long_entry, is_long_exit, is_short_entry, is_short_exit = signal_func_nb(
+                    signal_ctx,
+                    *pre_segment_out,
+                    *signal_args,
+                )
 
                 _i = i - abs(flex_select_nb(from_ago_, i, col))
                 if _i < 0:
@@ -6916,7 +7033,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             last_value[col] = value_now
                             last_return[col] = return_now
 
-                        post_signal_ctx = PostSignalContext(
+                        post_order_ctx = PostSignalOrderContext(
                             target_shape=target_shape,
                             group_lens=group_lens,
                             cash_sharing=cash_sharing,
@@ -6970,7 +7087,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             value_before=value_before,
                             order_result=order_result,
                         )
-                        post_signal_func_nb(post_signal_ctx, *post_signal_args)
+                        post_order_func_nb(post_order_ctx, *pre_segment_out, *post_order_args)
 
             for col in range(from_col, to_col):
                 _close = flex_select_nb(close_, i, col)
@@ -7180,11 +7297,13 @@ def no_adjust_func_nb(c: SignalContext, *args) -> None:
 # @register_jitted
 # def adjust_func_nb(
 #     c: SignalContext,
+#     *args,
 # ) -> None:
 #     """Custom adjustment function.
 #
 #     Args:
 #         c (SignalContext): Signal context.
+#         *args: Additional positional arguments.
 #
 #     Returns:
 #         None

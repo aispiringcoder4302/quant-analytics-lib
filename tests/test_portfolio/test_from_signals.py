@@ -6937,7 +6937,13 @@ class TestFromHolding:
 
     def test_ctx_helpers(self):
         @njit
-        def post_signal_func_nb(c):
+        def signal_func_nb(c, x, y, z, long_entries, short_entries):
+            long_entry = vbt.pf_nb.select_nb(c, long_entries)
+            short_entry = vbt.pf_nb.select_nb(c, short_entries)
+            return long_entry, False, short_entry, False
+        
+        @njit
+        def post_order_func_nb(c, x, y, z):
             _ = vbt.pf_nb.get_position_nb(c)
             _ = vbt.pf_nb.in_position_nb(c)
             _ = vbt.pf_nb.in_long_position_nb(c)
@@ -6976,17 +6982,6 @@ class TestFromHolding:
             _ = vbt.pf_nb.get_order_value_nb(c, np.inf)
             _ = vbt.pf_nb.get_order_result_nb(c, vbt.pf_nb.close_position_nb())
 
-        _ = vbt.PF.from_signals(
-            [1],
-            long_entries=[[True, False]],
-            short_entries=[[False, True]],
-            init_cash=[100, 200],
-            post_signal_func_nb=post_signal_func_nb,
-            sl_stop=0.1,
-            tsl_stop=0.2,
-            tp_stop=0.3,
-        )
-
         @njit
         def post_segment_func_nb(c):
             for col in range(c.from_col, c.to_col):
@@ -7023,11 +7018,20 @@ class TestFromHolding:
             _ = vbt.pf_nb.stop_group_sim_nb(c, c.group)
             _ = vbt.pf_nb.stop_sim_nb(c)
 
+        @njit
+        def pre_segment_func_nb(c):
+            post_segment_func_nb(c)
+            return (1, 2, 3)
+
         _ = vbt.PF.from_signals(
             [1],
             long_entries=[[True, False]],
             short_entries=[[False, True]],
             init_cash=[100, 200],
+            pre_segment_func_nb=pre_segment_func_nb,
+            signal_func_nb=signal_func_nb,
+            signal_args=(vbt.Rep("long_entries"), vbt.Rep("short_entries")),
+            post_order_func_nb=post_order_func_nb,
             post_segment_func_nb=post_segment_func_nb,
             group_by=True,
             sl_stop=0.1,

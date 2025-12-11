@@ -66,7 +66,7 @@ __pdoc__all__ = __all__ = [
     "OrderResult",
     "SignalSegmentContext",
     "SignalContext",
-    "PostSignalContext",
+    "PostSignalOrderContext",
     "FSInOutputs",
     "FOInOutputs",
     "order_fields",
@@ -2661,7 +2661,7 @@ for field in SignalContext._fields:
 __pdoc__["SignalContext.col"] = "See `OrderContext.col`."
 
 
-class PostSignalContext(tp.NamedTuple):
+class PostSignalOrderContext(tp.NamedTuple):
     target_shape: tp.Shape
     group_lens: tp.GroupLens
     cash_sharing: bool
@@ -2725,23 +2725,23 @@ class PostSignalContext(tp.NamedTuple):
 
 
 __pdoc__[
-    "PostSignalContext"
+    "PostSignalOrderContext"
 ] = """Named tuple representing the context after an order has been processed in a from-signals simulation.
 
 Contains all fields from `SignalContext` along with previous balance fields and the order result.
 
-Passed to `post_signal_func_nb`.
+Passed to `post_order_func_nb`.
 """
-for field in PostSignalContext._fields:
+for field in PostSignalOrderContext._fields:
     if field in SignalContext._fields:
-        __pdoc__["PostSignalContext." + field] = f"See `SignalContext.{field}`."
-__pdoc__["PostSignalContext.cash_before"] = "`ExecState.cash` balance before execution."
-__pdoc__["PostSignalContext.position_before"] = "`ExecState.position` value before execution."
-__pdoc__["PostSignalContext.debt_before"] = "`ExecState.debt` value before execution."
-__pdoc__["PostSignalContext.locked_cash_before"] = "`ExecState.free_cash` value before execution."
-__pdoc__["PostSignalContext.free_cash_before"] = "`ExecState.val_price` value before execution."
-__pdoc__["PostSignalContext.val_price_before"] = "`ExecState.value` value before execution."
-__pdoc__["PostSignalContext.order_result"] = "See `PostOrderContext.order_result`."
+        __pdoc__["PostSignalOrderContext." + field] = f"See `SignalContext.{field}`."
+__pdoc__["PostSignalOrderContext.cash_before"] = "`ExecState.cash` balance before execution."
+__pdoc__["PostSignalOrderContext.position_before"] = "`ExecState.position` value before execution."
+__pdoc__["PostSignalOrderContext.debt_before"] = "`ExecState.debt` value before execution."
+__pdoc__["PostSignalOrderContext.locked_cash_before"] = "`ExecState.free_cash` value before execution."
+__pdoc__["PostSignalOrderContext.free_cash_before"] = "`ExecState.val_price` value before execution."
+__pdoc__["PostSignalOrderContext.val_price_before"] = "`ExecState.value` value before execution."
+__pdoc__["PostSignalOrderContext.order_result"] = "See `PostOrderContext.order_result`."
 
 
 # ############# In-place outputs ############# #

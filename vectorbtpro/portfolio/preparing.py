@@ -164,7 +164,7 @@ base_arg_config = ReadonlyConfig(
         init_cash=dict(map_enum_kwargs=dict(enum=enums.InitCashMode, look_for_type=str)),
         init_position=dict(),
         init_price=dict(),
-        cash_deposits=dict(),
+        cash_deposits=dict(broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=0.0))),
         group_by=dict(),
         cash_sharing=dict(),
         freq=dict(),
@@ -172,7 +172,6 @@ base_arg_config = ReadonlyConfig(
         sim_end=dict(),
         call_seq=dict(map_enum_kwargs=dict(enum=enums.CallSeqType, look_for_type=str)),
         attach_call_seq=dict(),
-        keep_inout_flex=dict(),
         in_outputs=dict(has_default=False),
     )
 )
@@ -569,15 +568,19 @@ class BasePFPreparer(BasePreparer):
             ArrayLike: Cash deposits broadcasted to the required shape.
         """
         cash_deposits = self["cash_deposits"]
-        checks.assert_subdtype(cash_deposits, np.number, arg_name="cash_deposits")
-        return broadcast(
-            cash_deposits,
-            to_shape=(self.target_shape[0], len(self.cs_group_lens)),
-            to_pd=False,
-            keep_flex=self.keep_inout_flex,
-            reindex_kwargs=dict(fill_value=0.0),
-            require_kwargs=self.broadcast_kwargs.get("require_kwargs", {}),
+        def_broadcast_kwargs = dict(self.broadcast_kwargs)
+        def_broadcast_kwargs.pop("wrapper_kwargs", None)
+        def_broadcast_kwargs.pop("return_wrapper", None)
+        def_broadcast_kwargs["to_shape"] = (self.target_shape[0], len(self.cs_group_lens))
+        if self.arg_config["cash_deposits"].get("full_shape", False):
+            def_broadcast_kwargs["keep_flex"] = False
+        broadcast_kwargs = merge_dicts(
+            def_broadcast_kwargs,
+            self.arg_config["cash_deposits"].get("broadcast_kwargs", {}),
         )
+        cash_deposits = broadcast(cash_deposits, **broadcast_kwargs)
+        checks.assert_subdtype(cash_deposits, np.number, arg_name="cash_deposits")
+        return cash_deposits
 
     @cachedproperty
     def auto_sim_start(self) -> tp.Optional[tp.ArrayLike]:
@@ -1199,12 +1202,14 @@ fs_arg_config = ReadonlyConfig(
             subdtype=np.bool_,
             broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=False)),
         ),
+        pre_segment_func_nb=dict(),
+        pre_segment_args=dict(type="args", substitute_templates=True),
         adjust_func_nb=dict(),
         adjust_args=dict(type="args", substitute_templates=True),
         signal_func_nb=dict(),
         signal_args=dict(type="args", substitute_templates=True),
-        post_signal_func_nb=dict(),
-        post_signal_args=dict(type="args", substitute_templates=True),
+        post_order_func_nb=dict(),
+        post_order_args=dict(type="args", substitute_templates=True),
         post_segment_func_nb=dict(),
         post_segment_args=dict(type="args", substitute_templates=True),
         order_mode=dict(),
@@ -1492,8 +1497,9 @@ class FSPreparer(BasePFPreparer):
         """
         return (
             self["adjust_func_nb"] is not None
+            or self["pre_segment_func_nb"] is not None
             or self["signal_func_nb"] is not None
-            or self["post_signal_func_nb"] is not None
+            or self["post_order_func_nb"] is not None
             or self["post_segment_func_nb"] is not None
             or self.order_mode
             or self.pre__staticized is not None
@@ -1593,6 +1599,23 @@ class FSPreparer(BasePFPreparer):
         return self.dynamic_mode and not self.signals_mode and not self.order_mode
 
     @cachedproperty
+    def pre_segment_func_nb(self) -> tp.Optional[tp.Callable]:
+        """Processed `pre_segment_func_nb` argument.
+
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
+
+        If a value is provided, it is returned. Outside dynamic mode, returns None.
+
+        Returns:
+            Optional[Callable]: Post segment function callable or None.
+        """
+        if self.dynamic_mode:
+            if self["pre_segment_func_nb"] is None:
+                return nb.no_pre_func_nb
+            return self["pre_segment_func_nb"]
+        return None
+
+    @cachedproperty
     def adjust_func_nb(self) -> tp.Optional[tp.Callable]:
         """Processed `adjust_func_nb` argument.
 
@@ -1637,8 +1660,8 @@ class FSPreparer(BasePFPreparer):
         return None
 
     @cachedproperty
-    def post_signal_func_nb(self) -> tp.Optional[tp.Callable]:
-        """Processed `post_signal_func_nb` argument.
+    def post_order_func_nb(self) -> tp.Optional[tp.Callable]:
+        """Processed `post_order_func_nb` argument.
 
         In dynamic mode, if not provided, a default `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`
         is returned; otherwise, the provided callable is used.
@@ -1649,9 +1672,9 @@ class FSPreparer(BasePFPreparer):
             Optional[Callable]: Post signal function callable or None.
         """
         if self.dynamic_mode:
-            if self["post_signal_func_nb"] is None:
+            if self["post_order_func_nb"] is None:
                 return nb.no_post_func_nb
-            return self["post_signal_func_nb"]
+            return self["post_order_func_nb"]
         return None
 
     @cachedproperty
@@ -1701,10 +1724,12 @@ class FSPreparer(BasePFPreparer):
                         staticized["suggest_fname"] = "from_order_signal_func_nb"
                 else:
                     self.adapt_staticized_to_udf(staticized, self["signal_func_nb"], "signal_func_nb")
+                if self["pre_segment_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["pre_segment_func_nb"], "pre_segment_func_nb")
                 if self["adjust_func_nb"] is not None:
                     self.adapt_staticized_to_udf(staticized, self["adjust_func_nb"], "adjust_func_nb")
-                if self["post_signal_func_nb"] is not None:
-                    self.adapt_staticized_to_udf(staticized, self["post_signal_func_nb"], "post_signal_func_nb")
+                if self["post_order_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["post_order_func_nb"], "post_order_func_nb")
                 if self["post_segment_func_nb"] is not None:
                     self.adapt_staticized_to_udf(staticized, self["post_segment_func_nb"], "post_segment_func_nb")
                 elif self.save_state or self.save_value or self.save_returns:
@@ -2157,12 +2182,14 @@ class FSPreparer(BasePFPreparer):
                 order_mode=self.order_mode,
                 use_stops=self.use_stops,
                 stop_ladder=self.stop_ladder,
+                pre_segment_func_nb=self.pre_segment_func_nb,
+                pre_segment_args=self.pre__pre_segment_args,
                 adjust_func_nb=self.adjust_func_nb,
                 adjust_args=self.pre__adjust_args,
                 signal_func_nb=self.signal_func_nb,
                 signal_args=self.pre__signal_args,
-                post_signal_func_nb=self.post_signal_func_nb,
-                post_signal_args=self.pre__post_signal_args,
+                post_order_func_nb=self.post_order_func_nb,
+                post_order_args=self.pre__post_order_args,
                 post_segment_func_nb=self.post_segment_func_nb,
                 post_segment_args=self.pre__post_segment_args,
                 ffill_val_price=self.ffill_val_price,
@@ -2317,8 +2344,9 @@ class FSPreparer(BasePFPreparer):
         target_arg_map = dict(BasePFPreparer.target_arg_map.func(self))
         if self.dynamic_mode:
             if self.staticized is not None:
+                target_arg_map["pre_segment_func_nb"] = None
                 target_arg_map["signal_func_nb"] = None
-                target_arg_map["post_signal_func_nb"] = None
+                target_arg_map["post_order_func_nb"] = None
                 target_arg_map["post_segment_func_nb"] = None
         else:
             target_arg_map["group_lens"] = "cs_group_lens"
@@ -2335,7 +2363,7 @@ FSPreparer.override_arg_config_doc(__pdoc__)
 
 fof_arg_config = ReadonlyConfig(
     dict(
-        segment_mask=dict(),
+        segment_mask=dict(broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=False))),
         call_pre_segment=dict(),
         call_post_segment=dict(),
         pre_sim_func_nb=dict(),
@@ -2689,22 +2717,23 @@ class FOFPreparer(BasePFPreparer):
             ArrayLike: Post-broadcasted segment mask.
         """
         segment_mask = self.pre__segment_mask
+        def_broadcast_kwargs = dict(self.broadcast_kwargs)
+        def_broadcast_kwargs.pop("wrapper_kwargs", None)
+        def_broadcast_kwargs.pop("return_wrapper", None)
+        def_broadcast_kwargs["to_shape"] = (self.target_shape[0], len(self.group_lens))
+        if self.arg_config["segment_mask"].get("full_shape", False):
+            def_broadcast_kwargs["keep_flex"] = False
+        broadcast_kwargs = merge_dicts(
+            def_broadcast_kwargs,
+            self.arg_config["segment_mask"].get("broadcast_kwargs", {}),
+        )
         if checks.is_int(segment_mask):
-            if self.keep_inout_flex:
-                _segment_mask = np.full((self.target_shape[0], 1), False)
-            else:
-                _segment_mask = np.full((self.target_shape[0], len(self.group_lens)), False)
+            broadcast_kwargs.pop("keep_flex", None)
+            _segment_mask = broadcast(False, keep_flex=False, **broadcast_kwargs)
             _segment_mask[0::segment_mask] = True
             segment_mask = _segment_mask
         else:
-            segment_mask = broadcast(
-                segment_mask,
-                to_shape=(self.target_shape[0], len(self.group_lens)),
-                to_pd=False,
-                keep_flex=self.keep_inout_flex,
-                reindex_kwargs=dict(fill_value=False),
-                require_kwargs=self.broadcast_kwargs.get("require_kwargs", {}),
-            )
+            segment_mask = broadcast(segment_mask, **broadcast_kwargs)
         checks.assert_subdtype(segment_mask, np.bool_, arg_name="segment_mask")
         return segment_mask
 
