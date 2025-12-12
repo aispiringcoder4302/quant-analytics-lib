@@ -8,7 +8,832 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing the base class for simulating a portfolio and measuring its performance."""
+"""Module providing the base class for simulating a portfolio and measuring its performance.
+
+## Stats
+
+!!! tip
+    See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `Portfolio.metrics`.
+
+Let us simulate a portfolio with two columns:
+
+```pycon
+>>> from vectorbtpro import *
+
+>>> data = vbt.YFData.pull("BTC-USD", start="2020", end="2021")
+
+>>> pf = vbt.Portfolio.from_random_signals(data.close, n=[10, 20], seed=42)
+>>> pf.wrapper.columns
+Index([10, 20], dtype='int64', name='randnx_n')
+```
+
+### Column, group, and tag selection
+
+To return statistics for a particular column or group, use the `column` argument:
+
+```pycon
+>>> pf.stats(column=10)
+UserWarning: Metric 'sharpe_ratio' requires frequency to be set
+UserWarning: Metric 'calmar_ratio' requires frequency to be set
+UserWarning: Metric 'omega_ratio' requires frequency to be set
+UserWarning: Metric 'sortino_ratio' requires frequency to be set
+
+Start Index                   2020-01-01 00:00:00+00:00
+End Index                     2020-12-31 00:00:00+00:00
+Total Duration                        366 days 00:00:00
+Start Value                                       100.0
+Min Value                                     53.920674
+Max Value                                    133.184269
+End Value                                    133.184269
+Total Return [%]                              33.184269
+Benchmark Return [%]                         302.791925
+Position Coverage [%]                         42.622951
+Max Gross Exposure [%]                            100.0
+Max Drawdown [%]                              54.330618
+Max Drawdown Duration                 309 days 00:00:00
+Total Orders                                         20
+Total Fees Paid                                     0.0
+Total Trades                                         10
+Win Rate [%]                                       80.0
+Best Trade [%]                                28.151123
+Worst Trade [%]                              -43.164326
+Avg Winning Trade [%]                         11.824565
+Avg Losing Trade [%]                         -22.193211
+Avg Winning Trade Duration             12 days 00:00:00
+Avg Losing Trade Duration              30 days 00:00:00
+Profit Factor                                  1.754294
+Expectancy                                     3.318427
+Sharpe Ratio                                   0.842891
+Calmar Ratio                                   0.608865
+Omega Ratio                                    1.271266
+Sortino Ratio                                  1.045106
+Name: 10, dtype: object
+```
+
+!!! info
+    In newer versions of vectorbtpro, the frequency is determined automatically.
+
+If vectorbtpro cannot parse the data frequency:
+
+1) it will not return any durations in time units,
+2) it will not return metrics that require annualization, and
+3) it will emit multiple warnings (you can silence them by passing `silence_warnings=True`).
+
+We can provide the frequency as part of the settings dictionary:
+
+```pycon
+>>> pf.stats(column=10, settings=dict(freq="d"))
+UserWarning: Changing the frequency will create a copy of this object.
+Consider setting the frequency upon object creation to re-use existing cache.
+
+Start Index                   2020-01-01 00:00:00+00:00
+End Index                     2020-12-31 00:00:00+00:00
+Total Duration                        366 days 00:00:00
+Start Value                                       100.0
+Min Value                                     53.920674
+Max Value                                    133.184269
+End Value                                    133.184269
+Total Return [%]                              33.184269
+Benchmark Return [%]                         302.791925
+Position Coverage [%]                         42.622951
+Max Gross Exposure [%]                            100.0
+Max Drawdown [%]                              54.330618
+Max Drawdown Duration                 309 days 00:00:00
+Total Orders                                         20
+Total Fees Paid                                     0.0
+Total Trades                                         10
+Win Rate [%]                                       80.0
+Best Trade [%]                                28.151123
+Worst Trade [%]                              -43.164326
+Avg Winning Trade [%]                         11.824565
+Avg Losing Trade [%]                         -22.193211
+Avg Winning Trade Duration             12 days 00:00:00
+Avg Losing Trade Duration              30 days 00:00:00
+Profit Factor                                  1.754294
+Expectancy                                     3.318427
+Sharpe Ratio                                   0.842891
+Calmar Ratio                                   0.608865
+Omega Ratio                                    1.271266
+Sortino Ratio                                  1.045106
+Name: 10, dtype: object
+```
+
+In this case, the portfolio is copied to set the new frequency, which prevents reuse of cached attributes.
+To avoid this, define the frequency during simulation instead:
+
+```pycon
+>>> pf = vbt.Portfolio.from_random_signals(data.close, n=[10, 20], seed=42, freq="d")
+```
+
+We can change the grouping of the portfolio dynamically. Let us form a single group:
+
+```pycon
+>>> pf.stats(group_by=True)
+Start Index                    2020-01-01 00:00:00+00:00
+End Index                      2020-12-31 00:00:00+00:00
+Total Duration                         366 days 00:00:00
+Start Value                                        200.0
+Min Value                                     113.656488
+Max Value                                     301.776542
+End Value                                     301.776542
+Total Return [%]                               50.888271
+Benchmark Return [%]                          302.791925
+Position Coverage [%]                          66.120219
+Max Gross Exposure [%]                             100.0
+Max Drawdown [%]                               48.998064
+Max Drawdown Duration                  292 days 00:00:00
+Total Orders                                          60
+Total Fees Paid                                      0.0
+Total Trades                                          30
+Win Rate [%]                                   63.333333
+Best Trade [%]                                 51.517706
+Worst Trade [%]                               -43.164326
+Avg Winning Trade [%]                          12.155429
+Avg Losing Trade [%]                           -9.597805
+Avg Winning Trade Duration    10 days 11:22:06.315789473
+Avg Losing Trade Duration     10 days 21:49:05.454545454
+Profit Factor                                   1.988587
+Expectancy                                      3.392551
+Sharpe Ratio                                    1.112479
+Calmar Ratio                                    1.035118
+Omega Ratio                                     1.342483
+Sortino Ratio                                   1.342404
+Name: group, dtype: object
+```
+
+We can see that the initial cash increased from $100 to $200, indicating that both columns
+now contribute to performance.
+
+### Aggregation
+
+If the portfolio contains multiple columns or groups and none is explicitly selected,
+each metric is aggregated across all columns or groups using `agg_func`, which defaults to `np.mean`.
+
+```pycon
+>>> pf.stats()
+UserWarning: Object has multiple columns. Aggregating using <function mean at 0x7fc77152bb70>.
+Pass column to select a single column/group.
+
+Start Index                    2020-01-01 00:00:00+00:00
+End Index                      2020-12-31 00:00:00+00:00
+Total Duration                         366 days 00:00:00
+Start Value                                        100.0
+Min Value                                      55.370744
+Max Value                                     150.888271
+End Value                                     150.888271
+Total Return [%]                               50.888271
+Benchmark Return [%]                          302.791925
+Position Coverage [%]                          43.579235
+Max Gross Exposure [%]                             100.0
+Max Drawdown [%]                               50.986314
+Max Drawdown Duration                  301 days 00:00:00
+Total Orders                                        30.0
+Total Fees Paid                                      0.0
+Total Trades                                        15.0
+Win Rate [%]                                        67.5
+Best Trade [%]                                 39.834414
+Worst Trade [%]                               -35.922904
+Avg Winning Trade [%]                          12.110311
+Avg Losing Trade [%]                          -14.496018
+Avg Winning Trade Duration    10 days 16:21:49.090909090
+Avg Losing Trade Duration               18 days 08:00:00
+Profit Factor                                   1.958855
+Expectancy                                       3.37402
+Sharpe Ratio                                    1.044191
+Calmar Ratio                                    1.021781
+Omega Ratio                                      1.35628
+Sortino Ratio                                   1.327701
+Name: agg_stats, dtype: object
+```
+
+Here, the Sharpe ratios of 0.842891 (column 10) and 1.245490 (column 20) result in an average of 1.044191.
+
+To return a DataFrame with statistics per column or group, pass `agg_func=None`:
+
+```pycon
+>>> pf.stats(agg_func=None)
+                       Start Index                 End Index Total Duration  ...  Sortino Ratio
+randnx_n
+10       2020-01-01 00:00:00+00:00 2020-12-31 00:00:00+00:00       366 days            1.045106
+20       2020-01-01 00:00:00+00:00 2020-12-31 00:00:00+00:00       366 days            1.610296
+
+[2 rows x 29 columns]
+```
+
+### Metric selection
+
+To select specific metrics, use the `metrics` argument (see `Portfolio.metrics` for supported metrics):
+
+```pycon
+>>> pf.stats(metrics=["sharpe_ratio", "sortino_ratio"], column=10)
+Sharpe Ratio     0.842891
+Sortino Ratio    1.045106
+Name: 10, dtype: object
+```
+
+You can also select metrics by tag (see any metric in `Portfolio.metrics` that defines a tag key):
+
+```pycon
+>>> pf.stats(column=10, tags=["trades"])
+Total Trades                                10
+Win Rate [%]                              80.0
+Best Trade [%]                       28.151123
+Worst Trade [%]                     -43.164326
+Avg Winning Trade [%]                11.824565
+Avg Losing Trade [%]                -22.193211
+Avg Winning Trade Duration    12 days 00:00:00
+Avg Losing Trade Duration     30 days 00:00:00
+Profit Factor                         1.754294
+Expectancy                            3.318427
+Name: 10, dtype: object
+```
+
+Or provide a boolean expression:
+
+```pycon
+>>> pf.stats(column=10, tags="trades and open and not closed")
+Total Open Trades      0
+Open Trade PnL       0.0
+Name: 10, dtype: object
+```
+
+We include "not closed" alongside "open" because some metrics, such as win rate,
+have both tags since they are based on both open and closed trades or positions.
+To observe this, pass `settings=dict(incl_open=True)` and `tags="trades and open"`.
+
+!!! info
+    In newer versions of vectorbtpro, many trade metrics have been moved to `pf.trades.stats()`.
+
+### Passing parameters
+
+Use `settings` to pass parameters shared across multiple metrics.
+For example, we can pass the required return and risk free rate to all return metrics:
+
+```pycon
+>>> pf.stats(column=10, settings=dict(required_return=0.1, risk_free=0.01))
+Start Index                   2020-01-01 00:00:00+00:00
+End Index                     2020-12-31 00:00:00+00:00
+Total Duration                        366 days 00:00:00
+Start Value                                       100.0
+Min Value                                     53.920674
+Max Value                                    133.184269
+End Value                                    133.184269
+Total Return [%]                              33.184269
+Benchmark Return [%]                         302.791925
+Position Coverage [%]                         42.622951
+Max Gross Exposure [%]                            100.0
+Max Drawdown [%]                              54.330618
+Max Drawdown Duration                 309 days 00:00:00
+Total Orders                                         20
+Total Fees Paid                                     0.0
+Total Trades                                         10
+Win Rate [%]                                       80.0
+Best Trade [%]                                28.151123
+Worst Trade [%]                              -43.164326
+Avg Winning Trade [%]                         11.824565
+Avg Losing Trade [%]                         -22.193211
+Avg Winning Trade Duration             12 days 00:00:00
+Avg Losing Trade Duration              30 days 00:00:00
+Profit Factor                                  1.754294
+Expectancy                                     3.318427
+Sharpe Ratio                                  -5.954819
+Calmar Ratio                                   0.608865
+Omega Ratio                                    0.297155
+Sortino Ratio                                -18.377491
+Name: 10, dtype: object
+```
+
+Any argument passed via `settings` either overrides an existing default or acts as an optional argument
+passed to the calculation function during resolution. Both `required_return` and `risk_free` appear
+in the signatures of the four ratio methods, so vectorbtpro knows to pass them automatically.
+
+If the signature of `vectorbtpro.returns.accessors.ReturnsAccessor.sharpe_ratio` did not list these arguments,
+vectorbtpro would call the method without them. In that case, there are two options.
+
+1) Set parameters globally using `settings` and explicitly enable passing them with
+`pass_{arg}=True` in `metric_settings`:
+
+```pycon
+>>> pf.stats(
+...     column=10,
+...     settings=dict(required_return=0.1, risk_free=0.01),
+...     metric_settings=dict(
+...         sharpe_ratio=dict(pass_risk_free=True),
+...         omega_ratio=dict(pass_required_return=True, pass_risk_free=True),
+...         sortino_ratio=dict(pass_required_return=True)
+...     )
+... )
+```
+
+2) Set parameters individually using `metric_settings`:
+
+```pycon
+>>> pf.stats(
+...     column=10,
+...     metric_settings=dict(
+...         sharpe_ratio=dict(risk_free=0.01),
+...         omega_ratio=dict(required_return=0.1, risk_free=0.01),
+...         sortino_ratio=dict(required_return=0.1)
+...     )
+... )
+```
+
+### Custom metrics
+
+To compute a custom metric, provide at least two elements: a short name and a settings dictionary with
+a title and a calculation function (see arguments in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`):
+
+```pycon
+>>> max_winning_streak = (
+...     "max_winning_streak",
+...     dict(
+...         title="Max Winning Streak",
+...         calc_func=lambda trades: trades.winning_streak.max(),
+...         resolve_trades=True
+...     )
+... )
+>>> pf.stats(metrics=max_winning_streak, column=10)
+Max Winning Streak    6.0
+Name: 10, dtype: object
+```
+
+You may wonder how vectorbtpro determines which arguments to pass to `calc_func`?
+
+In this example, the calculation function expects `trades` and `group_by`. To pass these automatically,
+vectorbtpro searches for each argument in the current settings. If an argument such as `trades` is not found,
+vectorbtpro either raises an error or attempts to resolve it if `resolve_{arg}=True` is set.
+
+Argument resolution involves searching for a property or method with the same name (or prefixed with `get_`)
+on the current portfolio. Any relevant settings such as `group_by` are automatically passed if they appear
+in the target method signature. The resolved result is then passed as `arg` (or `trades` in our example)
+to the calculation function as the argument.
+
+Here is an example without argument resolution:
+
+```pycon
+>>> max_winning_streak = (
+...     "max_winning_streak",
+...     dict(
+...         title="Max Winning Streak",
+...         calc_func=lambda self, group_by:
+...         self.get_trades(group_by=group_by).winning_streak.max()
+...     )
+... )
+>>> pf.stats(metrics=max_winning_streak, column=10)
+Max Winning Streak    6.0
+Name: 10, dtype: object
+```
+
+And here is an example without calculation function resolution:
+
+```pycon
+>>> max_winning_streak = (
+...     "max_winning_streak",
+...     dict(
+...         title="Max Winning Streak",
+...         calc_func=lambda self, settings:
+...         self.get_trades(group_by=settings["group_by"]).winning_streak.max(),
+...         resolve_calc_func=False
+...     )
+... )
+>>> pf.stats(metrics=max_winning_streak, column=10)
+Max Winning Streak    6.0
+Name: 10, dtype: object
+```
+
+Since the `max_winning_streak` computation can be expressed as a path from the portfolio,
+we can simplify it further:
+
+```pycon
+>>> max_winning_streak = (
+...     "max_winning_streak",
+...     dict(
+...         title="Max Winning Streak",
+...         calc_func="trades.winning_streak.max"
+...     )
+... )
+```
+
+In this case, there is no need to pass `resolve_trades=True` because vectorbtpro resolves it automatically.
+Another benefit is that vectorbtpro can inspect the signature of the final method in the path
+(`vectorbtpro.records.mapped_array.MappedArray.max` in this case) and resolve its arguments accordingly.
+
+To switch between entry trades, exit trades, and positions, use the `trades_type` setting.
+You can also include open trades by passing `incl_open=True`.
+
+```pycon
+>>> pf.stats(column=10, settings=dict(trades_type="positions", incl_open=True))
+Start Index                   2020-01-01 00:00:00+00:00
+End Index                     2020-12-31 00:00:00+00:00
+Total Duration                        366 days 00:00:00
+Start Value                                       100.0
+Min Value                                     53.920674
+Max Value                                    133.184269
+End Value                                    133.184269
+Total Return [%]                              33.184269
+Benchmark Return [%]                         302.791925
+Position Coverage [%]                         42.622951
+Max Gross Exposure [%]                            100.0
+Max Drawdown [%]                              54.330618
+Max Drawdown Duration                 309 days 00:00:00
+Total Orders                                         20
+Total Fees Paid                                     0.0
+Total Trades                                         10
+Win Rate [%]                                       80.0
+Best Trade [%]                                28.151123
+Worst Trade [%]                              -43.164326
+Avg Winning Trade [%]                         11.824565
+Avg Losing Trade [%]                         -22.193211
+Avg Winning Trade Duration             12 days 00:00:00
+Avg Losing Trade Duration              30 days 00:00:00
+Profit Factor                                  1.754294
+Expectancy                                     3.318427
+Sharpe Ratio                                   0.842891
+Calmar Ratio                                   0.608865
+Omega Ratio                                    1.271266
+Sortino Ratio                                  1.045106
+Name: 10, dtype: object
+```
+
+Any default metric setting or even a global setting can be overridden using metric specific keyword arguments.
+In the following example, we override the global aggregation function for `max_dd_duration`:
+
+```pycon
+>>> pf.stats(agg_func=lambda sr: sr.mean(),
+...     metric_settings=dict(
+...         max_dd_duration=dict(agg_func=lambda sr: sr.max())
+...     )
+... )
+UserWarning: Object has multiple columns. Aggregating using <function <lambda> at 0x7fbf6e77b268>.
+Pass column to select a single column/group.
+
+Start Index                    2020-01-01 00:00:00+00:00
+End Index                      2020-12-31 00:00:00+00:00
+Total Duration                         366 days 00:00:00
+Start Value                                        100.0
+Min Value                                      55.370744
+Max Value                                     150.888271
+End Value                                     150.888271
+Total Return [%]                               50.888271
+Benchmark Return [%]                          302.791925
+Position Coverage [%]                          43.579235
+Max Gross Exposure [%]                             100.0
+Max Drawdown [%]                               50.986314
+Max Drawdown Duration                  309 days 00:00:00  << here
+Total Orders                                        30.0
+Total Fees Paid                                      0.0
+Total Trades                                        15.0
+Win Rate [%]                                        67.5
+Best Trade [%]                                 39.834414
+Worst Trade [%]                               -35.922904
+Avg Winning Trade [%]                          12.110311
+Avg Losing Trade [%]                          -14.496018
+Avg Winning Trade Duration    10 days 16:21:49.090909090
+Avg Losing Trade Duration               18 days 08:00:00
+Profit Factor                                   1.958855
+Expectancy                                       3.37402
+Sharpe Ratio                                    1.044191
+Calmar Ratio                                    1.021781
+Omega Ratio                                      1.35628
+Sortino Ratio                                   1.327701
+Name: agg_stats, dtype: object
+```
+
+The following example demonstrates how vectorbtpro overrides settings, from least to most important,
+using a simple metric that returns a passed value:
+
+```pycon
+>>> # vbt.settings.portfolio.stats
+>>> vbt.settings.portfolio.stats["settings"]["custom_value"] = 100
+>>> custom_metric = (
+...     "custom_metric",
+...     dict(title="Custom Metric", calc_func=lambda custom_value: custom_value)
+... )
+>>> pf.stats(custom_metric, column=10)
+Custom Metric    100
+Name: 10, dtype: object
+
+>>> # settings > vbt.settings.portfolio.stats
+>>> pf.stats(custom_metric, column=10, settings=dict(custom_value=200))
+Custom Metric    200
+Name: 10, dtype: object
+
+>>> # metric settings > settings
+>>> custom_metric = (
+...     "custom_metric",
+...     dict(title="Custom Metric", custom_value=300, calc_func=lambda custom_value: custom_value)
+... )
+>>> pf.stats(custom_metric, column=10, settings=dict(custom_value=200))
+Custom Metric    300
+Name: 10, dtype: object
+
+>>> # metric_settings > metric settings
+>>> pf.stats(
+...     custom_metric,
+...     column=10,
+...     settings=dict(custom_value=200),
+...     metric_settings=dict(custom_metric=dict(custom_value=400))
+... )
+Custom Metric    400
+Name: 10, dtype: object
+```
+
+Here is an example of a parameterized metric that counts the number of trades with PnL above a given threshold:
+
+```pycon
+>>> trade_min_pnl_cnt = (
+...     "trade_min_pnl_cnt",
+...     dict(
+...         title=vbt.Sub("Trades with PnL over $$${min_pnl}"),
+...         calc_func=lambda trades, min_pnl: trades.apply_mask(trades.pnl.values >= min_pnl).count(),
+...         resolve_trades=True
+...     )
+... )
+>>> pf.stats(
+...     metrics=trade_min_pnl_cnt, column=10,
+...     metric_settings=dict(trade_min_pnl_cnt=dict(min_pnl=0))
+... )
+Trades with PnL over $0    8
+Name: 10, dtype: object
+
+>>> pf.stats(
+...     metrics=trade_min_pnl_cnt, column=10,
+...     metric_settings=dict(trade_min_pnl_cnt=dict(min_pnl=10))
+... )
+Trades with PnL over $10    3
+Name: 10, dtype: object
+```
+
+If the same metric name appears multiple times, vectorbtpro automatically appends an underscore
+and an index, allowing you to pass keyword arguments to each instance separately:
+
+```pycon
+>>> pf.stats(
+...     metrics=[
+...         trade_min_pnl_cnt,
+...         trade_min_pnl_cnt,
+...         trade_min_pnl_cnt
+...     ],
+...     column=10,
+...     metric_settings=dict(
+...         trade_min_pnl_cnt_0=dict(min_pnl=0),
+...         trade_min_pnl_cnt_1=dict(min_pnl=10),
+...         trade_min_pnl_cnt_2=dict(min_pnl=20)
+...     )
+... )
+Trades with PnL over $0     8
+Trades with PnL over $10    3
+Trades with PnL over $20    1
+Name: 10, dtype: object
+```
+
+To add a custom metric to the full list of metrics, there are three options.
+
+The first option is to modify `Portfolio.metrics` in place, which appends the metric to the end:
+
+```pycon
+>>> pf.metrics["max_winning_streak"] = max_winning_streak[1]
+>>> pf.stats(column=10)
+Start Index                   2020-01-01 00:00:00+00:00
+End Index                     2020-12-31 00:00:00+00:00
+Total Duration                        366 days 00:00:00
+Start Value                                       100.0
+Min Value                                     53.920674
+Max Value                                    133.184269
+End Value                                    133.184269
+Total Return [%]                              33.184269
+Benchmark Return [%]                         302.791925
+Position Coverage [%]                         42.622951
+Max Gross Exposure [%]                            100.0
+Max Drawdown [%]                              54.330618
+Max Drawdown Duration                 309 days 00:00:00
+Total Orders                                         20
+Total Fees Paid                                     0.0
+Total Trades                                         10
+Win Rate [%]                                       80.0
+Best Trade [%]                                28.151123
+Worst Trade [%]                              -43.164326
+Avg Winning Trade [%]                         11.824565
+Avg Losing Trade [%]                         -22.193211
+Avg Winning Trade Duration             12 days 00:00:00
+Avg Losing Trade Duration              30 days 00:00:00
+Profit Factor                                  1.754294
+Expectancy                                     3.318427
+Sharpe Ratio                                   0.842891
+Calmar Ratio                                   0.608865
+Omega Ratio                                    1.271266
+Sortino Ratio                                  1.045106
+Max Winning Streak                                  6.0  << here
+Name: 10, dtype: object
+```
+
+Since `Portfolio.metrics` is a `vectorbtpro.utils.config.Config` object, it can be reset at any
+time to restore the default metrics:
+
+```pycon
+>>> pf.metrics.reset()
+```
+
+The second option is to copy `Portfolio.metrics`, append the custom metric, and pass it via the `metrics` argument:
+
+```pycon
+>>> my_metrics = list(pf.metrics.items()) + [max_winning_streak]
+>>> pf.stats(metrics=my_metrics, column=10)
+```
+
+The third option is to set `metrics` globally under `portfolio.stats` in `vectorbtpro._settings.settings`:
+
+```pycon
+>>> vbt.settings.portfolio["stats"]["metrics"] = my_metrics
+>>> pf.stats(column=10)
+```
+
+## Returns stats
+
+You can compute statistics based solely on portfolio returns using `Portfolio.returns_stats`,
+which calls `vectorbtpro.returns.accessors.ReturnsAccessor.stats`:
+
+```pycon
+>>> pf.returns_stats(column=10)
+Start Index                  2020-01-01 00:00:00+00:00
+End Index                    2020-12-31 00:00:00+00:00
+Total Duration                       366 days 00:00:00
+Total Return [%]                             33.184269
+Benchmark Return [%]                        302.791925
+Annualized Return [%]                        33.080032
+Annualized Volatility [%]                    53.694553
+Max Drawdown [%]                             54.330618
+Max Drawdown Duration                309 days 00:00:00
+Sharpe Ratio                                  0.842891
+Calmar Ratio                                  0.608865
+Omega Ratio                                   1.271266
+Sortino Ratio                                 1.045106
+Skew                                         -6.021573
+Kurtosis                                     86.380224
+Tail Ratio                                    1.335689
+Common Sense Ratio                            1.698016
+Value at Risk                                -0.027159
+Alpha                                        -0.375839
+Beta                                          0.552587
+Name: 10, dtype: object
+```
+
+Most metrics defined in `vectorbtpro.returns.accessors.ReturnsAccessor` are also exposed as attributes on `Portfolio`:
+
+```pycon
+>>> pf.sharpe_ratio
+randnx_n
+10    0.842891
+20    1.245490
+Name: sharpe_ratio, dtype: float64
+```
+
+You can also access quantstats functions via `vectorbtpro.returns.qs_adapter.QSAdapter`:
+
+```pycon
+>>> pf.qs.sharpe(column=10)
+0.842891321532401
+
+>>> pf.qs.plot_snapshot(column=10)
+```
+
+![](/assets/images/portfolio_plot_snapshot.png)
+
+## Plots
+
+!!! tip
+    See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`.
+
+    The functionality provided here closely mirrors `Portfolio.stats`.
+    Refer to the examples under `Portfolio.stats` as well.
+
+Plot the portfolio of a random strategy:
+
+```pycon
+>>> pf.plot(column=10)
+```
+
+![](/assets/images/api/portfolio_plot.light.svg#only-light){: .iimg loading=lazy }
+![](/assets/images/api/portfolio_plot.dark.svg#only-dark){: .iimg loading=lazy }
+
+You can select any subplots from `Portfolio.subplots`, arrange them in any order, and
+control their appearance using keyword arguments:
+
+```pycon
+>>> from vectorbtpro.utils.colors import adjust_opacity
+
+>>> pf.plot(
+...     subplots=["drawdowns", "underwater"],
+...     column=10,
+...     subplot_settings=dict(
+...         drawdowns=dict(top_n=3),
+...         underwater=dict(
+...             trace_kwargs=dict(
+...                 line=dict(color="#FF6F00"),
+...                 fillcolor=adjust_opacity("#FF6F00", 0.3)
+...             )
+...         )
+...     )
+... )
+```
+
+![](/assets/images/api/portfolio_plot_drawdowns.light.svg#only-light){: .iimg loading=lazy }
+![](/assets/images/api/portfolio_plot_drawdowns.dark.svg#only-dark){: .iimg loading=lazy }
+
+To create a new subplot, the preferred approach is to pass a plotting function:
+
+```pycon
+>>> def plot_order_size(pf, size, column=None, add_trace_kwargs=None, fig=None):
+...     size = pf.select_col_from_obj(size, column=column, wrapper=pf.wrapper.regroup(False))
+...     size.rename("Order Size").vbt.barplot(add_trace_kwargs=add_trace_kwargs, fig=fig)
+
+>>> order_size = pf.orders.size.to_pd(fill_value=0.)
+>>> pf.plot(subplots=[
+...     "orders",
+...     ("order_size", dict(
+...         title="Order Size",
+...         yaxis_kwargs=dict(title="Order size"),
+...         check_is_not_grouped=True,
+...         plot_func=plot_order_size
+...     ))
+... ],
+...     column=10,
+...     subplot_settings=dict(
+...         order_size=dict(
+...             size=order_size
+...         )
+...     )
+... )
+```
+
+Alternatively, you can create a placeholder and overwrite it manually afterward:
+
+```pycon
+>>> fig = pf.plot(subplots=[
+...     "orders",
+...     ("order_size", dict(
+...         title="Order Size",
+...         yaxis_kwargs=dict(title="Order size"),
+...         check_is_not_grouped=True
+...     ))  # placeholder
+... ], column=10)
+>>> order_size[10].rename("Order Size").vbt.barplot(
+...     add_trace_kwargs=dict(row=2, col=1),
+...     fig=fig
+... )
+```
+
+![](/assets/images/api/portfolio_plot_custom.light.svg#only-light){: .iimg loading=lazy }
+![](/assets/images/api/portfolio_plot_custom.dark.svg#only-dark){: .iimg loading=lazy }
+
+If a plotting function can be accessed from the current portfolio, you can pass its path directly
+(see `vectorbtpro.utils.attr_.deep_getattr` for the path format). You can also use templates to make
+parameters depend on passed keyword arguments:
+
+```pycon
+>>> subplots = [
+...     ("cumulative_returns", dict(
+...         title="Cumulative Returns",
+...         yaxis_kwargs=dict(title="Cumulative returns"),
+...         plot_func="returns.vbt.returns.cumulative.vbt.plot",
+...         pass_add_trace_kwargs=True
+...     )),
+...     ("rolling_drawdown", dict(
+...         title="Rolling Drawdown",
+...         yaxis_kwargs=dict(title="Rolling drawdown"),
+...         plot_func=(
+...             "returns.vbt.returns",  # returns accessor
+...             (
+...                 "rolling_max_drawdown",  # function name
+...                 (vbt.Rep("window"),)),  # positional arguments
+...             "vbt.plot"  # plotting function
+...         ),
+...         pass_add_trace_kwargs=True,
+...         trace_names=(vbt.Sub("rolling_drawdown(${window})"),),  # add window to the trace name
+...     ))
+... ]
+>>> pf.plot(
+...     subplots,
+...     column=10,
+...     subplot_settings=dict(
+...         rolling_drawdown=dict(
+...             template_context=dict(
+...                 window=10
+...             )
+...         )
+...     )
+... )
+```
+
+You can also replace templates across all subplots using the global template mapping:
+
+```pycon
+>>> pf.plot(subplots, column=10, template_context=dict(window=20))
+```
+
+![](/assets/images/api/portfolio_plot_path.light.svg#only-light){: .iimg loading=lazy }
+![](/assets/images/api/portfolio_plot_path.dark.svg#only-dark){: .iimg loading=lazy }
+"""
 
 import inspect
 import string

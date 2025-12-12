@@ -1210,6 +1210,8 @@ fs_arg_config = ReadonlyConfig(
         signal_args=dict(type="args", substitute_templates=True),
         post_order_func_nb=dict(),
         post_order_args=dict(type="args", substitute_templates=True),
+        post_signal_func_nb=dict(obsolete_by="post_order_func_nb"),
+        post_signal_args=dict(obsolete_by="post_order_args"),
         post_segment_func_nb=dict(),
         post_segment_args=dict(type="args", substitute_templates=True),
         order_mode=dict(),

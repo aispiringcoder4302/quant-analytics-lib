@@ -125,6 +125,19 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         if arg_config is not None:
             self._arg_config = merge_dicts(self._arg_config, arg_config)
 
+        self.check_arg_config()
+
+    def check_arg_config(self) -> None:
+        """Check the argument configuration for deprecated aliases.
+
+        Raises:
+            ValueError: If a deprecated alias is used in the configuration.
+        """
+        for arg_name, arg_conf in self.arg_config.items():
+            if arg_name in self.config and "obsolete_by" in arg_conf:
+                obsolete_by = arg_conf["obsolete_by"]
+                raise ValueError(f"Argument {arg_name!r} is obsolete, use {obsolete_by!r} instead")
+
     @classmethod
     def map_enum_value(cls, value: tp.ArrayLike, look_for_type: tp.Optional[type] = None, **kwargs) -> tp.ArrayLike:
         """Map enumerated value(s) from the input.

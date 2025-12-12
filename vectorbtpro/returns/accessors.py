@@ -16,7 +16,8 @@ Access methods are available as follows:
 * `ReturnsDFAccessor` can be accessed via `pd.DataFrame.vbt.returns.*`
 
 !!! note
-    The underlying Series/DataFrame must represent returns. To convert price data to returns, use `ReturnsAccessor.from_value`.
+    The underlying Series/DataFrame must represent returns.
+    To convert price data to returns, use `ReturnsAccessor.from_value`.
 
     Grouping is supported only by methods accepting the `group_by` argument.
     Accessor methods do not use caching.
@@ -54,7 +55,8 @@ The accessors extend `vectorbtpro.generic.accessors`.
 
 ## Defaults
 
-`ReturnsAccessor` accepts a `defaults` dictionary that provides default parameters used throughout the accessor, such as:
+`ReturnsAccessor` accepts a `defaults` dictionary that provides default parameters used
+throughout the accessor, such as:
 
 * `start_value`: Starting value.
 * `window`: Window length.
