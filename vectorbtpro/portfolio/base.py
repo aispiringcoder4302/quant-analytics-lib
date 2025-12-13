@@ -697,7 +697,8 @@ You can also access quantstats functions via `vectorbtpro.returns.qs_adapter.QSA
 >>> pf.qs.plot_snapshot(column=10)
 ```
 
-![](/assets/images/portfolio_plot_snapshot.png)
+![](/assets/images/api/portfolio_plot_snapshot.light.png#only-light){: .iimg loading=lazy style="width:800px" }
+![](/assets/images/api/portfolio_plot_snapshot.dark.png#only-dark){: .iimg loading=lazy style="width:800px" }
 
 ## Plots
 
@@ -3999,15 +4000,17 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         long_exits: tp.Optional[tp.ArrayLike] = None,
         short_entries: tp.Optional[tp.ArrayLike] = None,
         short_exits: tp.Optional[tp.ArrayLike] = None,
-        pre_segment_func_nb: tp.Union[None, tp.PathLike, tp.PreSignalSegmentFunc] = None,
+        pre_segment_func_nb: tp.Union[None, tp.PathLike, tp.FSPreSegmentFunc] = None,
         pre_segment_args: tp.ArgsLike = (),
-        adjust_func_nb: tp.Union[None, tp.PathLike, tp.AdjustFunc] = None,
+        adjust_func_nb: tp.Union[None, tp.PathLike, tp.FSAdjustFunc] = None,
         adjust_args: tp.Args = (),
-        signal_func_nb: tp.Union[None, tp.PathLike, tp.SignalFunc] = None,
+        signal_func_nb: tp.Union[None, tp.PathLike, tp.FSSignalFunc] = None,
         signal_args: tp.ArgsLike = (),
-        post_order_func_nb: tp.Union[None, tp.PathLike, tp.PostSignalOrderFunc] = None,
+        pre_order_segment_func_nb: tp.Union[None, tp.PathLike, tp.FSPreOrderSegmentFunc] = None,
+        pre_order_segment_args: tp.ArgsLike = (),
+        post_order_func_nb: tp.Union[None, tp.PathLike, tp.FSPostOrderFunc] = None,
         post_order_args: tp.ArgsLike = (),
-        post_segment_func_nb: tp.Union[None, tp.PathLike, tp.PostSignalSegmentFunc] = None,
+        post_segment_func_nb: tp.Union[None, tp.PathLike, tp.FSPostSegmentFunc] = None,
         post_segment_args: tp.ArgsLike = (),
         order_mode: bool = False,
         size: tp.Optional[tp.ArrayLike] = None,
@@ -4192,32 +4195,38 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             short_exits (Optional[ArrayLike]): Boolean array of short exit signals.
 
                 Broadcasts.
-            pre_segment_func_nb (Union[None, PathLike, PreSignalSegmentFunc]):
+            pre_segment_func_nb (Union[None, PathLike, FSPreSegmentFunc]):
                 Callback function to be called before processing a segment.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be provided as a module path when staticizing.
             pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
-            adjust_func_nb (Union[None, PathLike, AdjustFunc]):
+            adjust_func_nb (Union[None, PathLike, FSAdjustFunc]):
                 Callback function to be called to adjust the context before signal generation.
 
-                Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*adjust_args`, and returns nothing.
+                Accepts `vectorbtpro.portfolio.enums.FSSignalContext` and `*adjust_args`, and returns nothing.
 
                 Passed to the corresponding signal function. Can be provided as a module path when staticizing.
             adjust_args (Args): Positional arguments for `adjust_func_nb`.
-            signal_func_nb (Union[None, PathLike, SignalFunc]):
+            signal_func_nb (Union[None, PathLike, FSSignalFunc]):
                 Callback function to be called to generate signals.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be given as a module path when staticizing.
             signal_args (Args): Positional arguments for `signal_func_nb`.
-            post_order_func_nb (Union[None, PathLike, PostSignalOrderFunc]):
+            pre_order_segment_func_nb (Union[None, PathLike, FSPreOrderSegmentFunc]):
+                Callback function to be called before processing a order segment.
+
+                See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
+                Can be provided as a module path when staticizing.
+            pre_order_segment_args (Args): Positional arguments for `pre_order_segment_func_nb`.
+            post_order_func_nb (Union[None, PathLike, FSPostOrderFunc]):
                 Callback function to be called after processing an order.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be given as a module path when staticizing.
             post_order_args (Args): Positional arguments for `post_order_func_nb`.
-            post_segment_func_nb (Union[None, PathLike, PostSignalSegmentFunc]):
+            post_segment_func_nb (Union[None, PathLike, FSPostSegmentFunc]):
                 Callback function to be called after processing a segment.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.

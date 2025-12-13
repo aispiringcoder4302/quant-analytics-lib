@@ -64,9 +64,10 @@ __pdoc__all__ = __all__ = [
     "Order",
     "NoOrder",
     "OrderResult",
-    "SignalSegmentContext",
-    "SignalContext",
-    "PostSignalOrderContext",
+    "FSSegmentContext",
+    "FSSignalContext",
+    "FSSegmentContext",
+    "FSPostOrderContext",
     "FSInOutputs",
     "FOInOutputs",
     "order_fields",
@@ -81,8 +82,8 @@ __pdoc__all__ = __all__ = [
     "alloc_range_dt",
     "alloc_point_fields",
     "alloc_point_dt",
-    "main_info_fields",
-    "main_info_dt",
+    "order_info_fields",
+    "order_info_dt",
     "limit_info_fields",
     "limit_info_dt",
     "sl_info_fields",
@@ -2471,7 +2472,7 @@ __pdoc__["OrderResult.status"] = "See `OrderStatus`."
 __pdoc__["OrderResult.status_info"] = "See `OrderStatusInfo`."
 
 
-class SignalSegmentContext(tp.NamedTuple):
+class FSSegmentContext(tp.NamedTuple):
     target_shape: tp.Shape
     group_lens: tp.GroupLens
     cash_sharing: bool
@@ -2505,13 +2506,13 @@ class SignalSegmentContext(tp.NamedTuple):
     last_value: tp.Array1d
     last_return: tp.Array1d
 
-    last_pos_info: tp.Array1d
-    last_limit_info: tp.Array1d
-    last_sl_info: tp.Array1d
-    last_tsl_info: tp.Array1d
-    last_tp_info: tp.Array1d
-    last_td_info: tp.Array1d
-    last_dt_info: tp.Array1d
+    last_pos_info: tp.RecordArray
+    last_limit_info: tp.RecordArray
+    last_sl_info: tp.RecordArray
+    last_tsl_info: tp.RecordArray
+    last_tp_info: tp.RecordArray
+    last_td_info: tp.RecordArray
+    last_dt_info: tp.RecordArray
 
     sim_start: tp.Array1d
     sim_end: tp.Array1d
@@ -2524,77 +2525,77 @@ class SignalSegmentContext(tp.NamedTuple):
 
 
 __pdoc__[
-    "SignalSegmentContext"
-] = """Named tuple representing the context for a simulation segment in a from-signals simulation.
+    "FSSegmentContext"
+] = """Named tuple representing the context for a segment in a from-signals simulation.
 
 This context includes OHLC data and additional internal simulation details computed at the start 
 of the simulation. For accessing other information, such as order size, consider using templates.
 
-Passed to `post_segment_func_nb`.
+Passed to `pre_segment_func_nb` and `post_segment_func_nb`.
 """
-for field in SignalSegmentContext._fields:
+for field in FSSegmentContext._fields:
     if field in SimulationContext._fields:
-        __pdoc__["SignalSegmentContext." + field] = f"See `SimulationContext.{field}`."
-for field in SignalSegmentContext._fields:
+        __pdoc__["FSSegmentContext." + field] = f"See `SimulationContext.{field}`."
+for field in FSSegmentContext._fields:
     if field in GroupContext._fields:
-        __pdoc__["SignalSegmentContext." + field] = f"See `GroupContext.{field}`."
-for field in SignalSegmentContext._fields:
+        __pdoc__["FSSegmentContext." + field] = f"See `GroupContext.{field}`."
+for field in FSSegmentContext._fields:
     if field in RowContext._fields:
-        __pdoc__["SignalSegmentContext." + field] = f"See `RowContext.{field}`."
+        __pdoc__["FSSegmentContext." + field] = f"See `RowContext.{field}`."
 __pdoc__[
-    "SignalSegmentContext.track_cash_deposits"
+    "FSSegmentContext.track_cash_deposits"
 ] = """Indicates whether cash deposits are tracked.
 
 Becomes True if any value in `cash_deposits` is nonzero.
 """
-__pdoc__["SignalSegmentContext.cash_deposits_out"] = "See `SimulationOutput.cash_deposits`."
+__pdoc__["FSSegmentContext.cash_deposits_out"] = "See `SimulationOutput.cash_deposits`."
 __pdoc__[
-    "SignalSegmentContext.track_cash_earnings"
+    "FSSegmentContext.track_cash_earnings"
 ] = """Indicates whether cash earnings are tracked.
 
 Becomes True if any value in `cash_earnings` is nonzero.
 """
-__pdoc__["SignalSegmentContext.cash_earnings_out"] = "See `SimulationOutput.cash_earnings`."
-__pdoc__["SignalSegmentContext.in_outputs"] = "See `FSInOutputs`."
+__pdoc__["FSSegmentContext.cash_earnings_out"] = "See `SimulationOutput.cash_earnings`."
+__pdoc__["FSSegmentContext.in_outputs"] = "See `FSInOutputs`."
 __pdoc__[
-    "SignalSegmentContext.last_limit_info"
+    "FSSegmentContext.last_limit_info"
 ] = """Record of type `limit_info_dt` for each column.
 
 Accessible via `c.limit_info_dt[field][col]`.
 """
 __pdoc__[
-    "SignalSegmentContext.last_sl_info"
+    "FSSegmentContext.last_sl_info"
 ] = """Record of type `sl_info_dt` for each column.
 
 Accessible via `c.last_sl_info[field][col]`.
 """
 __pdoc__[
-    "SignalSegmentContext.last_tsl_info"
+    "FSSegmentContext.last_tsl_info"
 ] = """Record of type `tsl_info_dt` for each column.
 
 Accessible via `c.last_tsl_info[field][col]`.
 """
 __pdoc__[
-    "SignalSegmentContext.last_tp_info"
+    "FSSegmentContext.last_tp_info"
 ] = """Record of type `tp_info_dt` for each column.
 
 Accessible via `c.last_tp_info[field][col]`.
 """
 __pdoc__[
-    "SignalSegmentContext.last_td_info"
+    "FSSegmentContext.last_td_info"
 ] = """Record of type `time_info_dt` for each column.
 
 Accessible via `c.last_td_info[field][col]`.
 """
 __pdoc__[
-    "SignalSegmentContext.last_dt_info"
+    "FSSegmentContext.last_dt_info"
 ] = """Record of type `time_info_dt` for each column.
 
 Accessible via `c.last_dt_info[field][col]`.
 """
 
 
-class SignalContext(tp.NamedTuple):
+class FSSignalContext(tp.NamedTuple):
     target_shape: tp.Shape
     group_lens: tp.GroupLens
     cash_sharing: bool
@@ -2628,13 +2629,13 @@ class SignalContext(tp.NamedTuple):
     last_value: tp.Array1d
     last_return: tp.Array1d
 
-    last_pos_info: tp.Array1d
-    last_limit_info: tp.Array1d
-    last_sl_info: tp.Array1d
-    last_tsl_info: tp.Array1d
-    last_tp_info: tp.Array1d
-    last_td_info: tp.Array1d
-    last_dt_info: tp.Array1d
+    last_pos_info: tp.RecordArray
+    last_limit_info: tp.RecordArray
+    last_sl_info: tp.RecordArray
+    last_tsl_info: tp.RecordArray
+    last_tp_info: tp.RecordArray
+    last_td_info: tp.RecordArray
+    last_dt_info: tp.RecordArray
 
     sim_start: tp.Array1d
     sim_end: tp.Array1d
@@ -2648,20 +2649,20 @@ class SignalContext(tp.NamedTuple):
 
 
 __pdoc__[
-    "SignalContext"
+    "FSSignalContext"
 ] = """Named tuple representing the context of an element in a from-signals simulation.
 
-Contains all fields from `SignalSegmentContext` with an additional field `col` representing the column.
+Contains all fields from `FSSegmentContext` with an additional field `col` representing the column.
 
 Passed to `signal_func_nb` and `adjust_func_nb`.
 """
-for field in SignalContext._fields:
-    if field in SignalSegmentContext._fields:
-        __pdoc__["SignalContext." + field] = f"See `SignalSegmentContext.{field}`."
-__pdoc__["SignalContext.col"] = "See `OrderContext.col`."
+for field in FSSignalContext._fields:
+    if field in FSSegmentContext._fields:
+        __pdoc__["FSSignalContext." + field] = f"See `FSSegmentContext.{field}`."
+__pdoc__["FSSignalContext.col"] = "See `OrderContext.col`."
 
 
-class PostSignalOrderContext(tp.NamedTuple):
+class FSPreOrderSegmentContext(tp.NamedTuple):
     target_shape: tp.Shape
     group_lens: tp.GroupLens
     cash_sharing: bool
@@ -2695,13 +2696,86 @@ class PostSignalOrderContext(tp.NamedTuple):
     last_value: tp.Array1d
     last_return: tp.Array1d
 
-    last_pos_info: tp.Array1d
-    last_limit_info: tp.Array1d
-    last_sl_info: tp.Array1d
-    last_tsl_info: tp.Array1d
-    last_tp_info: tp.Array1d
-    last_td_info: tp.Array1d
-    last_dt_info: tp.Array1d
+    last_pos_info: tp.RecordArray
+    last_limit_info: tp.RecordArray
+    last_sl_info: tp.RecordArray
+    last_tsl_info: tp.RecordArray
+    last_tp_info: tp.RecordArray
+    last_td_info: tp.RecordArray
+    last_dt_info: tp.RecordArray
+
+    sim_start: tp.Array1d
+    sim_end: tp.Array1d
+
+    group: int
+    group_len: int
+    from_col: int
+    to_col: int
+    i: int
+
+    order_info: tp.RecordArray
+
+
+__pdoc__[
+    "FSPreOrderSegmentContext"
+] = """Named tuple representing the context for a segment before processing orders in a from-signals simulation.
+
+Contains all fields from `FSSegmentContext` with an additional field `order_info` representing the order information.
+
+Passed to `pre_order_func_nb`.
+"""
+for field in FSPreOrderSegmentContext._fields:
+    if field in FSSegmentContext._fields:
+        __pdoc__["FSPreOrderSegmentContext." + field] = f"See `FSSegmentContext.{field}`."
+__pdoc__[
+    "FSPreOrderSegmentContext.order_info"
+] = """Record of type `order_info_dt` for each column.
+
+Accessible via `c.order_info[field][col]`.
+"""
+
+
+class FSPostOrderContext(tp.NamedTuple):
+    target_shape: tp.Shape
+    group_lens: tp.GroupLens
+    cash_sharing: bool
+    index: tp.Optional[tp.Array1d]
+    freq: tp.Optional[int]
+    open: tp.FlexArray2d
+    high: tp.FlexArray2d
+    low: tp.FlexArray2d
+    close: tp.FlexArray2d
+    init_cash: tp.FlexArray1d
+    init_position: tp.FlexArray1d
+    init_price: tp.FlexArray1d
+
+    order_records: tp.RecordArray2d
+    order_counts: tp.Array1d
+    log_records: tp.RecordArray2d
+    log_counts: tp.Array1d
+
+    track_cash_deposits: bool
+    cash_deposits_out: tp.Array2d
+    track_cash_earnings: bool
+    cash_earnings_out: tp.Array2d
+    in_outputs: tp.Optional[tp.NamedTuple]
+
+    last_cash: tp.Array1d
+    last_position: tp.Array1d
+    last_debt: tp.Array1d
+    last_locked_cash: tp.Array1d
+    last_free_cash: tp.Array1d
+    last_val_price: tp.Array1d
+    last_value: tp.Array1d
+    last_return: tp.Array1d
+
+    last_pos_info: tp.RecordArray
+    last_limit_info: tp.RecordArray
+    last_sl_info: tp.RecordArray
+    last_tsl_info: tp.RecordArray
+    last_tp_info: tp.RecordArray
+    last_td_info: tp.RecordArray
+    last_dt_info: tp.RecordArray
 
     sim_start: tp.Array1d
     sim_end: tp.Array1d
@@ -2725,23 +2799,23 @@ class PostSignalOrderContext(tp.NamedTuple):
 
 
 __pdoc__[
-    "PostSignalOrderContext"
+    "FSPostOrderContext"
 ] = """Named tuple representing the context after an order has been processed in a from-signals simulation.
 
-Contains all fields from `SignalContext` along with previous balance fields and the order result.
+Contains all fields from `FSSignalContext` along with previous balance fields and the order result.
 
 Passed to `post_order_func_nb`.
 """
-for field in PostSignalOrderContext._fields:
-    if field in SignalContext._fields:
-        __pdoc__["PostSignalOrderContext." + field] = f"See `SignalContext.{field}`."
-__pdoc__["PostSignalOrderContext.cash_before"] = "`ExecState.cash` balance before execution."
-__pdoc__["PostSignalOrderContext.position_before"] = "`ExecState.position` value before execution."
-__pdoc__["PostSignalOrderContext.debt_before"] = "`ExecState.debt` value before execution."
-__pdoc__["PostSignalOrderContext.locked_cash_before"] = "`ExecState.free_cash` value before execution."
-__pdoc__["PostSignalOrderContext.free_cash_before"] = "`ExecState.val_price` value before execution."
-__pdoc__["PostSignalOrderContext.val_price_before"] = "`ExecState.value` value before execution."
-__pdoc__["PostSignalOrderContext.order_result"] = "See `PostOrderContext.order_result`."
+for field in FSPostOrderContext._fields:
+    if field in FSSignalContext._fields:
+        __pdoc__["FSPostOrderContext." + field] = f"See `FSSignalContext.{field}`."
+__pdoc__["FSPostOrderContext.cash_before"] = "`ExecState.cash` balance before execution."
+__pdoc__["FSPostOrderContext.position_before"] = "`ExecState.position` value before execution."
+__pdoc__["FSPostOrderContext.debt_before"] = "`ExecState.debt` value before execution."
+__pdoc__["FSPostOrderContext.locked_cash_before"] = "`ExecState.free_cash` value before execution."
+__pdoc__["FSPostOrderContext.val_price_before"] = "`ExecState.val_price` value before execution."
+__pdoc__["FSPostOrderContext.value_before"] = "`ExecState.value` value before execution."
+__pdoc__["FSPostOrderContext.order_result"] = "See `PostOrderContext.order_result`."
 
 
 # ############# In-place outputs ############# #
@@ -3161,7 +3235,7 @@ Fields:
 
 # ############# Info records ############# #
 
-main_info_fields = [
+order_info_fields = [
     ("bar_zone", int_),
     ("signal_idx", int_),
     ("creation_idx", int_),
@@ -3174,17 +3248,17 @@ main_info_fields = [
     ("type", int_),
     ("stop_type", int_),
 ]
-"""Field definitions for the NumPy dtype `main_info_dt`."""
+"""Field definitions for the NumPy dtype `order_info_dt`."""
 
-main_info_dt = np.dtype(main_info_fields, align=True)
+order_info_dt = np.dtype(order_info_fields, align=True)
 """_"""
 
 __pdoc__[
-    "main_info_dt"
-] = f"""NumPy dtype for main information records.
+    "order_info_dt"
+] = f"""NumPy dtype for order information records.
 
 ```python
-{prettify_doc(main_info_dt)}
+{prettify_doc(order_info_dt)}
 ```
 
 Fields:

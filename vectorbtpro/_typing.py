@@ -102,9 +102,10 @@ if TYPE_CHECKING:
     from vectorbtpro.generic.splitting.base import FixRange, RelRange
     from vectorbtpro.indicators.factory import IndicatorBase
     from vectorbtpro.portfolio.enums import (
-        SignalContext,
-        PostSignalOrderContext,
-        SignalSegmentContext,
+        FSSignalContext,
+        FSPostOrderContext,
+        FSSegmentContext,
+        FSPreOrderSegmentContext,
         SimulationContext,
         GroupContext,
         RowContext,
@@ -155,9 +156,10 @@ else:
     FixRange = "FixRange"
     RelRange = "RelRange"
     IndicatorBase = "IndicatorBase"
-    SignalContext = "SignalContext"
-    PostSignalOrderContext = "PostSignalOrderContext"
-    SignalSegmentContext = "SignalSegmentContext"
+    FSSignalContext = "FSSignalContext"
+    FSPostOrderContext = "FSPostOrderContext"
+    FSSegmentContext = "FSSegmentContext"
+    FSPreOrderSegmentContext = "FSPreOrderSegmentContext"
     SimulationContext = "SimulationContext"
     GroupContext = "GroupContext"
     RowContext = "RowContext"
@@ -561,11 +563,12 @@ OrderFunc = Callable[[OrderContext, VarArg()], Order]
 FlexOrderFunc = Callable[[FlexOrderContext, VarArg()], Tuple[int, Order]]
 PostOrderFunc = Callable[[PostOrderContext, VarArg()], None]
 
-PreSignalSegmentFunc = Callable[[SignalSegmentContext, VarArg()], Args]
-SignalFunc = Callable[[SignalContext, VarArg()], Tuple[bool, bool, bool, bool]]
-AdjustFunc = Callable[[SignalContext, VarArg()], None]
-PostSignalOrderFunc = Callable[[PostSignalOrderContext, VarArg()], None]
-PostSignalSegmentFunc = Callable[[SignalSegmentContext, VarArg()], None]
+FSPreSegmentFunc = Callable[[FSSegmentContext, VarArg()], Args]
+FSSignalFunc = Callable[[FSSignalContext, VarArg()], Tuple[bool, bool, bool, bool]]
+FSAdjustFunc = Callable[[FSSignalContext, VarArg()], None]
+FSPreOrderSegmentFunc = Callable[[FSPreOrderSegmentContext, VarArg()], Args]
+FSPostOrderFunc = Callable[[FSPostOrderContext, VarArg()], None]
+FSPostSegmentFunc = Callable[[FSSegmentContext, VarArg()], None]
 
 # Portfolio optimization
 AllocateFunc = Callable[[int, int, VarArg()], MaybeArray]

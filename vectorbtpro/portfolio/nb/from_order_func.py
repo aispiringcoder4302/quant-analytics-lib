@@ -725,16 +725,15 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         ```plaintext
         1. pre_sim_out = pre_sim_func_nb(SimulationContext, *pre_sim_args)
             2. pre_group_out = pre_group_func_nb(GroupContext, *pre_sim_out, *pre_group_args)
-                3. if call_pre_segment or segment_mask:
-                    pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_group_out, *pre_segment_args)
-                    4. if segment_mask:
-                        order = order_func_nb(OrderContext, *pre_segment_out, *order_args)
-                    5. if order exists:
-                        post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
-                6. if call_post_segment or segment_mask:
-                    post_segment_func_nb(SegmentContext, *pre_group_out, *post_segment_args)
-            7. post_group_func_nb(GroupContext, *pre_sim_out, *post_group_args)
-        8. post_sim_func_nb(SimulationContext, *post_sim_args)
+                if call_pre_segment or segment_mask:
+                    3. pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_group_out, *pre_segment_args)
+                if segment_mask:
+                    4. order = order_func_nb(OrderContext, *pre_segment_out, *order_args)
+                    5. post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
+                if call_post_segment or segment_mask:
+                    6. post_segment_func_nb(SegmentContext, *pre_segment_out, *post_segment_args)
+            7. post_group_func_nb(GroupContext, *pre_group_out, *post_group_args)
+        8. post_sim_func_nb(SimulationContext, *pre_sim_out, *post_sim_args)
         ```
 
         Let's demonstrate a frame with one group of two columns and one group of one column, and the
@@ -781,18 +780,18 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
             This function is used for creating global arrays and setting the seed.
 
             Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`,
-            and returns a tuple that is passed to `pre_group_func_nb` and `post_group_func_nb`.
+            and returns a tuple that is passed to `pre_group_func_nb` and `post_sim_func_nb`.
         pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
         post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
 
-            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*post_sim_args`,
-            and returns nothing.
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*post_sim_args`, and returns nothing.
         post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
         pre_group_func_nb (PreGroupFunc): Callback function to be called before processing a group.
 
             Accepts `vectorbtpro.portfolio.enums.GroupContext`, the unpacked output from
             `pre_sim_func_nb`, and `*pre_group_args`, and returns a tuple that is passed to
-            `pre_segment_func_nb` and `post_segment_func_nb`.
+            `pre_segment_func_nb` and `post_group_func_nb`.
         pre_group_args (Args): Positional arguments for `pre_group_func_nb`.
         post_group_func_nb (PostGroupFunc): Callback function to be called after processing a group.
 
@@ -804,7 +803,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
 
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
             `pre_group_func_nb`, and `*pre_segment_args`, and returns a tuple that is passed to
-            `order_func_nb` and `post_order_func_nb`.
+            `order_func_nb`, `post_order_func_nb`, and `post_segment_func_nb`.
 
             This is the appropriate place to adjust the call sequence or set the valuation price.
             Group re-valuation and updates of open position stats occur immediately after this function
@@ -827,7 +826,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
             of open position stats.
 
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
-            `pre_group_func_nb`, and `*post_segment_args`, and returns nothing.
+            `pre_segment_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
         order_func_nb (OrderFunc): Callback function to be called to generate an order.
 
@@ -946,7 +945,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         ...     return None
 
         >>> @njit
-        ... def post_segment_func_nb(c, order_value_out):
+        ... def post_segment_func_nb(c):
         ...     print('\\t\\tafter segment', c.i)
         ...     return None
 
@@ -956,7 +955,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         ...     return None
 
         >>> @njit
-        ... def post_sim_func_nb(c):
+        ... def post_sim_func_nb(c, order_value_out):
         ...     print('after simulation')
         ...     return None
 
@@ -1670,7 +1669,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                     i=i,
                     call_seq_now=call_seq_now,
                 )
-                post_segment_func_nb(post_seg_ctx, *pre_group_out, *post_segment_args)
+                post_segment_func_nb(post_seg_ctx, *pre_segment_out, *post_segment_args)
 
             if i >= sim_end_[group] - 1:
                 break
@@ -1720,7 +1719,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
             from_col=from_col,
             to_col=to_col,
         )
-        post_group_func_nb(post_group_ctx, *pre_sim_out, *post_group_args)
+        post_group_func_nb(post_group_ctx, *pre_group_out, *post_group_args)
 
     post_sim_ctx = SimulationContext(
         target_shape=target_shape,
@@ -1763,7 +1762,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         sim_start=sim_start_,
         sim_end=sim_end_,
     )
-    post_sim_func_nb(post_sim_ctx, *post_sim_args)
+    post_sim_func_nb(post_sim_ctx, *pre_sim_out, *post_sim_args)
 
     sim_start_out, sim_end_out = generic_nb.resolve_ungrouped_sim_range_nb(
         target_shape=target_shape,
@@ -1989,16 +1988,15 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
         ```plaintext
         1. pre_sim_out = pre_sim_func_nb(SimulationContext, *pre_sim_args)
             2. pre_row_out = pre_row_func_nb(RowContext, *pre_sim_out, *pre_row_args)
-                3. if call_pre_segment or segment_mask:
-                    pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_row_out, *pre_segment_args)
-                    4. if segment_mask:
-                        order = order_func_nb(OrderContext, *pre_segment_out, *order_args)
-                    5. if order exists:
-                        post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
-                6. if call_post_segment or segment_mask:
-                    post_segment_func_nb(SegmentContext, *pre_row_out, *post_segment_args)
-            7. post_row_func_nb(RowContext, *pre_sim_out, *post_row_args)
-        8. post_sim_func_nb(SimulationContext, *post_sim_args)
+                if call_pre_segment or segment_mask:
+                    3. pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_row_out, *pre_segment_args)
+                if segment_mask:
+                    4. order = order_func_nb(OrderContext, *pre_segment_out, *order_args)
+                    5. post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
+                if call_post_segment or segment_mask:
+                    6. post_segment_func_nb(SegmentContext, *pre_segment_out, *post_segment_args)
+            7. post_row_func_nb(RowContext, *pre_row_out, *post_row_args)
+        8. post_sim_func_nb(SimulationContext, *pre_sim_out, *post_sim_args)
         ```
 
         Let's illustrate the same example as in `from_order_func_nb` but adapted for this function:
@@ -2035,30 +2033,30 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
             This function is used for creating global arrays and setting the seed.
 
             Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`,
-            and returns a tuple that is passed to `pre_row_func_nb` and `post_row_func_nb`.
+            and returns a tuple that is passed to `pre_row_func_nb` and `post_sim_func_nb`.
         pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
         post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
 
-            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*post_sim_args`,
-            and returns nothing.
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*post_sim_args`, and returns nothing.
         post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
         pre_row_func_nb (PreRowFunc): Callback function to be called before processing a row.
 
             Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
             `pre_sim_func_nb`, and `*pre_row_args`, and returns a tuple that is passed to
-            `pre_segment_func_nb` and `post_segment_func_nb`.
+            `pre_segment_func_nb` and `post_row_func_nb`.
         pre_row_args (Args): Positional arguments for `pre_row_func_nb`.
         post_row_func_nb (PostRowFunc): Callback function to be called after processing a row.
 
             Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
-            `pre_sim_func_nb`, and `*post_row_args`, and returns nothing.
+            `pre_row_func_nb`, and `*post_row_args`, and returns nothing.
         post_row_args (Args): Positional arguments for `post_row_func_nb`.
         pre_segment_func_nb (PreSegmentFunc): Callback function to be called before processing a segment
             if `segment_mask` or `call_pre_segment` is True.
 
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
             `pre_row_func_nb`, and `*pre_segment_args`, and returns a tuple that is passed to
-            `order_func_nb` and `post_order_func_nb`.
+            `order_func_nb`, `post_order_func_nb`, and `post_segment_func_nb`.
 
             This is the appropriate place to adjust the call sequence or set the valuation price.
             Group re-valuation and updates of open position stats occur immediately after this function
@@ -2081,7 +2079,7 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
             of open position stats.
 
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
-            `pre_row_func_nb`, and `*post_segment_args`, and returns nothing.
+            `pre_segment_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
         order_func_nb (OrderFunc): Callback function to be called to generate an order.
 
@@ -2836,7 +2834,7 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                     i=i,
                     call_seq_now=call_seq_now,
                 )
-                post_segment_func_nb(post_seg_ctx, *pre_row_out, *post_segment_args)
+                post_segment_func_nb(post_seg_ctx, *pre_segment_out, *post_segment_args)
 
         post_row_ctx = RowContext(
             target_shape=target_shape,
@@ -2880,7 +2878,7 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
             sim_end=sim_end_,
             i=i,
         )
-        post_row_func_nb(post_row_ctx, *pre_sim_out, *post_row_args)
+        post_row_func_nb(post_row_ctx, *pre_row_out, *post_row_args)
 
         sim_end_reached = True
         for group in range(len(group_lens)):
@@ -2931,7 +2929,7 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
         sim_start=sim_start_,
         sim_end=sim_end_,
     )
-    post_sim_func_nb(post_sim_ctx, *post_sim_args)
+    post_sim_func_nb(post_sim_ctx, *pre_sim_out, *post_sim_args)
 
     sim_start_out, sim_end_out = generic_nb.resolve_ungrouped_sim_range_nb(
         target_shape=target_shape,
@@ -3152,17 +3150,16 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         ```plaintext
         1. pre_sim_out = pre_sim_func_nb(SimulationContext, *pre_sim_args)
             2. pre_group_out = pre_group_func_nb(GroupContext, *pre_sim_out, *pre_group_args)
-                3. if call_pre_segment or segment_mask:
-                    pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_group_out, *pre_segment_args)
-                    while col != -1:
-                        4. if segment_mask:
-                            col, order = flex_order_func_nb(FlexOrderContext, *pre_segment_out, *flex_order_args)
-                        5. if order exists:
-                            post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
-                6. if call_post_segment or segment_mask:
-                    post_segment_func_nb(SegmentContext, *pre_group_out, *post_segment_args)
-            7. post_group_func_nb(GroupContext, *pre_sim_out, *post_group_args)
-        8. post_sim_func_nb(SimulationContext, *post_sim_args)
+                if call_pre_segment or segment_mask:
+                    3. pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_group_out, *pre_segment_args)
+                while col != -1:
+                    if segment_mask:
+                        4. col, order = flex_order_func_nb(FlexOrderContext, *pre_segment_out, *flex_order_args)
+                        5. post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
+                if call_post_segment or segment_mask:
+                    6. post_segment_func_nb(SegmentContext, *pre_segment_out, *post_segment_args)
+            7. post_group_func_nb(GroupContext, *pre_group_out, *post_group_args)
+        8. post_sim_func_nb(SimulationContext, *pre_sim_out, *post_sim_args)
         ```
 
         Let's illustrate a similar example as in `from_order_func_nb`, but adapted for this function:
@@ -3199,18 +3196,18 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
             This function is used for creating global arrays and setting the seed.
 
             Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`,
-            and returns a tuple that is passed to `pre_group_func_nb` and `post_group_func_nb`.
+            and returns a tuple that is passed to `pre_group_func_nb` and `post_sim_func_nb`.
         pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
         post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
 
-            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*post_sim_args`,
-            and returns nothing.
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*post_sim_args`, and returns nothing.
         post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
         pre_group_func_nb (PreGroupFunc): Callback function to be called before processing a group.
 
             Accepts `vectorbtpro.portfolio.enums.GroupContext`, the unpacked output from
             `pre_sim_func_nb`, and `*pre_group_args`, and returns a tuple that is passed to
-            `pre_segment_func_nb` and `post_segment_func_nb`.
+            `pre_segment_func_nb` and `post_group_func_nb`.
         pre_group_args (Args): Positional arguments for `pre_group_func_nb`.
         post_group_func_nb (PostGroupFunc): Callback function to be called after processing a group.
 
@@ -3222,7 +3219,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
 
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
             `pre_group_func_nb`, and `*pre_segment_args`, and returns a tuple that is passed to
-            `flex_order_func_nb` and `post_order_func_nb`.
+            `flex_order_func_nb`, `post_order_func_nb`, and `post_segment_func_nb`.
 
             This is the appropriate place to adjust the call sequence or set the valuation price.
             Group re-valuation and updates of open position stats occur immediately after this function
@@ -3245,7 +3242,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
             of open position stats.
 
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
-            `pre_group_func_nb`, and `*post_segment_args`, and returns nothing.
+            `pre_segment_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
         flex_order_func_nb (FlexOrderFunc): Callback function to be called to generate a flexible order.
 
@@ -3367,7 +3364,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         ...     return None
 
         >>> @njit
-        ... def post_segment_func_nb(c, order_value_out, call_seq_out):
+        ... def post_segment_func_nb(c, call_seq_out):
         ...     print('\\t\\tafter segment', c.i)
         ...     return None
 
@@ -3377,7 +3374,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         ...     return None
 
         >>> @njit
-        ... def post_sim_func_nb(c):
+        ... def post_sim_func_nb(c, order_value_out, call_seq_out):
         ...     print('after simulation')
         ...     return None
 
@@ -4058,7 +4055,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                     i=i,
                     call_seq_now=None,
                 )
-                post_segment_func_nb(post_seg_ctx, *pre_group_out, *post_segment_args)
+                post_segment_func_nb(post_seg_ctx, *pre_segment_out, *post_segment_args)
 
             if i >= sim_end_[group] - 1:
                 break
@@ -4108,7 +4105,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
             from_col=from_col,
             to_col=to_col,
         )
-        post_group_func_nb(post_group_ctx, *pre_sim_out, *post_group_args)
+        post_group_func_nb(post_group_ctx, *pre_group_out, *post_group_args)
 
     post_sim_ctx = SimulationContext(
         target_shape=target_shape,
@@ -4151,7 +4148,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         sim_start=sim_start_,
         sim_end=sim_end_,
     )
-    post_sim_func_nb(post_sim_ctx, *post_sim_args)
+    post_sim_func_nb(post_sim_ctx, *pre_sim_out, *post_sim_args)
 
     sim_start_out, sim_end_out = generic_nb.resolve_ungrouped_sim_range_nb(
         target_shape=target_shape,
@@ -4311,17 +4308,16 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
         ```plaintext
         1. pre_sim_out = pre_sim_func_nb(SimulationContext, *pre_sim_args)
             2. pre_row_out = pre_row_func_nb(RowContext, *pre_sim_out, *pre_row_args)
-                3. if call_pre_segment or segment_mask:
-                    pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_row_out, *pre_segment_args)
-                    while col != -1:
-                        4. if segment_mask:
-                            col, order = flex_order_func_nb(FlexOrderContext, *pre_segment_out, *flex_order_args)
-                        5. if order:
-                            post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
-                6. if call_post_segment or segment_mask:
-                    post_segment_func_nb(SegmentContext, *pre_row_out, *post_segment_args)
-            7. post_row_func_nb(RowContext, *pre_sim_out, *post_row_args)
-        8. post_sim_func_nb(SimulationContext, *post_sim_args)
+                if call_pre_segment or segment_mask:
+                    3. pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_row_out, *pre_segment_args)
+                while col != -1:
+                    if segment_mask:
+                        4. col, order = flex_order_func_nb(FlexOrderContext, *pre_segment_out, *flex_order_args)
+                        5. post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
+                if call_post_segment or segment_mask:
+                    6. post_segment_func_nb(SegmentContext, *pre_segment_out, *post_segment_args)
+            7. post_row_func_nb(RowContext, *pre_row_out, *post_row_args)
+        8. post_sim_func_nb(SimulationContext, *pre_sim_out, *post_sim_args)
         ```
 
         Let's illustrate the same example as in `from_order_func_nb` but adapted for this function:
@@ -4387,30 +4383,30 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
             This function is used for creating global arrays and setting the seed.
 
             Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`,
-            and returns a tuple that is passed to `pre_row_func_nb` and `post_row_func_nb`.
+            and returns a tuple that is passed to `pre_row_func_nb` and `post_sim_func_nb`.
         pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
         post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
 
-            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*post_sim_args`,
-            and returns nothing.
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*post_sim_args`, and returns nothing.
         post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
         pre_row_func_nb (PreRowFunc): Callback function to be called before processing a row.
 
             Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
             `pre_sim_func_nb`, and `*pre_row_args`, and returns a tuple that is passed to
-            `pre_segment_func_nb` and `post_segment_func_nb`.
+            `pre_segment_func_nb` and `post_row_func_nb`.
         pre_row_args (Args): Positional arguments for `pre_row_func_nb`.
         post_row_func_nb (PostRowFunc): Callback function to be called after processing a row.
 
             Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
-            `pre_sim_func_nb`, and `*post_row_args`, and returns nothing.
+            `pre_row_func_nb`, and `*post_row_args`, and returns nothing.
         post_row_args (Args): Positional arguments for `post_row_func_nb`.
         pre_segment_func_nb (PreSegmentFunc): Callback function to be called before processing a segment
             if `segment_mask` or `call_pre_segment` is True.
 
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
             `pre_row_func_nb`, and `*pre_segment_args`, and returns a tuple that is passed to
-            `flex_order_func_nb` and `post_order_func_nb`.
+            `flex_order_func_nb`, `post_order_func_nb`, and `post_segment_func_nb`.
 
             This is the appropriate place to adjust the call sequence or set the valuation price.
             Group re-valuation and updates of open position stats occur immediately after this function
@@ -4433,7 +4429,7 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
             of open position stats.
 
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
-            `pre_row_func_nb`, and `*post_segment_args`, and returns nothing.
+            `pre_segment_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
         flex_order_func_nb (FlexOrderFunc): Callback function to be called to generate a flexible order.
 
@@ -5104,7 +5100,7 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                     i=i,
                     call_seq_now=None,
                 )
-                post_segment_func_nb(post_seg_ctx, *pre_row_out, *post_segment_args)
+                post_segment_func_nb(post_seg_ctx, *pre_segment_out, *post_segment_args)
 
         post_row_ctx = RowContext(
             target_shape=target_shape,
@@ -5148,7 +5144,7 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
             sim_end=sim_end_,
             i=i,
         )
-        post_row_func_nb(post_row_ctx, *pre_sim_out, *post_row_args)
+        post_row_func_nb(post_row_ctx, *pre_row_out, *post_row_args)
 
         sim_end_reached = True
         for group in range(len(group_lens)):
@@ -5199,7 +5195,7 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
         sim_start=sim_start_,
         sim_end=sim_end_,
     )
-    post_sim_func_nb(post_sim_ctx, *post_sim_args)
+    post_sim_func_nb(post_sim_ctx, *pre_sim_out, *post_sim_args)
 
     sim_start_out, sim_end_out = generic_nb.resolve_ungrouped_sim_range_nb(
         target_shape=target_shape,

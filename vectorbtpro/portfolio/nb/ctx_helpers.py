@@ -39,14 +39,14 @@ def get_position_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Return the position of the current column based on the provided context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -75,14 +75,14 @@ def in_position_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> bool:
     """Return whether the current column is in a position.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -111,14 +111,14 @@ def in_long_position_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> bool:
     """Return whether the current column is in a long position.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -147,14 +147,14 @@ def in_short_position_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> bool:
     """Return whether the current column is in a short position.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -171,16 +171,16 @@ def get_n_active_positions_nb(
         OrderContext,
         PostOrderContext,
         FlexOrderContext,
-        SignalSegmentContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSegmentContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
     all_groups: bool = False,
 ) -> int:
     """Return the number of active positions in the current group or across all groups.
 
     Args:
-        c (Union[GroupContext, SegmentContext, OrderContext, PostOrderContext, FlexOrderContext, SignalSegmentContext, SignalContext, PostSignalOrderContext]):
+        c (Union[GroupContext, SegmentContext, OrderContext, PostOrderContext, FlexOrderContext, FSSegmentContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
         all_groups (bool): Flag indicating whether to count active positions across all groups.
 
@@ -251,14 +251,14 @@ def get_cash_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Return the cash for the current column or group based on cash sharing.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -292,14 +292,14 @@ def get_debt_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Return the debt for the current column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -330,14 +330,14 @@ def get_locked_cash_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Return the locked cash for the current column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -401,14 +401,14 @@ def get_free_cash_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Return the free cash for the current column or group based on cash sharing.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -453,14 +453,14 @@ def has_free_cash_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> bool:
     """Return whether the current column or group with cash sharing has free cash available.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -493,14 +493,14 @@ def get_val_price_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Return the valuation price for the current column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -564,14 +564,14 @@ def get_value_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Retrieve the value of the current column or group based on cash sharing.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -613,14 +613,14 @@ def get_leverage_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Retrieve the leverage of the current column from the context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -678,14 +678,14 @@ def get_position_value_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Retrieve the position value of the current column from the context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -737,14 +737,14 @@ def get_allocation_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Retrieve the allocation of the current column within its current group.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -775,14 +775,14 @@ def get_order_count_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> int:
     """Retrieve the number of order records for the current column from the context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -811,14 +811,14 @@ def get_order_records_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> tp.RecordArray:
     """Retrieve the order records for the current column from the context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -846,14 +846,14 @@ def has_orders_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> bool:
     """Determine whether any order records exist for the current column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -886,14 +886,14 @@ def get_last_order_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> tp.Record:
     """Retrieve the last order record for the current column from the context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -909,13 +909,13 @@ def get_last_order_nb(
 def order_filled_nb(
     c: tp.Union[
         PostOrderContext,
-        PostSignalOrderContext,
+        FSPostOrderContext,
     ],
 ) -> bool:
     """Determine if the order has been filled.
 
     Args:
-        c (Union[PostOrderContext, PostSignalOrderContext]):
+        c (Union[PostOrderContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -928,13 +928,13 @@ def order_filled_nb(
 def order_opened_position_nb(
     c: tp.Union[
         PostOrderContext,
-        PostSignalOrderContext,
+        FSPostOrderContext,
     ],
 ) -> bool:
     """Determine if the order has opened a new position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalOrderContext]):
+        c (Union[PostOrderContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -949,13 +949,13 @@ def order_opened_position_nb(
 def order_increased_position_nb(
     c: tp.Union[
         PostOrderContext,
-        PostSignalOrderContext,
+        FSPostOrderContext,
     ],
 ) -> bool:
     """Determine if the order has opened a new position or increased an existing position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalOrderContext]):
+        c (Union[PostOrderContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -972,13 +972,13 @@ def order_increased_position_nb(
 def order_decreased_position_nb(
     c: tp.Union[
         PostOrderContext,
-        PostSignalOrderContext,
+        FSPostOrderContext,
     ],
 ) -> bool:
     """Determine if the order has decreased or closed an existing position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalOrderContext]):
+        c (Union[PostOrderContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -997,13 +997,13 @@ def order_decreased_position_nb(
 def order_closed_position_nb(
     c: tp.Union[
         PostOrderContext,
-        PostSignalOrderContext,
+        FSPostOrderContext,
     ],
 ) -> bool:
     """Determine if the order has completely closed an existing position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalOrderContext]):
+        c (Union[PostOrderContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -1018,13 +1018,13 @@ def order_closed_position_nb(
 def order_reversed_position_nb(
     c: tp.Union[
         PostOrderContext,
-        PostSignalOrderContext,
+        FSPostOrderContext,
     ],
 ) -> bool:
     """Check whether the order has reversed an existing position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalOrderContext]):
+        c (Union[PostOrderContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -1054,14 +1054,14 @@ def get_col_limit_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
 @register_jitted
 def get_limit_info_nb(
     c: tp.Union[
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> tp.Record:
     """Get limit order information for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalOrderContext]):
+        c (Union[FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -1090,14 +1090,14 @@ def get_col_limit_target_price_nb(c: tp.NamedTuple, col: int) -> float:
 @register_jitted
 def get_limit_target_price_nb(
     c: tp.Union[
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Get target price of the limit order for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalOrderContext]):
+        c (Union[FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -1126,14 +1126,14 @@ def get_col_sl_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
 @register_jitted
 def get_sl_info_nb(
     c: tp.Union[
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> tp.Record:
     """Get stop-loss (SL) order information for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalOrderContext]):
+        c (Union[FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -1163,14 +1163,14 @@ def get_col_sl_target_price_nb(c: tp.NamedTuple, col: int) -> float:
 @register_jitted
 def get_sl_target_price_nb(
     c: tp.Union[
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Get target price of the stop-loss (SL) order for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalOrderContext]):
+        c (Union[FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -1196,14 +1196,14 @@ def get_col_tsl_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
 @register_jitted
 def get_tsl_info_nb(
     c: tp.Union[
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> tp.Record:
     """Get trailing stop-loss (TSL/TTP) order information for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalOrderContext]):
+        c (Union[FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -1233,14 +1233,14 @@ def get_col_tsl_target_price_nb(c: tp.NamedTuple, col: int) -> float:
 @register_jitted
 def get_tsl_target_price_nb(
     c: tp.Union[
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Get target price of the trailing stop-loss (TSL/TTP) order for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalOrderContext]):
+        c (Union[FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -1266,14 +1266,14 @@ def get_col_tp_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
 @register_jitted
 def get_tp_info_nb(
     c: tp.Union[
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> tp.Record:
     """Get take-profit (TP) order information for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalOrderContext]):
+        c (Union[FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -1303,14 +1303,14 @@ def get_col_tp_target_price_nb(c: tp.NamedTuple, col: int) -> float:
 @register_jitted
 def get_tp_target_price_nb(
     c: tp.Union[
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> float:
     """Get target price of the take-profit (TP) order for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalOrderContext]):
+        c (Union[FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -1362,8 +1362,8 @@ def get_entry_trade_records_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
     init_position: tp.FlexArray1dLike = 0.0,
     init_price: tp.FlexArray1dLike = np.nan,
@@ -1371,7 +1371,7 @@ def get_entry_trade_records_nb(
     """Get entry trade records for the current column up to the current point.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
         init_position (FlexArray1dLike): Initial position.
 
@@ -1426,8 +1426,8 @@ def get_exit_trade_records_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
     init_position: tp.FlexArray1dLike = 0.0,
     init_price: tp.FlexArray1dLike = np.nan,
@@ -1435,7 +1435,7 @@ def get_exit_trade_records_nb(
     """Get exit trade records for the current column up to the current point.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
         init_position (FlexArray1dLike): Initial position.
 
@@ -1483,8 +1483,8 @@ def get_position_records_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
     init_position: tp.FlexArray1dLike = 0.0,
     init_price: tp.FlexArray1dLike = np.nan,
@@ -1492,7 +1492,7 @@ def get_position_records_nb(
     """Get position records for the current column up to the current point.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
         init_position (FlexArray1dLike): Initial position.
 
@@ -1530,15 +1530,15 @@ def stop_sim_nb(
         OrderContext,
         PostOrderContext,
         FlexOrderContext,
-        SignalSegmentContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSegmentContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
 ) -> None:
     """Stop simulation for the current group.
 
     Args:
-        c (Union[SegmentContext, OrderContext, PostOrderContext, FlexOrderContext, SignalSegmentContext, SignalContext, PostSignalOrderContext]):
+        c (Union[SegmentContext, OrderContext, PostOrderContext, FlexOrderContext, FSSegmentContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
 
     Returns:
@@ -1555,15 +1555,15 @@ def get_exec_state_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
     val_price: tp.Optional[int] = None,
 ) -> ExecState:
     """Compute the execution state from the simulation context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
         val_price (Optional[float]): Valuation price of the asset.
 
@@ -1622,8 +1622,8 @@ def get_order_size_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
     size: float,
     size_type: int = SizeType.Amount,
@@ -1632,7 +1632,7 @@ def get_order_size_nb(
     """Calculate the order size based on the simulation context and provided parameters.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
         size (float): Order size.
         size_type (int): Type of order size.
@@ -1660,8 +1660,8 @@ def get_order_value_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
     size: float,
     size_type: int = SizeType.Amount,
@@ -1671,7 +1671,7 @@ def get_order_value_nb(
     """Calculate the approximate order value from the execution state and order parameters.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
         size (float): Order size.
         size_type (int): Type of order size.
@@ -1699,8 +1699,8 @@ def get_order_result_nb(
     c: tp.Union[
         OrderContext,
         PostOrderContext,
-        SignalContext,
-        PostSignalOrderContext,
+        FSSignalContext,
+        FSPostOrderContext,
     ],
     order: Order,
     val_price: tp.Optional[float] = None,
@@ -1709,7 +1709,7 @@ def get_order_result_nb(
     """Obtain the order result and updated execution state without modifying the simulation state.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalOrderContext]):
+        c (Union[OrderContext, PostOrderContext, FSSignalContext, FSPostOrderContext]):
             Relevant context.
         order (Order): Order to execute.
 
