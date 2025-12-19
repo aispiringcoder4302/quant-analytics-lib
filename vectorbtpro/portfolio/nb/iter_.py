@@ -28,7 +28,7 @@ def select_nb(
     i: tp.Optional[int] = None,
     col: tp.Optional[int] = None,
 ) -> tp.Scalar:
-    """Get the current element using flexible indexing.
+    """Get the current element from a flexible 2D array.
 
     Args:
         c (NamedTuple): Context.
@@ -57,7 +57,7 @@ def select_from_col_nb(
     arr: tp.FlexArray2d,
     i: tp.Optional[int] = None,
 ) -> tp.Scalar:
-    """Get the current element from a specified column using flexible indexing.
+    """Get the current element from a specified column of a flexible 2D array.
 
     Args:
         c (NamedTuple): Context.
@@ -82,7 +82,7 @@ def select_from_group_nb(
     arr: tp.FlexArray2d,
     i: tp.Optional[int] = None,
 ) -> tp.Scalar:
-    """Get the current element from a specified group using flexible indexing.
+    """Get the current element from a specified group of a flexible 2D array.
 
     Args:
         c (NamedTuple): Context.

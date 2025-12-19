@@ -64,9 +64,11 @@ __pdoc__all__ = __all__ = [
     "Order",
     "NoOrder",
     "OrderResult",
+    "FSSimulationContext",
+    "FSGroupContext",
     "FSSegmentContext",
     "FSSignalContext",
-    "FSSegmentContext",
+    "FSPreOrderSegmentContext",
     "FSPostOrderContext",
     "FSInOutputs",
     "FOInOutputs",
@@ -1820,6 +1822,9 @@ When columns are not grouped, equals `from_col + 1`.
 !!! warning
     In the last group, `to_col` points to a column that does not exist.
 """
+for field in GroupContext._fields:
+    if "GroupContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for GroupContext.{field} is missing")
 
 
 class RowContext(tp.NamedTuple):
@@ -1889,6 +1894,9 @@ __pdoc__[
 
 Range: `[0, target_shape[0])`
 """
+for field in RowContext._fields:
+    if "RowContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for RowContext.{field} is missing")
 
 
 class SegmentContext(tp.NamedTuple):
@@ -1978,6 +1986,9 @@ You can override `call_seq_now` using `pre_segment_func_nb`.
 Examples:
     `[2, 0, 1]` calls column 2 first, then column 0, and finally column 1.
 """
+for field in SegmentContext._fields:
+    if "SegmentContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for SegmentContext.{field} is missing")
 
 
 class OrderContext(tp.NamedTuple):
@@ -2084,6 +2095,9 @@ __pdoc__["OrderContext.val_price_now"] = "`SimulationContext.last_val_price` for
 __pdoc__["OrderContext.value_now"] = "`SimulationContext.last_value` for the current column or group."
 __pdoc__["OrderContext.return_now"] = "`SimulationContext.last_return` for the current column or group."
 __pdoc__["OrderContext.pos_info_now"] = "`SimulationContext.last_pos_info` for the current column."
+for field in OrderContext._fields:
+    if "OrderContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for OrderContext.{field} is missing")
 
 
 class PostOrderContext(tp.NamedTuple):
@@ -2214,6 +2228,9 @@ otherwise, it remains unchanged.
 """
 __pdoc__["PostOrderContext.return_now"] = "`OrderContext.return_now` value after order execution."
 __pdoc__["PostOrderContext.pos_info_now"] = "`OrderContext.pos_info_now` value after order execution."
+for field in PostOrderContext._fields:
+    if "PostOrderContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for PostOrderContext.{field} is missing")
 
 
 class FlexOrderContext(tp.NamedTuple):
@@ -2288,6 +2305,9 @@ for field in FlexOrderContext._fields:
     elif field in SegmentContext._fields:
         __pdoc__["FlexOrderContext." + field] = f"See `SegmentContext.{field}`."
 __pdoc__["FlexOrderContext.call_idx"] = "Index of the current call."
+for field in FlexOrderContext._fields:
+    if "FlexOrderContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FlexOrderContext.{field} is missing")
 
 
 class Order(tp.NamedTuple):
@@ -2472,6 +2492,189 @@ __pdoc__["OrderResult.status"] = "See `OrderStatus`."
 __pdoc__["OrderResult.status_info"] = "See `OrderStatusInfo`."
 
 
+class FSSimulationContext(tp.NamedTuple):
+    target_shape: tp.Shape
+    group_lens: tp.GroupLens
+    cash_sharing: bool
+    index: tp.Optional[tp.Array1d]
+    freq: tp.Optional[int]
+    open: tp.FlexArray2d
+    high: tp.FlexArray2d
+    low: tp.FlexArray2d
+    close: tp.FlexArray2d
+    init_cash: tp.FlexArray1d
+    init_position: tp.FlexArray1d
+    init_price: tp.FlexArray1d
+
+    order_records: tp.RecordArray2d
+    order_counts: tp.Array1d
+    log_records: tp.RecordArray2d
+    log_counts: tp.Array1d
+
+    track_cash_deposits: bool
+    cash_deposits_out: tp.Array2d
+    track_cash_earnings: bool
+    cash_earnings_out: tp.Array2d
+    in_outputs: tp.Optional[tp.NamedTuple]
+
+    last_cash: tp.Array1d
+    last_position: tp.Array1d
+    last_debt: tp.Array1d
+    last_locked_cash: tp.Array1d
+    last_free_cash: tp.Array1d
+    last_val_price: tp.Array1d
+    last_value: tp.Array1d
+    last_return: tp.Array1d
+
+    last_pos_info: tp.RecordArray
+    last_limit_info: tp.RecordArray
+    last_sl_info: tp.RecordArray
+    last_tsl_info: tp.RecordArray
+    last_tp_info: tp.RecordArray
+    last_td_info: tp.RecordArray
+    last_dt_info: tp.RecordArray
+
+    sim_start: tp.Array1d
+    sim_end: tp.Array1d
+
+
+__pdoc__[
+    "FSSimulationContext"
+] = """Named tuple representing the context for a from-signals simulation.
+
+This context includes OHLC data and additional internal simulation details computed at the start 
+of the simulation. For accessing other information, such as order size, consider using templates.
+
+Passed to `pre_sim_func_nb` and `post_sim_func_nb`.
+"""
+for field in FSSimulationContext._fields:
+    if field in SimulationContext._fields:
+        __pdoc__["FSSimulationContext." + field] = f"See `SimulationContext.{field}`."
+__pdoc__[
+    "FSSimulationContext.track_cash_deposits"
+] = """Indicates whether cash deposits are tracked.
+
+Becomes True if `cash_deposits_out` has been materialized.
+"""
+__pdoc__["FSSimulationContext.cash_deposits_out"] = "See `SimulationOutput.cash_deposits`."
+__pdoc__[
+    "FSSimulationContext.track_cash_earnings"
+] = """Indicates whether cash earnings are tracked.
+
+Becomes True if `cash_earnings_out` has been materialized.
+"""
+__pdoc__["FSSimulationContext.cash_earnings_out"] = "See `SimulationOutput.cash_earnings`."
+__pdoc__["FSSimulationContext.in_outputs"] = "See `FSInOutputs`."
+__pdoc__[
+    "FSSimulationContext.last_limit_info"
+] = """Record of type `limit_info_dt` for each column.
+
+Accessible via `c.limit_info_dt[field][col]`.
+"""
+__pdoc__[
+    "FSSimulationContext.last_sl_info"
+] = """Record of type `sl_info_dt` for each column.
+
+Accessible via `c.last_sl_info[field][col]`.
+"""
+__pdoc__[
+    "FSSimulationContext.last_tsl_info"
+] = """Record of type `tsl_info_dt` for each column.
+
+Accessible via `c.last_tsl_info[field][col]`.
+"""
+__pdoc__[
+    "FSSimulationContext.last_tp_info"
+] = """Record of type `tp_info_dt` for each column.
+
+Accessible via `c.last_tp_info[field][col]`.
+"""
+__pdoc__[
+    "FSSimulationContext.last_td_info"
+] = """Record of type `time_info_dt` for each column.
+
+Accessible via `c.last_td_info[field][col]`.
+"""
+__pdoc__[
+    "FSSimulationContext.last_dt_info"
+] = """Record of type `time_info_dt` for each column.
+
+Accessible via `c.last_dt_info[field][col]`.
+"""
+for field in FSSimulationContext._fields:
+    if "FSSimulationContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FSSimulationContext.{field} is missing")
+
+
+class FSGroupContext(tp.NamedTuple):
+    target_shape: tp.Shape
+    group_lens: tp.GroupLens
+    cash_sharing: bool
+    index: tp.Optional[tp.Array1d]
+    freq: tp.Optional[int]
+    open: tp.FlexArray2d
+    high: tp.FlexArray2d
+    low: tp.FlexArray2d
+    close: tp.FlexArray2d
+    init_cash: tp.FlexArray1d
+    init_position: tp.FlexArray1d
+    init_price: tp.FlexArray1d
+
+    order_records: tp.RecordArray2d
+    order_counts: tp.Array1d
+    log_records: tp.RecordArray2d
+    log_counts: tp.Array1d
+
+    track_cash_deposits: bool
+    cash_deposits_out: tp.Array2d
+    track_cash_earnings: bool
+    cash_earnings_out: tp.Array2d
+    in_outputs: tp.Optional[tp.NamedTuple]
+
+    last_cash: tp.Array1d
+    last_position: tp.Array1d
+    last_debt: tp.Array1d
+    last_locked_cash: tp.Array1d
+    last_free_cash: tp.Array1d
+    last_val_price: tp.Array1d
+    last_value: tp.Array1d
+    last_return: tp.Array1d
+
+    last_pos_info: tp.RecordArray
+    last_limit_info: tp.RecordArray
+    last_sl_info: tp.RecordArray
+    last_tsl_info: tp.RecordArray
+    last_tp_info: tp.RecordArray
+    last_td_info: tp.RecordArray
+    last_dt_info: tp.RecordArray
+
+    sim_start: tp.Array1d
+    sim_end: tp.Array1d
+
+    group: int
+    group_len: int
+    from_col: int
+    to_col: int
+
+__pdoc__[
+    "FSGroupContext"
+] = """Named tuple representing the context for a group in a from-signals simulation.
+
+Contains all fields from `FSSimulationContext` with additional fields
+`group`, `group_len`, `from_col`, and `to_col` representing the current group.
+
+Passed to `pre_group_func_nb` and `post_group_func_nb`.
+"""
+for field in FSGroupContext._fields:
+    if field in FSSimulationContext._fields:
+        __pdoc__["FSGroupContext." + field] = f"See `FSSimulationContext.{field}`."
+    elif field in GroupContext._fields:
+        __pdoc__["FSGroupContext." + field] = f"See `GroupContext.{field}`."
+for field in FSGroupContext._fields:
+    if "FSGroupContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FSGroupContext.{field} is missing")
+
+
 class FSSegmentContext(tp.NamedTuple):
     target_shape: tp.Shape
     group_lens: tp.GroupLens
@@ -2521,6 +2724,7 @@ class FSSegmentContext(tp.NamedTuple):
     group_len: int
     from_col: int
     to_col: int
+
     i: int
 
 
@@ -2528,71 +2732,18 @@ __pdoc__[
     "FSSegmentContext"
 ] = """Named tuple representing the context for a segment in a from-signals simulation.
 
-This context includes OHLC data and additional internal simulation details computed at the start 
-of the simulation. For accessing other information, such as order size, consider using templates.
+Contains all fields from `FSGroupContext` with an additional field `i` representing the row index.
 
 Passed to `pre_segment_func_nb` and `post_segment_func_nb`.
 """
 for field in FSSegmentContext._fields:
-    if field in SimulationContext._fields:
-        __pdoc__["FSSegmentContext." + field] = f"See `SimulationContext.{field}`."
+    if field in FSGroupContext._fields:
+        __pdoc__["FSSegmentContext." + field] = f"See `FSGroupContext.{field}`."
+    elif field in SegmentContext._fields:
+        __pdoc__["FSSegmentContext." + field] = f"See `SegmentContext.{field}`."
 for field in FSSegmentContext._fields:
-    if field in GroupContext._fields:
-        __pdoc__["FSSegmentContext." + field] = f"See `GroupContext.{field}`."
-for field in FSSegmentContext._fields:
-    if field in RowContext._fields:
-        __pdoc__["FSSegmentContext." + field] = f"See `RowContext.{field}`."
-__pdoc__[
-    "FSSegmentContext.track_cash_deposits"
-] = """Indicates whether cash deposits are tracked.
-
-Becomes True if any value in `cash_deposits` is nonzero.
-"""
-__pdoc__["FSSegmentContext.cash_deposits_out"] = "See `SimulationOutput.cash_deposits`."
-__pdoc__[
-    "FSSegmentContext.track_cash_earnings"
-] = """Indicates whether cash earnings are tracked.
-
-Becomes True if any value in `cash_earnings` is nonzero.
-"""
-__pdoc__["FSSegmentContext.cash_earnings_out"] = "See `SimulationOutput.cash_earnings`."
-__pdoc__["FSSegmentContext.in_outputs"] = "See `FSInOutputs`."
-__pdoc__[
-    "FSSegmentContext.last_limit_info"
-] = """Record of type `limit_info_dt` for each column.
-
-Accessible via `c.limit_info_dt[field][col]`.
-"""
-__pdoc__[
-    "FSSegmentContext.last_sl_info"
-] = """Record of type `sl_info_dt` for each column.
-
-Accessible via `c.last_sl_info[field][col]`.
-"""
-__pdoc__[
-    "FSSegmentContext.last_tsl_info"
-] = """Record of type `tsl_info_dt` for each column.
-
-Accessible via `c.last_tsl_info[field][col]`.
-"""
-__pdoc__[
-    "FSSegmentContext.last_tp_info"
-] = """Record of type `tp_info_dt` for each column.
-
-Accessible via `c.last_tp_info[field][col]`.
-"""
-__pdoc__[
-    "FSSegmentContext.last_td_info"
-] = """Record of type `time_info_dt` for each column.
-
-Accessible via `c.last_td_info[field][col]`.
-"""
-__pdoc__[
-    "FSSegmentContext.last_dt_info"
-] = """Record of type `time_info_dt` for each column.
-
-Accessible via `c.last_dt_info[field][col]`.
-"""
+    if "FSSegmentContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FSSegmentContext.{field} is missing")
 
 
 class FSSignalContext(tp.NamedTuple):
@@ -2660,6 +2811,9 @@ for field in FSSignalContext._fields:
     if field in FSSegmentContext._fields:
         __pdoc__["FSSignalContext." + field] = f"See `FSSegmentContext.{field}`."
 __pdoc__["FSSignalContext.col"] = "See `OrderContext.col`."
+for field in FSSignalContext._fields:
+    if "FSSignalContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FSSignalContext.{field} is missing")
 
 
 class FSPreOrderSegmentContext(tp.NamedTuple):
@@ -2733,6 +2887,9 @@ __pdoc__[
 
 Accessible via `c.order_info[field][col]`.
 """
+for field in FSPreOrderSegmentContext._fields:
+    if "FSPreOrderSegmentContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FSPreOrderSegmentContext.{field} is missing")
 
 
 class FSPostOrderContext(tp.NamedTuple):
@@ -2812,10 +2969,14 @@ for field in FSPostOrderContext._fields:
 __pdoc__["FSPostOrderContext.cash_before"] = "`ExecState.cash` balance before execution."
 __pdoc__["FSPostOrderContext.position_before"] = "`ExecState.position` value before execution."
 __pdoc__["FSPostOrderContext.debt_before"] = "`ExecState.debt` value before execution."
-__pdoc__["FSPostOrderContext.locked_cash_before"] = "`ExecState.free_cash` value before execution."
+__pdoc__["FSPostOrderContext.locked_cash_before"] = "`ExecState.locked_cash` value before execution."
+__pdoc__["FSPostOrderContext.free_cash_before"] = "`ExecState.free_cash` value before execution."
 __pdoc__["FSPostOrderContext.val_price_before"] = "`ExecState.val_price` value before execution."
 __pdoc__["FSPostOrderContext.value_before"] = "`ExecState.value` value before execution."
 __pdoc__["FSPostOrderContext.order_result"] = "See `PostOrderContext.order_result`."
+for field in FSPostOrderContext._fields:
+    if "FSPostOrderContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FSPostOrderContext.{field} is missing")
 
 
 # ############# In-place outputs ############# #

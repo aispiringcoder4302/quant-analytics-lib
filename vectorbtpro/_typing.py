@@ -102,10 +102,6 @@ if TYPE_CHECKING:
     from vectorbtpro.generic.splitting.base import FixRange, RelRange
     from vectorbtpro.indicators.factory import IndicatorBase
     from vectorbtpro.portfolio.enums import (
-        FSSignalContext,
-        FSPostOrderContext,
-        FSSegmentContext,
-        FSPreOrderSegmentContext,
         SimulationContext,
         GroupContext,
         RowContext,
@@ -113,6 +109,12 @@ if TYPE_CHECKING:
         OrderContext,
         FlexOrderContext,
         PostOrderContext,
+        FSSimulationContext,
+        FSGroupContext,
+        FSSegmentContext,
+        FSSignalContext,
+        FSPreOrderSegmentContext,
+        FSPostOrderContext,
         Order,
     )
 else:
@@ -156,10 +158,6 @@ else:
     FixRange = "FixRange"
     RelRange = "RelRange"
     IndicatorBase = "IndicatorBase"
-    FSSignalContext = "FSSignalContext"
-    FSPostOrderContext = "FSPostOrderContext"
-    FSSegmentContext = "FSSegmentContext"
-    FSPreOrderSegmentContext = "FSPreOrderSegmentContext"
     SimulationContext = "SimulationContext"
     GroupContext = "GroupContext"
     RowContext = "RowContext"
@@ -167,6 +165,12 @@ else:
     OrderContext = "OrderContext"
     FlexOrderContext = "FlexOrderContext"
     PostOrderContext = "PostOrderContext"
+    FSSimulationContext = "FSSimulationContext"
+    FSGroupContext = "FSGroupContext"
+    FSSegmentContext = "FSSegmentContext"
+    FSSignalContext = "FSSignalContext"
+    FSPreOrderSegmentContext = "FSPreOrderSegmentContext"
+    FSPostOrderContext = "FSPostOrderContext"
     Order = "Order"
 
 __all__ = []
@@ -563,12 +567,24 @@ OrderFunc = Callable[[OrderContext, VarArg()], Order]
 FlexOrderFunc = Callable[[FlexOrderContext, VarArg()], Tuple[int, Order]]
 PostOrderFunc = Callable[[PostOrderContext, VarArg()], None]
 
+FSPreSimFunc = Callable[[FSSimulationContext, VarArg()], Args]
+FSPostSimFunc = Callable[[FSSimulationContext, VarArg()], None]
+FSPreGroupFunc = Callable[[FSGroupContext, VarArg()], Args]
+FSPostGroupFunc = Callable[[FSGroupContext, VarArg()], None]
 FSPreSegmentFunc = Callable[[FSSegmentContext, VarArg()], Args]
+FSPostSegmentFunc = Callable[[FSSegmentContext, VarArg()], None]
 FSSignalFunc = Callable[[FSSignalContext, VarArg()], Tuple[bool, bool, bool, bool]]
 FSAdjustFunc = Callable[[FSSignalContext, VarArg()], None]
 FSPreOrderSegmentFunc = Callable[[FSPreOrderSegmentContext, VarArg()], Args]
 FSPostOrderFunc = Callable[[FSPostOrderContext, VarArg()], None]
-FSPostSegmentFunc = Callable[[FSSegmentContext, VarArg()], None]
+
+# Contexts
+AnyPostOrderContext = Union[PostOrderContext, FSPostOrderContext]
+AnyColumnContext = Union[AnyPostOrderContext, OrderContext, FSSignalContext]
+AnySegmentContext = Union[AnyColumnContext, SegmentContext, FlexOrderContext, FSSegmentContext]
+AnyGroupContext = Union[AnySegmentContext, GroupContext, FSGroupContext]
+AnyRowContext = Union[RowContext]
+AnySimContext = Union[AnyGroupContext, AnyRowContext, SimulationContext, FSSimulationContext]
 
 # Portfolio optimization
 AllocateFunc = Callable[[int, int, VarArg()], MaybeArray]

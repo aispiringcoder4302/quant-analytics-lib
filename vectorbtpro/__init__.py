@@ -110,7 +110,7 @@ if settings["importing"]["auto_import"]:
     from vectorbtpro.records import nb as rec_nb
     from vectorbtpro.returns import nb as ret_nb, enums as ret_enums
     from vectorbtpro.signals import nb as sig_nb, enums as sig_enums
-    from vectorbtpro.utils import datetime_ as dt, datetime_nb as dt_nb
+    from vectorbtpro.utils import array_ as arr, datetime_ as dt, datetime_nb as dt_nb
     from vectorbtpro.utils.datetime_ import (
         to_offset as offset,
         to_timedelta as timedelta,

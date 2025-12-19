@@ -4000,6 +4000,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         long_exits: tp.Optional[tp.ArrayLike] = None,
         short_entries: tp.Optional[tp.ArrayLike] = None,
         short_exits: tp.Optional[tp.ArrayLike] = None,
+        pre_sim_func_nb: tp.Union[None, tp.PathLike, tp.FSPreSimFunc] = None,
+        pre_sim_args: tp.ArgsLike = (),
+        pre_group_func_nb: tp.Union[None, tp.PathLike, tp.FSPreGroupFunc] = None,
+        pre_group_args: tp.ArgsLike = (),
         pre_segment_func_nb: tp.Union[None, tp.PathLike, tp.FSPreSegmentFunc] = None,
         pre_segment_args: tp.ArgsLike = (),
         adjust_func_nb: tp.Union[None, tp.PathLike, tp.FSAdjustFunc] = None,
@@ -4012,6 +4016,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         post_order_args: tp.ArgsLike = (),
         post_segment_func_nb: tp.Union[None, tp.PathLike, tp.FSPostSegmentFunc] = None,
         post_segment_args: tp.ArgsLike = (),
+        post_group_func_nb: tp.Union[None, tp.PathLike, tp.FSPostGroupFunc] = None,
+        post_group_args: tp.ArgsLike = (),
+        post_sim_func_nb: tp.Union[None, tp.PathLike, tp.FSPostSimFunc] = None,
+        post_sim_args: tp.ArgsLike = (),
         order_mode: bool = False,
         size: tp.Optional[tp.ArrayLike] = None,
         size_type: tp.Optional[tp.ArrayLike] = None,
@@ -4195,6 +4203,18 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             short_exits (Optional[ArrayLike]): Boolean array of short exit signals.
 
                 Broadcasts.
+            pre_sim_func_nb (Union[None, PathLike, FSPreSimFunc]):
+                Callback function to be called before the simulation starts.
+
+                See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
+                Can be provided as a module path when staticizing.
+            pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
+            pre_group_func_nb (Union[None, PathLike, FSPreGroupFunc]):
+                Callback function to be called before processing a group.
+
+                See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
+                Can be provided as a module path when staticizing.
+            pre_group_args (Args): Positional arguments for `pre_group_func_nb`.
             pre_segment_func_nb (Union[None, PathLike, FSPreSegmentFunc]):
                 Callback function to be called before processing a segment.
 
@@ -4232,6 +4252,18 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be provided as a module path when staticizing.
             post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
+            post_group_func_nb (Union[None, PathLike, FSPostGroupFunc]):
+                Callback function to be called after processing a group.
+
+                See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
+                Can be provided as a module path when staticizing.
+            post_group_args (Args): Positional arguments for `post_group_func_nb`.
+            post_sim_func_nb (Union[None, PathLike, FSPostSimFunc]):
+                Callback function to be called after the simulation ends.
+
+                See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
+                Can be provided as a module path when staticizing.
+            post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
             order_mode (bool): If True, simulates in order mode without explicit signals.
             size (Optional[ArrayLike]): Size to order.
 

@@ -1202,6 +1202,10 @@ fs_arg_config = ReadonlyConfig(
             subdtype=np.bool_,
             broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=False)),
         ),
+        pre_sim_func_nb=dict(),
+        pre_sim_args=dict(type="args", substitute_templates=True),
+        pre_group_func_nb=dict(),
+        pre_group_args=dict(type="args", substitute_templates=True),
         pre_segment_func_nb=dict(),
         pre_segment_args=dict(type="args", substitute_templates=True),
         adjust_func_nb=dict(),
@@ -1216,6 +1220,10 @@ fs_arg_config = ReadonlyConfig(
         post_signal_args=dict(obsolete_by="post_order_args"),
         post_segment_func_nb=dict(),
         post_segment_args=dict(type="args", substitute_templates=True),
+        post_group_func_nb=dict(),
+        post_group_args=dict(type="args", substitute_templates=True),
+        post_sim_func_nb=dict(),
+        post_sim_args=dict(type="args", substitute_templates=True),
         order_mode=dict(),
         val_price=dict(
             broadcast=True,
@@ -1501,11 +1509,15 @@ class FSPreparer(BasePFPreparer):
         """
         return (
             self["adjust_func_nb"] is not None
+            or self["pre_sim_func_nb"] is not None
+            or self["pre_group_func_nb"] is not None
             or self["pre_segment_func_nb"] is not None
             or self["signal_func_nb"] is not None
             or self["pre_order_segment_func_nb"] is not None
             or self["post_order_func_nb"] is not None
             or self["post_segment_func_nb"] is not None
+            or self["post_group_func_nb"] is not None
+            or self["post_sim_func_nb"] is not None
             or self.order_mode
             or self.pre__staticized is not None
         )
@@ -1602,6 +1614,40 @@ class FSPreparer(BasePFPreparer):
             bool: True if signal function mode is enabled, False otherwise.
         """
         return self.dynamic_mode and not self.signals_mode and not self.order_mode
+    
+    @cachedproperty
+    def pre_sim_func_nb(self) -> tp.Optional[tp.Callable]:
+        """Processed `pre_sim_func_nb` argument.
+
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
+
+        If a value is provided, it is returned. Outside dynamic mode, returns None.
+
+        Returns:
+            Optional[Callable]: Pre-simulation function callable or None.
+        """
+        if self.dynamic_mode:
+            if self["pre_sim_func_nb"] is None:
+                return nb.no_pre_func_nb
+            return self["pre_sim_func_nb"]
+        return None
+
+    @cachedproperty
+    def pre_group_func_nb(self) -> tp.Optional[tp.Callable]:
+        """Processed `pre_group_func_nb` argument.
+
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
+
+        If a value is provided, it is returned. Outside dynamic mode, returns None.
+
+        Returns:
+            Optional[Callable]: Pre-group function callable or None.
+        """
+        if self.dynamic_mode:
+            if self["pre_group_func_nb"] is None:
+                return nb.no_pre_func_nb
+            return self["pre_group_func_nb"]
+        return None
 
     @cachedproperty
     def pre_segment_func_nb(self) -> tp.Optional[tp.Callable]:
@@ -1721,6 +1767,48 @@ class FSPreparer(BasePFPreparer):
         return None
 
     @cachedproperty
+    def post_group_func_nb(self) -> tp.Optional[tp.Callable]:
+        """Processed `post_group_func_nb` argument.
+
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_signals.save_post_group_func_nb`
+        if saving state, value, or returns is enabled; otherwise, returns
+        `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
+
+        If a value is provided, it is returned. Outside dynamic mode, returns None.
+
+        Returns:
+            Optional[Callable]: Post-group function callable or None.
+        """
+        if self.dynamic_mode:
+            if self["post_group_func_nb"] is None:
+                if self.save_state or self.save_value or self.save_returns:
+                    return nb.save_post_group_func_nb
+                return nb.no_post_func_nb
+            return self["post_group_func_nb"]
+        return None
+
+    @cachedproperty
+    def post_sim_func_nb(self) -> tp.Optional[tp.Callable]:
+        """Processed `post_sim_func_nb` argument.
+
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_signals.save_post_sim_func_nb`
+        if saving state, value, or returns is enabled; otherwise, returns
+        `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
+
+        If a value is provided, it is returned. Outside dynamic mode, returns None.
+
+        Returns:
+            Optional[Callable]: Post-simulation function callable or None.
+        """
+        if self.dynamic_mode:
+            if self["post_sim_func_nb"] is None:
+                if self.save_state or self.save_value or self.save_returns:
+                    return nb.save_post_sim_func_nb
+                return nb.no_post_func_nb
+            return self["post_sim_func_nb"]
+        return None
+
+    @cachedproperty
     def staticized(self) -> tp.StaticizedOption:
         """Processed `staticized` argument.
 
@@ -1734,6 +1822,14 @@ class FSPreparer(BasePFPreparer):
         if isinstance(staticized, dict):
             staticized = dict(staticized)
             if self.dynamic_mode:
+                if self["pre_sim_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["pre_sim_func_nb"], "pre_sim_func_nb")
+                if self["pre_group_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["pre_group_func_nb"], "pre_group_func_nb")
+                if self["pre_segment_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["pre_segment_func_nb"], "pre_segment_func_nb")
+                if self["adjust_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["adjust_func_nb"], "adjust_func_nb")
                 if self["signal_func_nb"] is None:
                     if self.ls_mode:
                         self.adapt_staticized_to_udf(staticized, "ls_signal_func_nb", "signal_func_nb")
@@ -1746,10 +1842,6 @@ class FSPreparer(BasePFPreparer):
                         staticized["suggest_fname"] = "from_order_signal_func_nb"
                 else:
                     self.adapt_staticized_to_udf(staticized, self["signal_func_nb"], "signal_func_nb")
-                if self["pre_segment_func_nb"] is not None:
-                    self.adapt_staticized_to_udf(staticized, self["pre_segment_func_nb"], "pre_segment_func_nb")
-                if self["adjust_func_nb"] is not None:
-                    self.adapt_staticized_to_udf(staticized, self["adjust_func_nb"], "adjust_func_nb")
                 if self["pre_order_segment_func_nb"] is not None:
                     self.adapt_staticized_to_udf(
                         staticized, 
@@ -1762,6 +1854,10 @@ class FSPreparer(BasePFPreparer):
                     self.adapt_staticized_to_udf(staticized, self["post_segment_func_nb"], "post_segment_func_nb")
                 elif self.save_state or self.save_value or self.save_returns:
                     self.adapt_staticized_to_udf(staticized, "save_post_segment_func_nb", "post_segment_func_nb")
+                if self["post_group_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["post_group_func_nb"], "post_group_func_nb")
+                if self["post_sim_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["post_sim_func_nb"], "post_sim_func_nb")
         return staticized
 
     @cachedproperty
@@ -2210,6 +2306,10 @@ class FSPreparer(BasePFPreparer):
                 order_mode=self.order_mode,
                 use_stops=self.use_stops,
                 stop_ladder=self.stop_ladder,
+                pre_sim_func_nb=self.pre_sim_func_nb,
+                pre_sim_args=self.pre__pre_sim_args,
+                pre_group_func_nb=self.pre_group_func_nb,
+                pre_group_args=self.pre__pre_group_args,
                 pre_segment_func_nb=self.pre_segment_func_nb,
                 pre_segment_args=self.pre__pre_segment_args,
                 adjust_func_nb=self.adjust_func_nb,
@@ -2222,6 +2322,10 @@ class FSPreparer(BasePFPreparer):
                 post_order_args=self.pre__post_order_args,
                 post_segment_func_nb=self.post_segment_func_nb,
                 post_segment_args=self.pre__post_segment_args,
+                post_group_func_nb=self.post_group_func_nb,
+                post_group_args=self.pre__post_group_args,
+                post_sim_func_nb=self.post_sim_func_nb,
+                post_sim_args=self.pre__post_sim_args,
                 ffill_val_price=self.ffill_val_price,
                 update_value=self.update_value,
                 fill_pos_info=self.fill_pos_info,
@@ -2374,11 +2478,15 @@ class FSPreparer(BasePFPreparer):
         target_arg_map = dict(BasePFPreparer.target_arg_map.func(self))
         if self.dynamic_mode:
             if self.staticized is not None:
+                target_arg_map["pre_sim_func_nb"] = None
+                target_arg_map["pre_group_func_nb"] = None
                 target_arg_map["pre_segment_func_nb"] = None
                 target_arg_map["signal_func_nb"] = None
                 target_arg_map["pre_order_segment_func_nb"] = None
                 target_arg_map["post_order_func_nb"] = None
                 target_arg_map["post_segment_func_nb"] = None
+                target_arg_map["post_group_func_nb"] = None
+                target_arg_map["post_sim_func_nb"] = None
         else:
             target_arg_map["group_lens"] = "cs_group_lens"
         return target_arg_map

@@ -19,6 +19,26 @@ from vectorbtpro.registries.jit_registry import register_jitted
 __all__ = []
 
 
+@register_jitted(cache=True)
+def reverse_nb(arr: tp.Array1d) -> None:
+    """Reverse the given 1-dimensional array in place.
+
+    Args:
+        arr (Array1d): Input array.
+
+    Returns:
+        None
+    """
+    i = 0
+    j = len(arr) - 1
+    while i < j:
+        tmp = arr[i]
+        arr[i] = arr[j]
+        arr[j] = tmp
+        i += 1
+        j -= 1
+
+
 def is_sorted(arr: tp.Array1d) -> bool:
     """Return whether the given array is sorted in non-decreasing order.
 
@@ -80,6 +100,7 @@ def insert_argsort_nb(A: tp.Array1d, I: tp.Array1d) -> None:
     """Sort the array and update its index array using an insertion sort algorithm.
 
     This in-memory, non-recursive approach is optimized for small arrays.
+    Treats NaN values as larger than any other number. Ties are resolved by original order.
 
     Args:
         A (Array1d): Array of values to sort.
@@ -89,15 +110,90 @@ def insert_argsort_nb(A: tp.Array1d, I: tp.Array1d) -> None:
         None: Function modifies the input arrays in place.
     """
     for j in range(1, len(A)):
-        A_j = A[j]
-        I_j = I[j]
+        aj = A[j]
+        ij = I[j]
+        aj_nan = aj != aj
+
         i = j - 1
-        while i >= 0 and (A[i] > A_j or np.isnan(A[i])):
-            A[i + 1] = A[i]
+        while i >= 0:
+            ai = A[i]
+            ai_nan = ai != ai
+
+            if ai_nan:
+                if aj_nan:
+                    break
+            else:
+                if aj_nan or ai <= aj:
+                    break
+
+            A[i + 1] = ai
             I[i + 1] = I[i]
-            i = i - 1
-        A[i + 1] = A_j
-        I[i + 1] = I_j
+            i -= 1
+
+        A[i + 1] = aj
+        I[i + 1] = ij
+
+
+@register_jitted(cache=True)
+def insert_lex_argsort_nb(A: tp.Array1d, B: tp.Array1d, I: tp.Array1d) -> None:
+    """Perform a lexicographical insertion sort on two arrays and update the index array.
+
+    This in-memory, non-recursive approach is optimized for small arrays.
+    Treats NaN values as larger than any other number. Ties are resolved by original order.
+
+    Args:
+        A (Array1d): Primary array of values to sort.
+        B (Array1d): Secondary array of values to sort.
+        I (Array1d): Array of indices to reorder alongside A and B.
+
+    Returns:
+        None: Function modifies the input arrays in place.
+    """
+    for j in range(1, len(A)):
+        aj = A[j]
+        bj = B[j]
+        ij = I[j]
+        aj_nan = aj != aj
+        bj_nan = bj != bj
+
+        i = j - 1
+        while i >= 0:
+            ai = A[i]
+            bi = B[i]
+            ai_nan = ai != ai
+
+            shift = False
+            if ai_nan:
+                if not aj_nan:
+                    shift = True
+                else:
+                    bi_nan = bi != bi
+                    if bi_nan:
+                        shift = not bj_nan
+                    else:
+                        shift = (not bj_nan) and (bi > bj)
+            else:
+                if not aj_nan:
+                    if ai > aj:
+                        shift = True
+                    elif ai == aj:
+                        bi_nan = bi != bi
+                        if bi_nan:
+                            shift = not bj_nan
+                        else:
+                            shift = (not bj_nan) and (bi > bj)
+
+            if not shift:
+                break
+
+            A[i + 1] = ai
+            B[i + 1] = bi
+            I[i + 1] = I[i]
+            i -= 1
+
+        A[i + 1] = aj
+        B[i + 1] = bj
+        I[i + 1] = ij
 
 
 def get_ranges_arr(starts: tp.ArrayLike, ends: tp.ArrayLike) -> tp.Array1d:

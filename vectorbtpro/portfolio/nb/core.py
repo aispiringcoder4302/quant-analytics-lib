@@ -1263,16 +1263,18 @@ def resolve_size_nb(
 def approx_long_buy_value_nb(val_price: float, size: float) -> float:
     """Approximate the value of a long-buy operation.
 
-    Calculates the order value as the product of the absolute order size and the valuation price,
-    and returns it as a negative value to represent spending.
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
 
     Args:
         val_price (float): Valuation price of the asset.
         size (float): Order size.
 
     Returns:
-        float: Negative value representing spending, or 0.0 if the order size is zero.
+        float: Approximated value of the long-buy operation.
     """
+    if np.isnan(size):
+        return np.nan
     if size == 0:
         return 0.0
     order_value = abs(size) * val_price
@@ -1284,8 +1286,8 @@ def approx_long_buy_value_nb(val_price: float, size: float) -> float:
 def approx_long_sell_value_nb(position: float, debt: float, val_price: float, size: float) -> float:
     """Approximate the value of a long-sell operation.
 
-    The computed value represents the spending amount for sorting purposes,
-    where a positive value indicates spending.
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
 
     Args:
         position (float): Current position size.
@@ -1294,8 +1296,10 @@ def approx_long_sell_value_nb(position: float, debt: float, val_price: float, si
         size (float): Requested order size for the long-sell operation.
 
     Returns:
-        float: Approximate value of the long-sell operation.
+        float: Approximated value of the long-sell operation.
     """
+    if np.isnan(size):
+        return np.nan
     if size == 0 or position == 0:
         return 0.0
     size_limit = min(abs(size), position)
@@ -1310,8 +1314,8 @@ def approx_long_sell_value_nb(position: float, debt: float, val_price: float, si
 def approx_short_sell_value_nb(val_price: float, size: float) -> float:
     """Approximate the value of a short-sell operation.
 
-    Calculates the transaction value based on the provided price and position size.
-    A positive result indicates expenditure (for sorting purposes).
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
 
     Args:
         val_price (float): Valuation price of the asset.
@@ -1320,6 +1324,8 @@ def approx_short_sell_value_nb(val_price: float, size: float) -> float:
     Returns:
         float: Approximated value of the short-sell operation.
     """
+    if np.isnan(size):
+        return np.nan
     if size == 0:
         return 0.0
     order_value = abs(size) * val_price
@@ -1329,10 +1335,10 @@ def approx_short_sell_value_nb(val_price: float, size: float) -> float:
 
 @register_jitted(cache=True)
 def approx_short_buy_value_nb(position: float, debt: float, locked_cash: float, val_price: float, size: float) -> float:
-    """Approximate the cash value adjustment for a short-buy operation.
+    """Approximate value of a short-buy operation.
 
-    Computes the additional cash required or freed by comparing the released debt and locked cash
-    against the order value. A positive return value indicates a spending requirement.
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
 
     Args:
         position (float): Current short position size.
@@ -1342,8 +1348,10 @@ def approx_short_buy_value_nb(position: float, debt: float, locked_cash: float, 
         size (float): Desired order size for the short-buy operation.
 
     Returns:
-        float: Approximate cash value adjustment, where a positive value signifies spending.
+        float: Approximated value of the short-buy operation.
     """
+    if np.isnan(size):
+        return np.nan
     if size == 0 or position == 0:
         return 0.0
     size_limit = min(abs(size), abs(position))
@@ -1366,10 +1374,8 @@ def approx_buy_value_nb(
 ) -> float:
     """Approximate value of a buy operation.
 
-    Calculates an estimated order value based on the current position, debt, locked cash,
-    valuation price, and desired order size. Depending on the position and trade direction,
-    it uses a short or long buy approximation or a combination of both. A positive return
-    value indicates spending, which is useful for sorting.
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
 
     Args:
         position (float): Current position amount.
@@ -1382,8 +1388,10 @@ def approx_buy_value_nb(
             See `vectorbtpro.portfolio.enums.Direction`.
 
     Returns:
-        float: Approximate order value representing the spending amount.
+        float: Approximated value of the buy operation.
     """
+    if np.isnan(size):
+        return np.nan
     if position <= 0 and direction == Direction.ShortOnly:
         return approx_short_buy_value_nb(position, debt, locked_cash, val_price, size)
     if position >= 0:
@@ -1404,10 +1412,10 @@ def approx_sell_value_nb(
     size: float,
     direction: int,
 ) -> float:
-    """Approximate the sell operation value based on asset position, debt, and valuation price.
+    """Approximate value of a sell operation.
 
-    Calculates an estimated sell value given the current position, associated debt, valuation price,
-    and order size. A positive result represents spending, which is useful for sorting operations.
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
 
     Args:
         position (float): Current asset position.
@@ -1419,8 +1427,10 @@ def approx_sell_value_nb(
             See `vectorbtpro.portfolio.enums.Direction`.
 
     Returns:
-        float: Approximate value of the sell operation.
+        float: Approximated value of the sell operation.
     """
+    if np.isnan(size):
+        return np.nan
     if position >= 0 and direction == Direction.LongOnly:
         return approx_long_sell_value_nb(position, debt, val_price, size)
     if position <= 0:
@@ -1444,7 +1454,8 @@ def approx_order_value_nb(
 
     Assumes infinite cash.
 
-    Positive value indicates spending (used for sorting purposes).
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
 
     Args:
         exec_state (ExecState): Current execution state.
@@ -1459,8 +1470,10 @@ def approx_order_value_nb(
             See `vectorbtpro.portfolio.enums.Direction`.
 
     Returns:
-        float: Approximate order value.
+        float: Approximated value of the order.
     """
+    if np.isnan(size):
+        return np.nan
     size = get_diraware_size_nb(float(size), direction)
     amount_size, _ = resolve_size_nb(
         size=size,

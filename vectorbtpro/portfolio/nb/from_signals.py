@@ -22,7 +22,7 @@ from vectorbtpro.registries.ch_registry import register_chunkable
 from vectorbtpro.returns.nb import get_return_nb
 from vectorbtpro.signals.enums import StopType
 from vectorbtpro.utils import chunking as ch
-from vectorbtpro.utils.array_ import insert_argsort_nb
+from vectorbtpro.utils.array_ import insert_argsort_nb, insert_lex_argsort_nb
 from vectorbtpro.utils.math_ import is_less_nb
 from vectorbtpro.utils.template import RepFunc
 
@@ -944,7 +944,8 @@ def from_basic_signals_nb(
     order_info = np.empty(target_shape[1], dtype=order_info_dt)
 
     temp_call_seq = np.empty(target_shape[1], dtype=int_)
-    temp_sort_by = np.empty(target_shape[1], dtype=float_)
+    temp_order_value = np.empty(target_shape[1], dtype=float_)
+    temp_bar_zone = np.empty(target_shape[1], dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -1049,7 +1050,6 @@ def from_basic_signals_nb(
                     order_info["direction"][col] = -1
                     order_info["type"][col] = OrderType.Market
                     order_info["stop_type"][col] = -1
-                    temp_sort_by[col] = 0.0
 
                     is_long_entry = (last_signal[col] >> 4) & 1
                     is_long_exit = (last_signal[col] >> 3) & 1
@@ -1157,18 +1157,16 @@ def from_basic_signals_nb(
                 if not skip:
                     bar_zone = -1
                     same_bar_zone = True
-                    same_timing = True
                     for ci in range(group_len):
                         col = from_col + ci
+                        temp_order_value[col] = 0.0
+                        temp_bar_zone[col] = -1
                         if np.isnan(order_info["size"][col]):
                             continue
                         if bar_zone == -1:
                             bar_zone = order_info["bar_zone"][col]
                         if order_info["bar_zone"][col] != bar_zone:
                             same_bar_zone = False
-                            same_timing = False
-                        if order_info["bar_zone"][col] == BarZone.Middle:
-                            same_timing = False
                         _val_price = order_info["val_price"][col]
                         if not np.isnan(_val_price) or not ffill_val_price:
                             last_val_price[col] = _val_price
@@ -1181,8 +1179,6 @@ def from_basic_signals_nb(
                         else:
                             call_seq_now = call_seq[i, from_col:to_col]
                         if auto_call_seq:
-                            if not same_timing:
-                                raise ValueError("Cannot sort orders by value if they are executed at different times")
                             for ci in range(group_len):
                                 if call_seq_now[ci] != ci:
                                     raise ValueError("Call sequence must follow CallSeqType.Default")
@@ -1198,13 +1194,21 @@ def from_basic_signals_nb(
                                     val_price=last_val_price[col],
                                     value=last_value[group] if cash_sharing else last_value[col],
                                 )
-                                temp_sort_by[ci] = approx_order_value_nb(
+                                temp_order_value[ci] = approx_order_value_nb(
                                     exec_state=exec_state,
                                     size=order_info["size"][col],
                                     size_type=order_info["size_type"][col],
                                     direction=order_info["direction"][col],
                                 )
-                            insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
+                                temp_bar_zone[ci] = order_info["bar_zone"][col]
+                            if same_bar_zone:
+                                insert_argsort_nb(temp_order_value[:group_len], call_seq_now)
+                            else:
+                                insert_lex_argsort_nb(
+                                    temp_bar_zone[:group_len],
+                                    temp_order_value[:group_len],
+                                    call_seq_now,
+                                )
                         else:
                             if not same_bar_zone:
                                 for ci in range(group_len):
@@ -1213,8 +1217,8 @@ def from_basic_signals_nb(
                                     col = from_col + ci
                                     if np.isnan(order_info["size"][col]):
                                         continue
-                                    temp_sort_by[ci] = order_info["bar_zone"][col]
-                                insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
+                                    temp_bar_zone[ci] = order_info["bar_zone"][col]
+                                insert_argsort_nb(temp_bar_zone[:group_len], call_seq_now)
 
                     for k in range(group_len):
                         if cash_sharing:
@@ -2190,7 +2194,8 @@ def from_signals_nb(
     order_info = np.empty(target_shape[1], dtype=order_info_dt)
 
     temp_call_seq = np.empty(target_shape[1], dtype=int_)
-    temp_sort_by = np.empty(target_shape[1], dtype=float_)
+    temp_order_value = np.empty(target_shape[1], dtype=float_)
+    temp_bar_zone = np.empty(target_shape[1], dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -2317,7 +2322,6 @@ def from_signals_nb(
                     order_info["direction"][col] = -1
                     order_info["type"][col] = -1
                     order_info["stop_type"][col] = -1
-                    temp_sort_by[col] = 0.0
 
                     is_long_entry = (last_signal[col] >> 10) & 1
                     is_long_exit = (last_signal[col] >> 9) & 1
@@ -3365,18 +3369,16 @@ def from_signals_nb(
                 if not skip:
                     bar_zone = -1
                     same_bar_zone = True
-                    same_timing = True
                     for ci in range(group_len):
                         col = from_col + ci
+                        temp_order_value[col] = 0.0
+                        temp_bar_zone[col] = -1
                         if np.isnan(order_info["size"][col]):
                             continue
                         if bar_zone == -1:
                             bar_zone = order_info["bar_zone"][col]
                         if order_info["bar_zone"][col] != bar_zone:
                             same_bar_zone = False
-                            same_timing = False
-                        if order_info["bar_zone"][col] == BarZone.Middle:
-                            same_timing = False
                         _val_price = order_info["val_price"][col]
                         if not np.isnan(_val_price) or not ffill_val_price:
                             last_val_price[col] = _val_price
@@ -3389,8 +3391,6 @@ def from_signals_nb(
                         else:
                             call_seq_now = call_seq[i, from_col:to_col]
                         if auto_call_seq:
-                            if not same_timing:
-                                raise ValueError("Cannot sort orders by value if they are executed at different times")
                             for ci in range(group_len):
                                 if call_seq_now[ci] != ci:
                                     raise ValueError("Call sequence must follow CallSeqType.Default")
@@ -3406,13 +3406,21 @@ def from_signals_nb(
                                     val_price=last_val_price[col],
                                     value=last_value[group] if cash_sharing else last_value[col],
                                 )
-                                temp_sort_by[ci] = approx_order_value_nb(
+                                temp_order_value[ci] = approx_order_value_nb(
                                     exec_state=exec_state,
                                     size=order_info["size"][col],
                                     size_type=order_info["size_type"][col],
                                     direction=order_info["direction"][col],
                                 )
-                            insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
+                                temp_bar_zone[ci] = order_info["bar_zone"][col]
+                            if same_bar_zone:
+                                insert_argsort_nb(temp_order_value[:group_len], call_seq_now)
+                            else:
+                                insert_lex_argsort_nb(
+                                    temp_bar_zone[:group_len],
+                                    temp_order_value[:group_len],
+                                    call_seq_now,
+                                )
                         else:
                             if not same_bar_zone:
                                 for ci in range(group_len):
@@ -3421,8 +3429,8 @@ def from_signals_nb(
                                     col = from_col + ci
                                     if np.isnan(order_info["size"][col]):
                                         continue
-                                    temp_sort_by[ci] = order_info["bar_zone"][col]
-                                insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
+                                    temp_bar_zone[ci] = order_info["bar_zone"][col]
+                                insert_argsort_nb(temp_bar_zone[:group_len], call_seq_now)
 
                     for k in range(group_len):
                         if cash_sharing:
@@ -4122,6 +4130,54 @@ def no_signal_func_nb(c: FSSignalContext, *args) -> tp.Tuple[bool, bool, bool, b
     return False, False, False, False
 
 
+# % <block pre_sim_func_nb>
+# % <skip? skip_func(out_lines, "pre_sim_func_nb")>
+# % <uncomment>
+# @register_jitted
+# def pre_sim_func_nb(
+#     c: FSSimulationContext,
+#     *args,
+# ) -> tp.Args:
+#     """Custom simulation pre-processing function.
+#
+#     Args:
+#         c (FSSimulationContext): Simulation context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         Args: Forwarded positional arguments.
+#     """
+#     return args
+#
+#
+# % </uncomment>
+# % </skip>
+# % </block>
+
+# % <block pre_group_func_nb>
+# % <skip? skip_func(out_lines, "pre_group_func_nb")>
+# % <uncomment>
+# @register_jitted
+# def pre_group_func_nb(
+#     c: FSGroupContext,
+#     *args,
+# ) -> tp.Args:
+#     """Custom group pre-processing function.
+#
+#     Args:
+#         c (FSGroupContext): Group context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         Args: Forwarded positional arguments.
+#     """
+#     return args
+#
+#
+# % </uncomment>
+# % </skip>
+# % </block>
+
 # % <block pre_segment_func_nb>
 # % <skip? skip_func(out_lines, "pre_segment_func_nb")>
 # % <uncomment>
@@ -4247,6 +4303,54 @@ def no_signal_func_nb(c: FSSignalContext, *args) -> tp.Tuple[bool, bool, bool, b
 # % </skip>
 # % </block>
 
+# % <block post_group_func_nb>
+# % <skip? skip_func(out_lines, "post_group_func_nb")>
+# % <uncomment>
+# @register_jitted
+# def post_group_func_nb(
+#     c: FSGroupContext,
+#     *args,
+# ) -> None:
+#     """Custom group post-processing function.
+#
+#     Args:
+#         c (FSGroupContext): Group context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         None
+#     """
+#     return None
+#
+#
+# % </uncomment>
+# % </skip>
+# % </block>
+
+# % <block post_sim_func_nb>
+# % <skip? skip_func(out_lines, "post_sim_func_nb")>
+# % <uncomment>
+# @register_jitted
+# def post_sim_func_nb(
+#     c: FSSimulationContext,
+#     *args,
+# ) -> None:
+#     """Custom simulation post-processing function.
+#
+#     Args:
+#         c (FSSimulationContext): Simulation context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         None
+#     """
+#     return None
+#
+#
+# % </uncomment>
+# % </skip>
+# % </block>
+
 
 # % <section from_signal_func_nb>
 # % <uncomment>
@@ -4256,6 +4360,10 @@ def no_signal_func_nb(c: FSSignalContext, *args) -> tp.Tuple[bool, bool, bool, b
 #
 #
 # % </uncomment>
+# %? blocks[pre_sim_func_nb_block]
+# % blocks["pre_sim_func_nb"]
+# %? blocks[pre_group_func_nb_block]
+# % blocks["pre_group_func_nb"]
 # %? blocks[pre_segment_func_nb_block]
 # % blocks["pre_segment_func_nb"]
 # %? blocks[signal_func_nb_block]
@@ -4266,6 +4374,10 @@ def no_signal_func_nb(c: FSSignalContext, *args) -> tp.Tuple[bool, bool, bool, b
 # % blocks["post_order_func_nb"]
 # %? blocks[post_segment_func_nb_block]
 # % blocks["post_segment_func_nb"]
+# %? blocks[post_group_func_nb_block]
+# % blocks["post_group_func_nb"]
+# %? blocks[post_sim_func_nb_block]
+# % blocks["post_sim_func_nb"]
 @register_chunkable(
     size=ch.ArraySizer(arg_query="group_lens", axis=0),
     arg_take_spec=dict(
@@ -4284,6 +4396,10 @@ def no_signal_func_nb(c: FSSignalContext, *args) -> tp.Tuple[bool, bool, bool, b
         cash_deposits=RepFunc(portfolio_ch.get_cash_deposits_slicer),
         cash_earnings=base_ch.flex_array_gl_slicer,
         cash_dividends=base_ch.flex_array_gl_slicer,
+        pre_sim_func_nb=None,  # % None
+        pre_sim_args=ch.ArgsTaker(),
+        pre_group_func_nb=None,  # % None
+        pre_group_args=ch.ArgsTaker(),
         pre_segment_func_nb=None,  # % None
         pre_segment_args=ch.ArgsTaker(),
         signal_func_nb=None,  # % None
@@ -4294,6 +4410,10 @@ def no_signal_func_nb(c: FSSignalContext, *args) -> tp.Tuple[bool, bool, bool, b
         post_order_args=ch.ArgsTaker(),
         post_segment_func_nb=None,  # % None
         post_segment_args=ch.ArgsTaker(),
+        post_group_func_nb=None,  # % None
+        post_group_args=ch.ArgsTaker(),
+        post_sim_func_nb=None,  # % None
+        post_sim_args=ch.ArgsTaker(),
         size=base_ch.flex_array_gl_slicer,
         price=base_ch.flex_array_gl_slicer,
         size_type=base_ch.flex_array_gl_slicer,
@@ -4381,6 +4501,10 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     cash_deposits: tp.FlexArray2dLike = 0.0,
     cash_earnings: tp.FlexArray2dLike = 0.0,
     cash_dividends: tp.FlexArray2dLike = 0.0,
+    pre_sim_func_nb: tp.FSPreSimFunc = no_pre_func_nb,  # % None
+    pre_sim_args: tp.Args = (),
+    pre_group_func_nb: tp.FSPreGroupFunc = no_pre_func_nb,  # % None
+    pre_group_args: tp.Args = (),
     pre_segment_func_nb: tp.FSPreSegmentFunc = no_pre_func_nb,  # % None
     pre_segment_args: tp.Args = (),
     signal_func_nb: tp.FSSignalFunc = no_signal_func_nb,  # % None
@@ -4391,6 +4515,10 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     post_order_args: tp.ArgsLike = (),
     post_segment_func_nb: tp.FSPostSegmentFunc = no_post_func_nb,  # % None
     post_segment_args: tp.ArgsLike = (),
+    post_group_func_nb: tp.FSPostGroupFunc = no_post_func_nb,  # % None
+    post_group_args: tp.ArgsLike = (),
+    post_sim_func_nb: tp.FSPostSimFunc = no_post_func_nb,
+    post_sim_args: tp.ArgsLike = (),
     size: tp.FlexArray2dLike = np.inf,
     price: tp.FlexArray2dLike = np.inf,
     size_type: tp.FlexArray2dLike = SizeType.Amount,
@@ -4506,11 +4634,22 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         cash_dividends (FlexArray2dLike): Cash dividends or interest at the end of each bar.
 
             Provided as a scalar, or per row, column, or element.
+        pre_sim_func_nb (FSPreSimFunc): Callback function to be called before the simulation.
+
+            Accepts `vectorbtpro.portfolio.enums.FSSimulationContext` and `*pre_sim_args`,
+            and returns a tuple that is passed to `pre_group_func_nb` and `post_sim_func_nb`.
+        pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
+        pre_group_func_nb (FSPreGroupFunc): Callback function to be called before processing a group.
+
+            Accepts `vectorbtpro.portfolio.enums.FSGroupContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*pre_group_args`, and returns a tuple that is passed to
+            `pre_segment_func_nb` and `post_group_func_nb`.
+        pre_group_args (Args): Positional arguments for `pre_group_func_nb`.
         pre_segment_func_nb (FSPreSegmentFunc): Callback function to be called before processing a segment.
 
             Accepts `vectorbtpro.portfolio.enums.FSSegmentContext` and `*pre_segment_args`,
             and returns a tuple that is passed to `signal_func_nb`, `pre_order_segment_func_nb`,
-            and `post_segment_func`.
+            and `post_segment_func_nb`.
         pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
         signal_func_nb (FSSignalFunc): Callback function to be called to generate signals.
 
@@ -4535,6 +4674,16 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
             Accepts `vectorbtpro.portfolio.enums.FSSegmentContext`, the unpacked output from
             `pre_segment_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (ArgsLike): Positional arguments for `post_segment_func_nb`.
+        post_group_func_nb (FSPostGroupFunc): Callback function to be called after processing a group.
+
+            Accepts `vectorbtpro.portfolio.enums.FSGroupContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*post_group_args`, and returns nothing.
+        post_group_args (Args): Positional arguments for `post_group_func_nb`.
+        post_sim_func_nb (FSPostSimFunc): Callback function to be called after the simulation.
+
+            Accepts `vectorbtpro.portfolio.enums.FSSimulationContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*post_sim_args`, and returns nothing.
+        post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
         size (FlexArray2dLike): Order size.
 
             Provided as a scalar, or per row, column, or element.
@@ -5070,7 +5219,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     order_info = np.empty(target_shape[1], dtype=order_info_dt)
 
     temp_call_seq = np.empty(target_shape[1], dtype=int_)
-    temp_sort_by = np.empty(target_shape[1], dtype=float_)
+    temp_order_value = np.empty(target_shape[1], dtype=float_)
+    temp_bar_zone = np.empty(target_shape[1], dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -5081,10 +5231,98 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         sim_end=sim_end,
     )
 
+    pre_sim_ctx = FSSimulationContext(
+        target_shape=target_shape,
+        group_lens=group_lens,
+        cash_sharing=cash_sharing,
+        index=index,
+        freq=freq,
+        open=open_,
+        high=high_,
+        low=low_,
+        close=close_,
+        init_cash=init_cash_,
+        init_position=init_position_,
+        init_price=init_price_,
+        order_records=order_records,
+        order_counts=order_counts,
+        log_records=log_records,
+        log_counts=log_counts,
+        track_cash_deposits=track_cash_deposits,
+        cash_deposits_out=cash_deposits_out,
+        track_cash_earnings=track_cash_earnings,
+        cash_earnings_out=cash_earnings_out,
+        in_outputs=in_outputs,
+        last_cash=last_cash,
+        last_position=last_position,
+        last_debt=last_debt,
+        last_locked_cash=last_locked_cash,
+        last_free_cash=last_free_cash,
+        last_val_price=last_val_price,
+        last_value=last_value,
+        last_return=last_return,
+        last_pos_info=last_pos_info,
+        last_limit_info=last_limit_info,
+        last_sl_info=last_sl_info,
+        last_tsl_info=last_tsl_info,
+        last_tp_info=last_tp_info,
+        last_td_info=last_td_info,
+        last_dt_info=last_dt_info,
+        sim_start=sim_start_,
+        sim_end=sim_end_,
+    )
+    pre_sim_out = pre_sim_func_nb(pre_sim_ctx, *pre_sim_args)
+
     for group in prange(len(group_lens)):
         from_col = group_start_idxs[group]
         to_col = group_end_idxs[group]
         group_len = to_col - from_col
+
+        pre_group_ctx = FSGroupContext(
+            target_shape=target_shape,
+            group_lens=group_lens,
+            cash_sharing=cash_sharing,
+            index=index,
+            freq=freq,
+            open=open_,
+            high=high_,
+            low=low_,
+            close=close_,
+            init_cash=init_cash_,
+            init_position=init_position_,
+            init_price=init_price_,
+            order_records=order_records,
+            order_counts=order_counts,
+            log_records=log_records,
+            log_counts=log_counts,
+            track_cash_deposits=track_cash_deposits,
+            cash_deposits_out=cash_deposits_out,
+            track_cash_earnings=track_cash_earnings,
+            cash_earnings_out=cash_earnings_out,
+            in_outputs=in_outputs,
+            last_cash=last_cash,
+            last_position=last_position,
+            last_debt=last_debt,
+            last_locked_cash=last_locked_cash,
+            last_free_cash=last_free_cash,
+            last_val_price=last_val_price,
+            last_value=last_value,
+            last_return=last_return,
+            last_pos_info=last_pos_info,
+            last_limit_info=last_limit_info,
+            last_sl_info=last_sl_info,
+            last_tsl_info=last_tsl_info,
+            last_tp_info=last_tp_info,
+            last_td_info=last_td_info,
+            last_dt_info=last_dt_info,
+            sim_start=sim_start_,
+            sim_end=sim_end_,
+            group=group,
+            group_len=group_len,
+            from_col=from_col,
+            to_col=to_col,
+        )
+        pre_group_out = pre_group_func_nb(pre_group_ctx, *pre_sim_out, *pre_group_args)
 
         _sim_start = sim_start_[group]
         _sim_end = sim_end_[group]
@@ -5166,7 +5404,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                 to_col=to_col,
                 i=i,
             )
-            pre_segment_out = pre_segment_func_nb(pre_segment_ctx, *pre_segment_args)
+            pre_segment_out = pre_segment_func_nb(pre_segment_ctx, *pre_group_out, *pre_segment_args)
 
             if cash_sharing:
                 _cash_deposits = flex_select_nb(cash_deposits_, i, group)
@@ -5382,7 +5620,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     order_info["direction"][col] = -1
                     order_info["type"][col] = -1
                     order_info["stop_type"][col] = -1
-                    temp_sort_by[col] = 0.0
 
                     is_long_entry = (last_signal[col] >> 10) & 1
                     is_long_exit = (last_signal[col] >> 9) & 1
@@ -6482,18 +6719,16 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                 if not skip:
                     bar_zone = -1
                     same_bar_zone = True
-                    same_timing = True
                     for ci in range(group_len):
                         col = from_col + ci
+                        temp_order_value[col] = 0.0
+                        temp_bar_zone[col] = -1
                         if np.isnan(order_info["size"][col]):
                             continue
                         if bar_zone == -1:
                             bar_zone = order_info["bar_zone"][col]
                         if order_info["bar_zone"][col] != bar_zone:
                             same_bar_zone = False
-                            same_timing = False
-                        if order_info["bar_zone"][col] == BarZone.Middle:
-                            same_timing = False
                         _val_price = order_info["val_price"][col]
                         if not np.isnan(_val_price) or not ffill_val_price:
                             last_val_price[col] = _val_price
@@ -6506,8 +6741,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         else:
                             call_seq_now = call_seq[i, from_col:to_col]
                         if auto_call_seq:
-                            if not same_timing:
-                                raise ValueError("Cannot sort orders by value if they are executed at different times")
                             for ci in range(group_len):
                                 if call_seq_now[ci] != ci:
                                     raise ValueError("Call sequence must follow CallSeqType.Default")
@@ -6523,13 +6756,21 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     val_price=last_val_price[col],
                                     value=last_value[group] if cash_sharing else last_value[col],
                                 )
-                                temp_sort_by[ci] = approx_order_value_nb(
+                                temp_order_value[ci] = approx_order_value_nb(
                                     exec_state=exec_state,
                                     size=order_info["size"][col],
                                     size_type=order_info["size_type"][col],
                                     direction=order_info["direction"][col],
                                 )
-                            insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
+                                temp_bar_zone[ci] = order_info["bar_zone"][col]
+                            if same_bar_zone:
+                                insert_argsort_nb(temp_order_value[:group_len], call_seq_now)
+                            else:
+                                insert_lex_argsort_nb(
+                                    temp_bar_zone[:group_len],
+                                    temp_order_value[:group_len],
+                                    call_seq_now,
+                                )
                         else:
                             if not same_bar_zone:
                                 for ci in range(group_len):
@@ -6538,8 +6779,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     col = from_col + ci
                                     if np.isnan(order_info["size"][col]):
                                         continue
-                                    temp_sort_by[ci] = order_info["bar_zone"][col]
-                                insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
+                                    temp_bar_zone[ci] = order_info["bar_zone"][col]
+                                insert_argsort_nb(temp_bar_zone[:group_len], call_seq_now)
 
                     for k in range(group_len):
                         if cash_sharing:
@@ -7273,6 +7514,94 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             if i >= sim_end_[group] - 1:
                 break
+
+        post_group_ctx = FSGroupContext(
+            target_shape=target_shape,
+            group_lens=group_lens,
+            cash_sharing=cash_sharing,
+            index=index,
+            freq=freq,
+            open=open_,
+            high=high_,
+            low=low_,
+            close=close_,
+            init_cash=init_cash_,
+            init_position=init_position_,
+            init_price=init_price_,
+            order_records=order_records,
+            order_counts=order_counts,
+            log_records=log_records,
+            log_counts=log_counts,
+            track_cash_deposits=track_cash_deposits,
+            cash_deposits_out=cash_deposits_out,
+            track_cash_earnings=track_cash_earnings,
+            cash_earnings_out=cash_earnings_out,
+            in_outputs=in_outputs,
+            last_cash=last_cash,
+            last_position=last_position,
+            last_debt=last_debt,
+            last_locked_cash=last_locked_cash,
+            last_free_cash=last_free_cash,
+            last_val_price=last_val_price,
+            last_value=last_value,
+            last_return=last_return,
+            last_pos_info=last_pos_info,
+            last_limit_info=last_limit_info,
+            last_sl_info=last_sl_info,
+            last_tsl_info=last_tsl_info,
+            last_tp_info=last_tp_info,
+            last_td_info=last_td_info,
+            last_dt_info=last_dt_info,
+            sim_start=sim_start_,
+            sim_end=sim_end_,
+            group=group,
+            group_len=group_len,
+            from_col=from_col,
+            to_col=to_col,
+        )
+        post_group_func_nb(post_group_ctx, *pre_group_out, *post_group_args)
+
+    post_sim_ctx = FSSimulationContext(
+        target_shape=target_shape,
+        group_lens=group_lens,
+        cash_sharing=cash_sharing,
+        index=index,
+        freq=freq,
+        open=open_,
+        high=high_,
+        low=low_,
+        close=close_,
+        init_cash=init_cash_,
+        init_position=init_position_,
+        init_price=init_price_,
+        order_records=order_records,
+        order_counts=order_counts,
+        log_records=log_records,
+        log_counts=log_counts,
+        track_cash_deposits=track_cash_deposits,
+        cash_deposits_out=cash_deposits_out,
+        track_cash_earnings=track_cash_earnings,
+        cash_earnings_out=cash_earnings_out,
+        in_outputs=in_outputs,
+        last_cash=last_cash,
+        last_position=last_position,
+        last_debt=last_debt,
+        last_locked_cash=last_locked_cash,
+        last_free_cash=last_free_cash,
+        last_val_price=last_val_price,
+        last_value=last_value,
+        last_return=last_return,
+        last_pos_info=last_pos_info,
+        last_limit_info=last_limit_info,
+        last_sl_info=last_sl_info,
+        last_tsl_info=last_tsl_info,
+        last_tp_info=last_tp_info,
+        last_td_info=last_td_info,
+        last_dt_info=last_dt_info,
+        sim_start=sim_start_,
+        sim_end=sim_end_,
+    )
+    post_sim_func_nb(post_sim_ctx, *pre_sim_out, *post_sim_args)
 
     sim_start_out, sim_end_out = generic_nb.resolve_ungrouped_sim_range_nb(
         target_shape=target_shape,
