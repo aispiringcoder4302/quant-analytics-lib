@@ -5257,6 +5257,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         func_name: tp.Union[None, str, run_func_dict] = None,
         func_args: tp.Union[tp.ArgsLike, run_func_dict] = None,
         func_kwargs: tp.Union[tp.KwargsLike, run_func_dict] = None,
+        indicator_kwargs: tp.Union[tp.KwargsLike, run_func_dict] = None,
         name_numbering: tp.Optional[str] = None,
         magnet_kwargs: tp.KwargsLike = None,
         ignore_args: tp.Optional[tp.Sequence[str]] = None,
@@ -5317,6 +5318,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Can be provided per function using `run_func_dict`.
             func_kwargs (Union[KwargsLike, run_func_dict]): Extra keyword arguments for the function.
 
+                Can be provided per function using `run_func_dict`.
+            indicator_kwargs (KwargsLike): Keyword arguments for the respective indicator constructor.
+
+                See `vectorbtpro.indicators.factory.IndicatorFactory.get_indicator`.
                 Can be provided per function using `run_func_dict`.
             name_numbering (Optional[str]): Naming convention for duplicate types.
 
@@ -5391,21 +5396,46 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     true_name = f.__name__
                 elif isinstance(f, str):
                     if _location is not None:
-                        true_name = f.lower().strip()
+                        matched_location = IndicatorFactory.match_location(_location)
+                        if matched_location is not None:
+                            _location = matched_location
+                        true_name = None
+                        if _location == "expr":
+                            _, true_name, _ = IndicatorFactory.parse_expr_name(f)
+                        if true_name is None:
+                            true_name = f
+                            true_name_parsed = False
+                        else:
+                            true_name_parsed = True
+                        true_name = true_name.lower().strip()
                         if true_name == "*":
                             true_name = "all"
                         if prepend_location is True:
-                            true_name = _location + "_" + true_name
+                            if not true_name_parsed and _location == "expr":
+                                true_name = _location + ":" + true_name
+                            else:
+                                true_name = _location + "_" + true_name
                     else:
                         _location, f = IndicatorFactory.split_indicator_name(f)
                         if f is None:
                             raise ValueError("Sequence of locations is not supported")
-                        true_name = f.lower().strip()
+                        true_name = None
+                        if _location is not None and _location == "expr":
+                            _, true_name, _ = IndicatorFactory.parse_expr_name(f)
+                        if true_name is None:
+                            true_name = f
+                            true_name_parsed = False
+                        else:
+                            true_name_parsed = True
+                        true_name = true_name.lower().strip()
                         if true_name == "*":
                             true_name = "all"
                         if _location is not None:
                             if prepend_location in (None, True):
-                                true_name = _location + "_" + true_name
+                                if not true_name_parsed and _location == "expr":
+                                    true_name = _location + ":" + true_name
+                                else:
+                                    true_name = _location + "_" + true_name
                 else:
                     true_name = f
                 if true_name not in f_id_number:
@@ -5450,12 +5480,17 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     new_func_kwargs = _self.select_run_func_kwargs(i, out_name, func_kwargs)
                 else:
                     new_func_kwargs = {}
+                if indicator_kwargs is not None:
+                    new_indicator_kwargs = _self.select_run_func_kwargs(i, out_name, indicator_kwargs)
+                else:
+                    new_indicator_kwargs = {}
                 if concat and _location == "talib_func":
                     new_kwargs["unpack_to"] = "frame"
                 new_kwargs = {
                     **dict(
                         func_args=new_func_args,
                         func_kwargs=new_func_kwargs,
+                        indicator_kwargs=new_indicator_kwargs,
                         magnet_kwargs=magnet_kwargs,
                         ignore_args=ignore_args,
                         rename_args=rename_args,
@@ -5533,7 +5568,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     raise ValueError("Portfolio cannot be unpacked")
                 return pf
             if location is None:
-                location, func_name = IndicatorFactory.split_indicator_name(func_name)
+                location, func = IndicatorFactory.split_indicator_name(func)
+                if func is None:
+                    func_name = None
+                else:
+                    func_name = func.lower().strip()
             if location is not None and (func_name is None or func_name == "all" or func_name == "*"):
                 matched_location = IndicatorFactory.match_location(location)
                 if matched_location is not None:
@@ -5553,6 +5592,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     *args,
                     func_args=func_args,
                     func_kwargs=func_kwargs,
+                    indicator_kwargs=indicator_kwargs,
                     magnet_kwargs=magnet_kwargs,
                     ignore_args=ignore_args,
                     rename_args=rename_args,
@@ -5576,10 +5616,18 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     location = matched_location
                 if location == "talib_func":
                     func = talib_func(func_name)
+                elif location == "expr":
+                    if indicator_kwargs is None:
+                        indicator_kwargs = {}
+                    func = IndicatorFactory.get_indicator(func, location=location, **indicator_kwargs)
                 else:
-                    func = IndicatorFactory.get_indicator(func_name, location=location)
+                    if indicator_kwargs is None:
+                        indicator_kwargs = {}
+                    func = IndicatorFactory.get_indicator(func_name, location=location, **indicator_kwargs)
             else:
-                func = IndicatorFactory.get_indicator(func_name)
+                if indicator_kwargs is None:
+                    indicator_kwargs = {}
+                func = IndicatorFactory.get_indicator(func_name, **indicator_kwargs)
             if out_name is not None:
                 func_name = out_name
         if isinstance(func, type) and issubclass(func, IndicatorBase):

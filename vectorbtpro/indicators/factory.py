@@ -3585,6 +3585,7 @@ class IndicatorFactory(Configured):
             "techcon",
             "smc",
             "wqa101",
+            "expr",
         ]
 
     @classmethod
@@ -3631,8 +3632,9 @@ class IndicatorFactory(Configured):
         if matched_location is not None:
             return matched_location, None
         if ":" in name:
-            location = name.split(":")[0].strip()
-            name = name.split(":")[1].strip()
+            parts = name.split(":", 1)
+            location = parts[0].strip()
+            name = parts[1].strip()
         else:
             location = None
             found_location = False
@@ -3654,6 +3656,7 @@ class IndicatorFactory(Configured):
         name: tp.Optional[str] = None,
         location: tp.Optional[str] = None,
         if_exists: str = "raise",
+        **kwargs,
     ) -> None:
         """Register a custom indicator under a custom location.
 
@@ -3664,12 +3667,13 @@ class IndicatorFactory(Configured):
             location (Optional[str]): Custom location where the indicator should be registered.
             if_exists (str): Behavior if an indicator with the same name already exists;
                 must be "raise", "skip", or "override".
+            **kwargs: Keyword arguments for `IndicatorFactory.get_indicator`.
 
         Returns:
             None
         """
         if isinstance(indicator, str):
-            indicator = cls.get_indicator(indicator)
+            indicator = cls.get_indicator(indicator, **kwargs)
         if name is None:
             name = indicator.__name__
         elif location is None:
@@ -3967,7 +3971,7 @@ class IndicatorFactory(Configured):
         return found_indicators
 
     @classmethod
-    def get_indicator(cls, name: str, location: tp.Optional[str] = None) -> tp.Type[IndicatorBase]:
+    def get_indicator(cls, name: str, location: tp.Optional[str] = None, **kwargs) -> tp.Type[IndicatorBase]:
         """Return the indicator class corresponding to the given name and location.
 
         The indicator name can include a location prefix separated by a colon. For example,
@@ -3977,6 +3981,7 @@ class IndicatorFactory(Configured):
         Args:
             name (str): Name of the indicator, optionally including a location prefix.
             location (Optional[str]): Location to filter the search for the indicator.
+            **kwargs: Keyword arguments for the respective indicator constructor.
 
         Returns:
             Type[IndicatorBase]: Indicator class matching the provided name.
@@ -3988,8 +3993,11 @@ class IndicatorFactory(Configured):
             if matched_location is not None:
                 location = matched_location
         if name is not None:
-            name = name.upper()
             if location is not None:
+                if location == "expr":
+                    return cls.from_expr(name, **kwargs)
+
+                name = name.upper()
                 if location in cls.list_custom_locations():
                     return cls.get_custom_indicator(name, location=location)
                 if location == "vbt":
@@ -3997,42 +4005,43 @@ class IndicatorFactory(Configured):
 
                     return getattr(vbt, name.upper())
                 if location == "talib":
-                    return cls.from_talib(name)
+                    return cls.from_talib(name, **kwargs)
                 if location == "pandas_ta":
-                    return cls.from_pandas_ta(name)
+                    return cls.from_pandas_ta(name, **kwargs)
                 if location == "ta":
-                    return cls.from_ta(name)
+                    return cls.from_ta(name, **kwargs)
                 if location == "technical":
-                    return cls.from_technical(name)
+                    return cls.from_technical(name, **kwargs)
                 if location == "techcon":
-                    return cls.from_techcon(name)
+                    return cls.from_techcon(name, **kwargs)
                 if location == "smc":
-                    return cls.from_smc(name)
+                    return cls.from_smc(name, **kwargs)
                 if location == "wqa101":
-                    return cls.from_wqa101(int(name))
+                    return cls.from_wqa101(int(name), **kwargs)
                 raise ValueError(f"Location {location!r} not found")
             else:
                 import vectorbtpro as vbt
                 from vectorbtpro.utils.module_ import check_installed
 
+                name = name.upper()
                 if name in cls.list_custom_indicators(uppercase=True, prepend_location=False):
                     return cls.get_custom_indicator(name, return_first=True)
                 if hasattr(vbt, name):
                     return getattr(vbt, name)
                 if str(name).isnumeric():
-                    return cls.from_wqa101(int(name))
+                    return cls.from_wqa101(int(name), **kwargs)
                 if check_installed("smc") and name in cls.list_smc_indicators():
-                    return cls.from_smc(name)
+                    return cls.from_smc(name, **kwargs)
                 if check_installed("technical") and name in cls.list_techcon_indicators():
-                    return cls.from_techcon(name)
+                    return cls.from_techcon(name, **kwargs)
                 if check_installed("talib") and name in cls.list_talib_indicators():
-                    return cls.from_talib(name)
+                    return cls.from_talib(name, **kwargs)
                 if check_installed("ta") and name in cls.list_ta_indicators(uppercase=True):
-                    return cls.from_ta(name)
+                    return cls.from_ta(name, **kwargs)
                 if check_installed("pandas_ta") and name in cls.list_pandas_ta_indicators():
-                    return cls.from_pandas_ta(name)
+                    return cls.from_pandas_ta(name, **kwargs)
                 if check_installed("technical") and name in cls.list_technical_indicators():
-                    return cls.from_technical(name)
+                    return cls.from_technical(name, **kwargs)
         raise ValueError(f"Indicator class {name!r} not found")
 
     # ############# Third party ############# #
@@ -5387,6 +5396,26 @@ class IndicatorFactory(Configured):
         ).with_apply_func(apply_func, pass_packed=True, keep_pd=True, takes_1d=True, **kwargs)
         return Indicator
 
+    @classmethod
+    def parse_expr_name(cls, expr: str) -> tp.Tuple[str, tp.Optional[str], tp.Optional[str]]:
+        """Parse the class name and short name from the expression.
+
+        Args:
+            expr (str): Expression string.
+
+        Returns:
+            Tuple[str, Optional[str], Optional[str]]: Modified expression, class name, and short name.
+        """
+        class_name = None
+        short_name = None
+        match = re.match(r"^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:\[([a-zA-Z_][a-zA-Z0-9_]*)\])?\s*:\s*", expr)
+        if match:
+            class_name = match.group(1)
+            if match.group(2):
+                short_name = match.group(2)
+            expr = expr[len(match.group(0)) :]
+        return expr, class_name, short_name
+
     @hybrid_method
     def from_expr(
         cls_or_self,
@@ -5584,12 +5613,11 @@ class IndicatorFactory(Configured):
                 )
             )
 
-            match = re.match(r"^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:\[([a-zA-Z_][a-zA-Z0-9_]*)\])?\s*:\s*", expr)
-            if match:
-                settings["factory_kwargs"]["class_name"] = match.group(1)
-                if match.group(2):
-                    settings["factory_kwargs"]["short_name"] = match.group(2)
-                expr = expr[len(match.group(0)) :]
+            expr, expr_class_name, expr_short_name = cls_or_self.parse_expr_name(expr)
+            if expr_class_name is not None:
+                settings["factory_kwargs"]["class_name"] = expr_class_name
+            if expr_short_name is not None:
+                settings["factory_kwargs"]["short_name"] = expr_short_name
 
             if "@settings" in expr:
                 remove_chars = set()

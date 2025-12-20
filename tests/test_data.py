@@ -2449,6 +2449,8 @@ class TestData:
             assert_frame_equal(data.run("talib:sma", 3).real, vbt.talib("SMA").run(data.close, 3).real)
             assert_frame_equal(data.run("pandas_ta:sma", 3).sma, vbt.pandas_ta("SMA").run(data.close, 3).sma)
             assert_frame_equal(data.run("wqa101:1").out, vbt.wqa101(1).run(data.close).out)
+            assert_frame_equal(data.run("expr:close + 10").out, data.close + 10)
+            assert_frame_equal(data.run("expr:CP10: close + 10").out, data.close + 10)
             assert_frame_equal(data.run("talib_sma", 3).real, vbt.talib("SMA").run(data.close, 3).real)
             assert_frame_equal(data.run("pandas_ta_sma", 3).sma, vbt.pandas_ta("SMA").run(data.close, 3).sma)
             assert_frame_equal(data.run("wqa101_1").out, vbt.wqa101(1).run(data.close).out)
