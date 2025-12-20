@@ -188,45 +188,58 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
                         elif not has_var_kwargs:
                             pass_kwargs[arg_name] = kwargs[arg_name]
 
-                    returns = self.returns_acc.select_col_from_obj(
-                        self.returns_acc.obj,
-                        column=column,
-                        wrapper=self.returns_acc.wrapper.regroup(False),
-                    )
-                    if returns.name is None:
-                        returns = returns.rename("Strategy")
-                    else:
-                        returns = returns.rename(str(returns.name))
-                    null_mask = returns.isnull()
-                    if "benchmark" in pass_kwargs and pass_kwargs["benchmark"] is not None:
-                        benchmark = pass_kwargs["benchmark"]
-                        benchmark = self.returns_acc.select_col_from_obj(
-                            benchmark,
+                    def _col_apply_func(column, **pass_kwargs):
+                        returns = self.returns_acc.select_col_from_obj(
+                            self.returns_acc.obj,
                             column=column,
                             wrapper=self.returns_acc.wrapper.regroup(False),
                         )
-                        if benchmark.name is None:
-                            benchmark = benchmark.rename("Benchmark")
+                        if returns.name is None:
+                            returns = returns.rename("Strategy")
                         else:
-                            benchmark = benchmark.rename(str(benchmark.name))
-                        bm_null_mask = benchmark.isnull()
-                        null_mask = null_mask | bm_null_mask
-                        benchmark = benchmark.loc[~null_mask]
-                        if isinstance(benchmark.index, pd.DatetimeIndex):
-                            if benchmark.index.tz is not None:
-                                benchmark = benchmark.tz_convert("utc")
-                            if benchmark.index.tz is not None:
-                                benchmark = benchmark.tz_localize(None)
-                        pass_kwargs["benchmark"] = benchmark
-                    returns = returns.loc[~null_mask]
-                    if isinstance(returns.index, pd.DatetimeIndex):
-                        if returns.index.tz is not None:
-                            returns = returns.tz_convert("utc")
-                        if returns.index.tz is not None:
-                            returns = returns.tz_localize(None)
+                            returns = returns.rename(str(returns.name))
+                        null_mask = returns.isnull()
+                        if "benchmark" in pass_kwargs and pass_kwargs["benchmark"] is not None:
+                            benchmark = pass_kwargs["benchmark"]
+                            benchmark = self.returns_acc.select_col_from_obj(
+                                benchmark,
+                                column=column,
+                                wrapper=self.returns_acc.wrapper.regroup(False),
+                            )
+                            if benchmark.name is None:
+                                benchmark = benchmark.rename("Benchmark")
+                            else:
+                                benchmark = benchmark.rename(str(benchmark.name))
+                            bm_null_mask = benchmark.isnull()
+                            null_mask = null_mask | bm_null_mask
+                            benchmark = benchmark.loc[~null_mask]
+                            if isinstance(benchmark.index, pd.DatetimeIndex):
+                                if benchmark.index.tz is not None:
+                                    benchmark = benchmark.tz_convert("utc")
+                                if benchmark.index.tz is not None:
+                                    benchmark = benchmark.tz_localize(None)
+                            pass_kwargs["benchmark"] = benchmark
+                        returns = returns.loc[~null_mask]
+                        if isinstance(returns.index, pd.DatetimeIndex):
+                            if returns.index.tz is not None:
+                                returns = returns.tz_convert("utc")
+                            if returns.index.tz is not None:
+                                returns = returns.tz_localize(None)
 
-                    signature(_func).bind(returns=returns, **pass_kwargs)
-                    return _func(returns=returns, **pass_kwargs)
+                        signature(_func).bind(returns=returns, **pass_kwargs)
+                        return _func(returns=returns, **pass_kwargs)
+
+                    if column is not None:
+                        return _col_apply_func(column, **pass_kwargs)
+                    obj = self.returns_acc.obj
+                    if isinstance(obj, pd.Series):
+                        return _col_apply_func(None, **pass_kwargs)
+                    outputs = [_col_apply_func(c, **pass_kwargs) for c in obj.columns]
+                    if all(o is None for o in outputs):
+                        return None
+                    if any(isinstance(o, pd.Series) for o in outputs):
+                        return pd.concat(outputs, axis=1, keys=obj.columns)
+                    return pd.Series(outputs, index=obj.columns)
 
                 if replace_signature:
                     source_sig = signature(qs_func)

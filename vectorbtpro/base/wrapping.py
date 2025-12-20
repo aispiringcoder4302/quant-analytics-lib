@@ -194,7 +194,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
                 if _self.wrapper.grouped_ndim == 1:
                     raise TypeError("This instance already contains one group of data")
                 if column not in _self.wrapper.get_columns():
-                    if isinstance(column, int):
+                    if checks.is_int(column):
                         if _self.column_only_select:
                             return _check_out_dim(_self.iloc[column])
                         return _check_out_dim(_self.iloc[:, column])
@@ -203,7 +203,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
                 if _self.wrapper.ndim == 1:
                     raise TypeError("This instance already contains one column of data")
                 if column not in _self.wrapper.columns:
-                    if isinstance(column, int):
+                    if checks.is_int(column):
                         if _self.column_only_select:
                             return _check_out_dim(_self.iloc[column])
                         return _check_out_dim(_self.iloc[:, column])
@@ -284,7 +284,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
                     return obj.loc[mask]
                 else:
                     if column not in _wrapper.get_columns():
-                        if isinstance(column, int):
+                        if checks.is_int(column):
                             if isinstance(obj, pd.DataFrame):
                                 return _check_out_dim(obj.iloc[:, column], True)
                             return _check_out_dim(obj.iloc[column], False)
@@ -293,7 +293,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
                 if _wrapper.ndim == 1:
                     raise TypeError("This instance already contains one column of data")
                 if column not in _wrapper.columns:
-                    if isinstance(column, int):
+                    if checks.is_int(column):
                         if isinstance(obj, pd.DataFrame):
                             return _check_out_dim(obj.iloc[:, column], True)
                         return _check_out_dim(obj.iloc[column], False)
