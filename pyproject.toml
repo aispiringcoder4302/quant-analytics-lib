@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vectorbtpro"
-version = "2025.10.15"
+version = "2025.12.21"
 description = "Next-Generation Quantitative Analysis Tool"
 license = { file = "LICENSE" }
 authors = [{ name = "Oleg Polakow", email = "olegpolakow@vectorbt.pro" }]
