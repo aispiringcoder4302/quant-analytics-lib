@@ -4517,7 +4517,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     post_segment_args: tp.ArgsLike = (),
     post_group_func_nb: tp.FSPostGroupFunc = no_post_func_nb,  # % None
     post_group_args: tp.ArgsLike = (),
-    post_sim_func_nb: tp.FSPostSimFunc = no_post_func_nb,
+    post_sim_func_nb: tp.FSPostSimFunc = no_post_func_nb,  # % None
     post_sim_args: tp.ArgsLike = (),
     size: tp.FlexArray2dLike = np.inf,
     price: tp.FlexArray2dLike = np.inf,
