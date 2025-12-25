@@ -1638,3 +1638,41 @@ def get_order_result_nb(
         val_price=val_price,
         update_value=update_value,
     )
+
+
+@register_jitted
+def fill_col_order_info_nb(
+    c: tp.FSPreOrderSegmentContext,
+    col: int,
+    order: Order,
+) -> None:
+    """Fill in order information for the specified column before order execution.
+
+    Args:
+        c (FSPreOrderSegmentContext): Relevant context.
+        col (int): Index of the column.
+        order (Order): Order to execute.
+
+            See `vectorbtpro.portfolio.enums.Order`.
+
+    Returns:
+        None: This function modifies the context in place.
+    """
+    c.order_info["size"][col] = order.size
+    c.order_info["price"][col] = order.price
+    c.order_info["size_type"][col] = order.size_type
+    c.order_info["direction"][col] = order.direction
+    c.order_info["fees"][col] = order.fees
+    c.order_info["fixed_fees"][col] = order.fixed_fees
+    c.order_info["slippage"][col] = order.slippage
+    c.order_info["min_size"][col] = order.min_size
+    c.order_info["max_size"][col] = order.max_size
+    c.order_info["size_granularity"][col] = order.size_granularity
+    c.order_info["cash_limit"][col] = order.cash_limit
+    c.order_info["leverage"][col] = order.leverage
+    c.order_info["leverage_mode"][col] = order.leverage_mode
+    c.order_info["reject_prob"][col] = order.reject_prob
+    c.order_info["price_area_vio_mode"][col] = order.price_area_vio_mode
+    c.order_info["allow_partial"][col] = order.allow_partial
+    c.order_info["raise_reject"][col] = order.raise_reject
+    c.order_info["log"][col] = order.log

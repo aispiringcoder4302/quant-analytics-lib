@@ -3402,10 +3402,24 @@ order_info_fields = [
     ("creation_idx", int_),
     ("idx", int_),
     ("val_price", float_),
-    ("price", float_),
     ("size", float_),
+    ("price", float_),
     ("size_type", int_),
     ("direction", int_),
+    ("fees", float_),
+    ("fixed_fees", float_),
+    ("slippage", float_),
+    ("min_size", float_),
+    ("max_size", float_),
+    ("size_granularity", float_),
+    ("cash_limit", float_),
+    ("leverage", float_),
+    ("leverage_mode", int_),
+    ("reject_prob", float_),
+    ("price_area_vio_mode", int_),
+    ("allow_partial", np.bool_),
+    ("raise_reject", np.bool_),
+    ("log", np.bool_),
     ("type", int_),
     ("stop_type", int_),
 ]
@@ -3426,12 +3440,26 @@ Fields:
     bar_zone: See `vectorbtpro.generic.enums.BarZone`.
     signal_idx: Row where signal was placed.
     creation_idx: Row where order was created.
-    i: Row from which order information was taken.
+    idx: Row from which order information was taken.
     val_price: Valuation price.
-    price: Requested price.
-    size: Order size.
-    size_type: See `SizeType`.
-    direction: See `Direction`.
+    size: See `Order.size`.
+    price: See `Order.price`.
+    size_type: See `Order..size_type`.
+    direction: See `Order.direction`.
+    fees: See `Order.fees`.
+    fixed_fees: See `Order.fixed_fees`.
+    slippage: See `Order.slippage`.
+    min_size: See `Order.min_size`.
+    max_size: See `Order.max_size`.
+    size_granularity: See `Order.size_granularity`.
+    cash_limit: See `Order.cash_limit`.
+    leverage: See `Order.leverage`.
+    leverage_mode: See `Order.leverage_mode`.
+    reject_prob: See `Order.reject_prob`.
+    price_area_vio_mode: See `Order.price_area_vio_mode`.
+    allow_partial: See `Order.allow_partial`.
+    raise_reject: See `Order.raise_reject`.
+    log: See `Order.log`.
     type: See `OrderType`.
     stop_type: See `vectorbtpro.signals.enums.StopType`.
 """
@@ -3440,8 +3468,8 @@ limit_info_fields = [
     ("signal_idx", int_),
     ("creation_idx", int_),
     ("init_idx", int_),
-    ("init_price", float_),
     ("init_size", float_),
+    ("init_price", float_),
     ("init_size_type", int_),
     ("init_direction", int_),
     ("init_stop_type", int_),
@@ -3470,8 +3498,8 @@ Fields:
     signal_idx: Row index for the signal.
     creation_idx: Row index for limit creation.
     init_idx: Initial order row index from which information is taken.
-    init_price: Initial price.
     init_size: Order size.
+    init_price: Initial price.
     init_size_type: See `SizeType`.
     init_direction: See `Direction`.
     init_stop_type: See `vectorbtpro.signals.enums.StopType`.
@@ -3489,8 +3517,8 @@ sl_info_fields = [
     ("init_price", float_),
     ("init_position", float_),
     ("stop", float_),
-    ("exit_price", float_),
     ("exit_size", float_),
+    ("exit_price", float_),
     ("exit_size_type", int_),
     ("exit_type", int_),
     ("order_type", int_),
@@ -3518,8 +3546,8 @@ Fields:
     init_price: Initial order price.
     init_position: Initial position.
     stop: Updated stop value.
-    exit_price: See `StopExitPrice`.
     exit_size: Order size.
+    exit_price: See `StopExitPrice`.
     exit_size_type: See `SizeType`.
     exit_type: See `StopExitType`.
     order_type: See `OrderType`.
@@ -3538,8 +3566,8 @@ tsl_info_fields = [
     ("peak_price", float_),
     ("stop", float_),
     ("th", float_),
-    ("exit_price", float_),
     ("exit_size", float_),
+    ("exit_price", float_),
     ("exit_size_type", int_),
     ("exit_type", int_),
     ("order_type", int_),
@@ -3570,8 +3598,8 @@ Fields:
     peak_price: Peak price value.
     stop: Updated stop value.
     th: Updated threshold value.
-    exit_price: See `StopExitPrice`.
     exit_size: Order size.
+    exit_price: See `StopExitPrice`.
     exit_size_type: See `SizeType`.
     exit_type: See `StopExitType`.
     order_type: See `OrderType`.
@@ -3587,8 +3615,8 @@ tp_info_fields = [
     ("init_price", float_),
     ("init_position", float_),
     ("stop", float_),
-    ("exit_price", float_),
     ("exit_size", float_),
+    ("exit_price", float_),
     ("exit_size_type", int_),
     ("exit_type", int_),
     ("order_type", int_),
@@ -3616,8 +3644,8 @@ Fields:
     init_price: Initial order price.
     init_position: Initial position.
     stop: Updated stop value.
-    exit_price: See `StopExitPrice`.
     exit_size: Order size.
+    exit_price: See `StopExitPrice`.
     exit_size_type: See `SizeType`.
     exit_type: See `StopExitType`.
     order_type: See `OrderType`.
@@ -3632,8 +3660,8 @@ time_info_fields = [
     ("init_idx", int_),
     ("init_position", float_),
     ("stop", np.int64),
-    ("exit_price", float_),
     ("exit_size", float_),
+    ("exit_price", float_),
     ("exit_size_type", int_),
     ("exit_type", int_),
     ("order_type", int_),
@@ -3661,8 +3689,8 @@ Fields:
     init_idx: Initial row index.
     init_position: Initial position.
     stop: Updated stop value.
-    exit_price: See `StopExitPrice`.
     exit_size: Order size.
+    exit_price: See `StopExitPrice`.
     exit_size_type: See `SizeType`.
     exit_type: See `StopExitType`.
     order_type: See `OrderType`.

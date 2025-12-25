@@ -1039,13 +1039,13 @@ def from_basic_signals_nb(
                 for ci in range(group_len):
                     col = from_col + ci
 
-                    order_info["bar_zone"][col] = -1
-                    order_info["signal_idx"][col] = -1
-                    order_info["creation_idx"][col] = -1
+                    order_info["bar_zone"][col] = BarZone.Close
+                    order_info["signal_idx"][col] = i
+                    order_info["creation_idx"][col] = i
                     order_info["idx"][col] = i
-                    order_info["val_price"][col] = np.nan
-                    order_info["price"][col] = np.nan
+                    order_info["val_price"][col] = last_val_price[col]
                     order_info["size"][col] = np.nan
+                    order_info["price"][col] = np.nan
                     order_info["size_type"][col] = -1
                     order_info["direction"][col] = -1
                     order_info["type"][col] = OrderType.Market
@@ -1139,8 +1139,8 @@ def from_basic_signals_nb(
                         order_info["creation_idx"][col] = i
                         order_info["idx"][col] = _i
                         order_info["val_price"][col] = last_val_price[col]
-                        order_info["price"][col] = _price
                         order_info["size"][col] = _size
+                        order_info["price"][col] = _price
                         order_info["size_type"][col] = _size_type
                         order_info["direction"][col] = _direction
 
@@ -2087,8 +2087,8 @@ def from_signals_nb(
     last_limit_info["signal_idx"][:] = -1
     last_limit_info["creation_idx"][:] = -1
     last_limit_info["init_idx"][:] = -1
-    last_limit_info["init_price"][:] = np.nan
     last_limit_info["init_size"][:] = np.nan
+    last_limit_info["init_price"][:] = np.nan
     last_limit_info["init_size_type"][:] = -1
     last_limit_info["init_direction"][:] = -1
     last_limit_info["init_stop_type"][:] = -1
@@ -2106,8 +2106,8 @@ def from_signals_nb(
         last_sl_info["init_price"][:] = np.nan
         last_sl_info["init_position"][:] = np.nan
         last_sl_info["stop"][:] = np.nan
-        last_sl_info["exit_price"][:] = -1
         last_sl_info["exit_size"][:] = np.nan
+        last_sl_info["exit_price"][:] = -1
         last_sl_info["exit_size_type"][:] = -1
         last_sl_info["exit_type"][:] = -1
         last_sl_info["order_type"][:] = -1
@@ -2125,8 +2125,8 @@ def from_signals_nb(
         last_tsl_info["peak_price"][:] = np.nan
         last_tsl_info["stop"][:] = np.nan
         last_tsl_info["th"][:] = np.nan
-        last_tsl_info["exit_price"][:] = -1
         last_tsl_info["exit_size"][:] = np.nan
+        last_tsl_info["exit_price"][:] = -1
         last_tsl_info["exit_size_type"][:] = -1
         last_tsl_info["exit_type"][:] = -1
         last_tsl_info["order_type"][:] = -1
@@ -2141,8 +2141,8 @@ def from_signals_nb(
         last_tp_info["init_price"][:] = np.nan
         last_tp_info["init_position"][:] = np.nan
         last_tp_info["stop"][:] = np.nan
-        last_tp_info["exit_price"][:] = -1
         last_tp_info["exit_size"][:] = np.nan
+        last_tp_info["exit_price"][:] = -1
         last_tp_info["exit_size_type"][:] = -1
         last_tp_info["exit_type"][:] = -1
         last_tp_info["order_type"][:] = -1
@@ -2156,8 +2156,8 @@ def from_signals_nb(
         last_td_info["init_idx"][:] = -1
         last_td_info["init_position"][:] = np.nan
         last_td_info["stop"][:] = -1
-        last_td_info["exit_price"][:] = -1
         last_td_info["exit_size"][:] = np.nan
+        last_td_info["exit_price"][:] = -1
         last_td_info["exit_size_type"][:] = -1
         last_td_info["exit_type"][:] = -1
         last_td_info["order_type"][:] = -1
@@ -2172,8 +2172,8 @@ def from_signals_nb(
         last_dt_info["init_idx"][:] = -1
         last_dt_info["init_position"][:] = np.nan
         last_dt_info["stop"][:] = -1
-        last_dt_info["exit_price"][:] = -1
         last_dt_info["exit_size"][:] = np.nan
+        last_dt_info["exit_price"][:] = -1
         last_dt_info["exit_size_type"][:] = -1
         last_dt_info["exit_type"][:] = -1
         last_dt_info["order_type"][:] = -1
@@ -2311,16 +2311,16 @@ def from_signals_nb(
                 for ci in range(group_len):
                     col = from_col + ci
 
-                    order_info["bar_zone"][col] = -1
-                    order_info["signal_idx"][col] = -1
-                    order_info["creation_idx"][col] = -1
+                    order_info["bar_zone"][col] = BarZone.Close
+                    order_info["signal_idx"][col] = i
+                    order_info["creation_idx"][col] = i
                     order_info["idx"][col] = i
-                    order_info["val_price"][col] = np.nan
-                    order_info["price"][col] = np.nan
+                    order_info["val_price"][col] = last_val_price[col]
                     order_info["size"][col] = np.nan
+                    order_info["price"][col] = np.nan
                     order_info["size_type"][col] = -1
                     order_info["direction"][col] = -1
-                    order_info["type"][col] = -1
+                    order_info["type"][col] = OrderType.Market
                     order_info["stop_type"][col] = -1
 
                     is_long_entry = (last_signal[col] >> 10) & 1
@@ -2393,8 +2393,8 @@ def from_signals_nb(
                         _signal_i = last_limit_info["signal_idx"][col]
                         _creation_i = last_limit_info["creation_idx"][col]
                         _init_i = last_limit_info["init_idx"][col]
-                        _price = last_limit_info["init_price"][col]
                         _size = last_limit_info["init_size"][col]
+                        _price = last_limit_info["init_price"][col]
                         _size_type = last_limit_info["init_size_type"][col]
                         _direction = last_limit_info["init_direction"][col]
                         _stop_type = last_limit_info["init_stop_type"][col]
@@ -2448,8 +2448,8 @@ def from_signals_nb(
                             last_limit_info["signal_idx"][col] = -1
                             last_limit_info["creation_idx"][col] = -1
                             last_limit_info["init_idx"][col] = -1
-                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size"][col] = np.nan
+                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size_type"][col] = -1
                             last_limit_info["init_direction"][col] = -1
                             last_limit_info["delta"][col] = np.nan
@@ -2671,8 +2671,8 @@ def from_signals_nb(
                             stop_hit_on_close = sl_stop_hit_on_close
                             _stop_type = StopType.SL
                             _init_i = last_sl_info["init_idx"][col]
-                            _stop_exit_price = last_sl_info["exit_price"][col]
                             _stop_exit_size = last_sl_info["exit_size"][col]
+                            _stop_exit_price = last_sl_info["exit_price"][col]
                             _stop_exit_size_type = last_sl_info["exit_size_type"][col]
                             _stop_exit_type = last_sl_info["exit_type"][col]
                             _stop_order_type = last_sl_info["order_type"][col]
@@ -2705,8 +2705,8 @@ def from_signals_nb(
                             else:
                                 _stop_type = StopType.TTP
                             _init_i = last_tsl_info["init_idx"][col]
-                            _stop_exit_price = last_tsl_info["exit_price"][col]
                             _stop_exit_size = last_tsl_info["exit_size"][col]
+                            _stop_exit_price = last_tsl_info["exit_price"][col]
                             _stop_exit_size_type = last_tsl_info["exit_size_type"][col]
                             _stop_exit_type = last_tsl_info["exit_type"][col]
                             _stop_order_type = last_tsl_info["order_type"][col]
@@ -2736,8 +2736,8 @@ def from_signals_nb(
                             stop_hit_on_close = tp_stop_hit_on_close
                             _stop_type = StopType.TP
                             _init_i = last_tp_info["init_idx"][col]
-                            _stop_exit_price = last_tp_info["exit_price"][col]
                             _stop_exit_size = last_tp_info["exit_size"][col]
+                            _stop_exit_price = last_tp_info["exit_price"][col]
                             _stop_exit_size_type = last_tp_info["exit_size_type"][col]
                             _stop_exit_type = last_tp_info["exit_type"][col]
                             _stop_order_type = last_tp_info["order_type"][col]
@@ -2767,8 +2767,8 @@ def from_signals_nb(
                             stop_hit_on_close = td_stop_hit_on_close
                             _stop_type = StopType.TD
                             _init_i = last_td_info["init_idx"][col]
-                            _stop_exit_price = last_td_info["exit_price"][col]
                             _stop_exit_size = last_td_info["exit_size"][col]
+                            _stop_exit_price = last_td_info["exit_price"][col]
                             _stop_exit_size_type = last_td_info["exit_size_type"][col]
                             _stop_exit_type = last_td_info["exit_type"][col]
                             _stop_order_type = last_td_info["order_type"][col]
@@ -2798,8 +2798,8 @@ def from_signals_nb(
                             stop_hit_on_close = dt_stop_hit_on_close
                             _stop_type = StopType.DT
                             _init_i = last_dt_info["init_idx"][col]
-                            _stop_exit_price = last_dt_info["exit_price"][col]
                             _stop_exit_size = last_dt_info["exit_size"][col]
+                            _stop_exit_price = last_dt_info["exit_price"][col]
                             _stop_exit_size_type = last_dt_info["exit_size_type"][col]
                             _stop_exit_type = last_dt_info["exit_type"][col]
                             _stop_order_type = last_dt_info["order_type"][col]
@@ -3172,8 +3172,8 @@ def from_signals_nb(
                             order_info["creation_idx"][col] = exec_limit_creation_i
                             order_info["idx"][col] = exec_limit_init_i
                             order_info["val_price"][col] = exec_limit_val_price
-                            order_info["price"][col] = exec_limit_price
                             order_info["size"][col] = exec_limit_size
+                            order_info["price"][col] = exec_limit_price
                             order_info["size_type"][col] = exec_limit_size_type
                             order_info["direction"][col] = exec_limit_direction
                             order_info["type"][col] = OrderType.Limit
@@ -3184,8 +3184,8 @@ def from_signals_nb(
                             last_limit_info["signal_idx"][col] = -1
                             last_limit_info["creation_idx"][col] = -1
                             last_limit_info["init_idx"][col] = -1
-                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size"][col] = np.nan
+                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size_type"][col] = -1
                             last_limit_info["init_direction"][col] = -1
                             last_limit_info["init_stop_type"][col] = -1
@@ -3209,8 +3209,8 @@ def from_signals_nb(
                                 last_limit_info["signal_idx"][col] = exec_stop_init_i
                                 last_limit_info["creation_idx"][col] = i
                                 last_limit_info["init_idx"][col] = i
-                                last_limit_info["init_price"][col] = exec_stop_price
                                 last_limit_info["init_size"][col] = exec_stop_size
+                                last_limit_info["init_price"][col] = exec_stop_price
                                 last_limit_info["init_size_type"][col] = exec_stop_size_type
                                 last_limit_info["init_direction"][col] = exec_stop_direction
                                 last_limit_info["init_stop_type"][col] = exec_stop_stop_type
@@ -3227,8 +3227,8 @@ def from_signals_nb(
                                 order_info["creation_idx"][col] = i
                                 order_info["idx"][col] = i
                                 order_info["val_price"][col] = exec_stop_val_price
-                                order_info["price"][col] = exec_stop_price
                                 order_info["size"][col] = exec_stop_size
+                                order_info["price"][col] = exec_stop_price
                                 order_info["size_type"][col] = exec_stop_size_type
                                 order_info["direction"][col] = exec_stop_direction
                                 order_info["type"][col] = exec_stop_type
@@ -3241,8 +3241,8 @@ def from_signals_nb(
                             last_sl_info["init_price"][col] = np.nan
                             last_sl_info["init_position"][col] = np.nan
                             last_sl_info["stop"][col] = np.nan
-                            last_sl_info["exit_price"][col] = -1
                             last_sl_info["exit_size"][col] = np.nan
+                            last_sl_info["exit_price"][col] = -1
                             last_sl_info["exit_size_type"][col] = -1
                             last_sl_info["exit_type"][col] = -1
                             last_sl_info["order_type"][col] = -1
@@ -3259,8 +3259,8 @@ def from_signals_nb(
                             last_tsl_info["peak_price"][col] = np.nan
                             last_tsl_info["stop"][col] = np.nan
                             last_tsl_info["th"][col] = np.nan
-                            last_tsl_info["exit_price"][col] = -1
                             last_tsl_info["exit_size"][col] = np.nan
+                            last_tsl_info["exit_price"][col] = -1
                             last_tsl_info["exit_size_type"][col] = -1
                             last_tsl_info["exit_type"][col] = -1
                             last_tsl_info["order_type"][col] = -1
@@ -3274,8 +3274,8 @@ def from_signals_nb(
                             last_tp_info["init_price"][col] = np.nan
                             last_tp_info["init_position"][col] = np.nan
                             last_tp_info["stop"][col] = np.nan
-                            last_tp_info["exit_price"][col] = -1
                             last_tp_info["exit_size"][col] = np.nan
+                            last_tp_info["exit_price"][col] = -1
                             last_tp_info["exit_size_type"][col] = -1
                             last_tp_info["exit_type"][col] = -1
                             last_tp_info["order_type"][col] = -1
@@ -3288,8 +3288,8 @@ def from_signals_nb(
                             last_td_info["init_idx"][col] = -1
                             last_td_info["init_position"][col] = np.nan
                             last_td_info["stop"][col] = -1
-                            last_td_info["exit_price"][col] = -1
                             last_td_info["exit_size"][col] = np.nan
+                            last_td_info["exit_price"][col] = -1
                             last_td_info["exit_size_type"][col] = -1
                             last_td_info["exit_type"][col] = -1
                             last_td_info["order_type"][col] = -1
@@ -3303,8 +3303,8 @@ def from_signals_nb(
                             last_dt_info["init_idx"][col] = -1
                             last_dt_info["init_position"][col] = np.nan
                             last_dt_info["stop"][col] = -1
-                            last_dt_info["exit_price"][col] = -1
                             last_dt_info["exit_size"][col] = np.nan
+                            last_dt_info["exit_price"][col] = -1
                             last_dt_info["exit_size_type"][col] = -1
                             last_dt_info["exit_type"][col] = -1
                             last_dt_info["order_type"][col] = -1
@@ -3331,8 +3331,8 @@ def from_signals_nb(
                                     last_limit_info["signal_idx"][col] = _i
                                     last_limit_info["creation_idx"][col] = i
                                     last_limit_info["init_idx"][col] = _i
-                                    last_limit_info["init_price"][col] = exec_user_price
                                     last_limit_info["init_size"][col] = exec_user_size
+                                    last_limit_info["init_price"][col] = exec_user_price
                                     last_limit_info["init_size_type"][col] = exec_user_size_type
                                     last_limit_info["init_direction"][col] = exec_user_direction
                                     last_limit_info["init_stop_type"][col] = -1
@@ -3349,8 +3349,8 @@ def from_signals_nb(
                                     order_info["creation_idx"][col] = i
                                     order_info["idx"][col] = _i
                                     order_info["val_price"][col] = exec_user_val_price
-                                    order_info["price"][col] = exec_user_price
                                     order_info["size"][col] = exec_user_size
+                                    order_info["price"][col] = exec_user_price
                                     order_info["size_type"][col] = exec_user_size_type
                                     order_info["direction"][col] = exec_user_direction
                                     order_info["type"][col] = exec_user_type
@@ -3551,8 +3551,8 @@ def from_signals_nb(
                                 last_sl_info["init_price"][col] = np.nan
                                 last_sl_info["init_position"][col] = np.nan
                                 last_sl_info["stop"][col] = np.nan
-                                last_sl_info["exit_price"][col] = -1
                                 last_sl_info["exit_size"][col] = np.nan
+                                last_sl_info["exit_price"][col] = -1
                                 last_sl_info["exit_size_type"][col] = -1
                                 last_sl_info["exit_type"][col] = -1
                                 last_sl_info["order_type"][col] = -1
@@ -3569,8 +3569,8 @@ def from_signals_nb(
                                 last_tsl_info["peak_price"][col] = np.nan
                                 last_tsl_info["stop"][col] = np.nan
                                 last_tsl_info["th"][col] = np.nan
-                                last_tsl_info["exit_price"][col] = -1
                                 last_tsl_info["exit_size"][col] = np.nan
+                                last_tsl_info["exit_price"][col] = -1
                                 last_tsl_info["exit_size_type"][col] = -1
                                 last_tsl_info["exit_type"][col] = -1
                                 last_tsl_info["order_type"][col] = -1
@@ -3584,8 +3584,8 @@ def from_signals_nb(
                                 last_tp_info["init_price"][col] = np.nan
                                 last_tp_info["init_position"][col] = np.nan
                                 last_tp_info["stop"][col] = np.nan
-                                last_tp_info["exit_price"][col] = -1
                                 last_tp_info["exit_size"][col] = np.nan
+                                last_tp_info["exit_price"][col] = -1
                                 last_tp_info["exit_size_type"][col] = -1
                                 last_tp_info["exit_type"][col] = -1
                                 last_tp_info["order_type"][col] = -1
@@ -3598,8 +3598,8 @@ def from_signals_nb(
                                 last_td_info["init_idx"][col] = -1
                                 last_td_info["init_position"][col] = np.nan
                                 last_td_info["stop"][col] = -1
-                                last_td_info["exit_price"][col] = -1
                                 last_td_info["exit_size"][col] = np.nan
+                                last_td_info["exit_price"][col] = -1
                                 last_td_info["exit_size_type"][col] = -1
                                 last_td_info["exit_type"][col] = -1
                                 last_td_info["order_type"][col] = -1
@@ -3613,8 +3613,8 @@ def from_signals_nb(
                                 last_dt_info["init_idx"][col] = -1
                                 last_dt_info["init_position"][col] = np.nan
                                 last_dt_info["stop"][col] = -1
-                                last_dt_info["exit_price"][col] = -1
                                 last_dt_info["exit_size"][col] = np.nan
+                                last_dt_info["exit_price"][col] = -1
                                 last_dt_info["exit_size_type"][col] = -1
                                 last_dt_info["exit_type"][col] = -1
                                 last_dt_info["order_type"][col] = -1
@@ -3783,8 +3783,8 @@ def from_signals_nb(
                                     last_sl_info["init_price"][col] = new_init_price
                                     last_sl_info["init_position"][col] = position_now
                                     last_sl_info["stop"][col] = _sl_stop
-                                    last_sl_info["exit_price"][col] = _stop_exit_price
                                     last_sl_info["exit_size"][col] = np.nan
+                                    last_sl_info["exit_price"][col] = _stop_exit_price
                                     last_sl_info["exit_size_type"][col] = -1
                                     last_sl_info["exit_type"][col] = _stop_exit_type
                                     last_sl_info["order_type"][col] = _stop_order_type
@@ -3802,8 +3802,8 @@ def from_signals_nb(
                                     last_tsl_info["peak_price"][col] = new_init_price
                                     last_tsl_info["stop"][col] = _tsl_stop
                                     last_tsl_info["th"][col] = _tsl_th
-                                    last_tsl_info["exit_price"][col] = _stop_exit_price
                                     last_tsl_info["exit_size"][col] = np.nan
+                                    last_tsl_info["exit_price"][col] = _stop_exit_price
                                     last_tsl_info["exit_size_type"][col] = -1
                                     last_tsl_info["exit_type"][col] = _stop_exit_type
                                     last_tsl_info["order_type"][col] = _stop_order_type
@@ -3817,8 +3817,8 @@ def from_signals_nb(
                                     last_tp_info["init_price"][col] = new_init_price
                                     last_tp_info["init_position"][col] = position_now
                                     last_tp_info["stop"][col] = _tp_stop
-                                    last_tp_info["exit_price"][col] = _stop_exit_price
                                     last_tp_info["exit_size"][col] = np.nan
+                                    last_tp_info["exit_price"][col] = _stop_exit_price
                                     last_tp_info["exit_size_type"][col] = -1
                                     last_tp_info["exit_type"][col] = _stop_exit_type
                                     last_tp_info["order_type"][col] = _stop_order_type
@@ -3831,8 +3831,8 @@ def from_signals_nb(
                                     last_td_info["init_idx"][col] = i
                                     last_td_info["init_position"][col] = position_now
                                     last_td_info["stop"][col] = _td_stop
-                                    last_td_info["exit_price"][col] = _stop_exit_price
                                     last_td_info["exit_size"][col] = np.nan
+                                    last_td_info["exit_price"][col] = _stop_exit_price
                                     last_td_info["exit_size_type"][col] = -1
                                     last_td_info["exit_type"][col] = _stop_exit_type
                                     last_td_info["order_type"][col] = _stop_order_type
@@ -3846,8 +3846,8 @@ def from_signals_nb(
                                     last_dt_info["init_idx"][col] = i
                                     last_dt_info["init_position"][col] = position_now
                                     last_dt_info["stop"][col] = _dt_stop
-                                    last_dt_info["exit_price"][col] = _stop_exit_price
                                     last_dt_info["exit_size"][col] = np.nan
+                                    last_dt_info["exit_price"][col] = _stop_exit_price
                                     last_dt_info["exit_size_type"][col] = -1
                                     last_dt_info["exit_type"][col] = _stop_exit_type
                                     last_dt_info["order_type"][col] = _stop_order_type
@@ -3865,8 +3865,8 @@ def from_signals_nb(
                                         last_sl_info["init_price"][col] = new_init_price
                                         last_sl_info["init_position"][col] = position_now
                                         last_sl_info["stop"][col] = _sl_stop
-                                        last_sl_info["exit_price"][col] = _stop_exit_price
                                         last_sl_info["exit_size"][col] = np.nan
+                                        last_sl_info["exit_price"][col] = _stop_exit_price
                                         last_sl_info["exit_size_type"][col] = -1
                                         last_sl_info["exit_type"][col] = _stop_exit_type
                                         last_sl_info["order_type"][col] = _stop_order_type
@@ -3884,8 +3884,8 @@ def from_signals_nb(
                                         last_tsl_info["peak_price"][col] = new_init_price
                                         last_tsl_info["stop"][col] = _tsl_stop
                                         last_tsl_info["th"][col] = _tsl_th
-                                        last_tsl_info["exit_price"][col] = _stop_exit_price
                                         last_tsl_info["exit_size"][col] = np.nan
+                                        last_tsl_info["exit_price"][col] = _stop_exit_price
                                         last_tsl_info["exit_size_type"][col] = -1
                                         last_tsl_info["exit_type"][col] = _stop_exit_type
                                         last_tsl_info["order_type"][col] = _stop_order_type
@@ -3899,8 +3899,8 @@ def from_signals_nb(
                                         last_tp_info["init_price"][col] = new_init_price
                                         last_tp_info["init_position"][col] = position_now
                                         last_tp_info["stop"][col] = _tp_stop
-                                        last_tp_info["exit_price"][col] = _stop_exit_price
                                         last_tp_info["exit_size"][col] = np.nan
+                                        last_tp_info["exit_price"][col] = _stop_exit_price
                                         last_tp_info["exit_size_type"][col] = -1
                                         last_tp_info["exit_type"][col] = _stop_exit_type
                                         last_tp_info["order_type"][col] = _stop_order_type
@@ -3915,8 +3915,8 @@ def from_signals_nb(
                                         last_td_info["init_idx"][col] = i
                                         last_td_info["init_position"][col] = position_now
                                         last_td_info["stop"][col] = _td_stop
-                                        last_td_info["exit_price"][col] = _stop_exit_price
                                         last_td_info["exit_size"][col] = np.nan
+                                        last_td_info["exit_price"][col] = _stop_exit_price
                                         last_td_info["exit_size_type"][col] = -1
                                         last_td_info["exit_type"][col] = _stop_exit_type
                                         last_td_info["order_type"][col] = _stop_order_type
@@ -3932,8 +3932,8 @@ def from_signals_nb(
                                         last_dt_info["init_idx"][col] = i
                                         last_dt_info["init_position"][col] = position_now
                                         last_dt_info["stop"][col] = _dt_stop
-                                        last_dt_info["exit_price"][col] = _stop_exit_price
                                         last_dt_info["exit_size"][col] = np.nan
+                                        last_dt_info["exit_price"][col] = _stop_exit_price
                                         last_dt_info["exit_size_type"][col] = -1
                                         last_dt_info["exit_type"][col] = _stop_exit_type
                                         last_dt_info["order_type"][col] = _stop_order_type
@@ -5112,8 +5112,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     last_limit_info["signal_idx"][:] = -1
     last_limit_info["creation_idx"][:] = -1
     last_limit_info["init_idx"][:] = -1
-    last_limit_info["init_price"][:] = np.nan
     last_limit_info["init_size"][:] = np.nan
+    last_limit_info["init_price"][:] = np.nan
     last_limit_info["init_size_type"][:] = -1
     last_limit_info["init_direction"][:] = -1
     last_limit_info["init_stop_type"][:] = -1
@@ -5131,8 +5131,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         last_sl_info["init_price"][:] = np.nan
         last_sl_info["init_position"][:] = np.nan
         last_sl_info["stop"][:] = np.nan
-        last_sl_info["exit_price"][:] = -1
         last_sl_info["exit_size"][:] = np.nan
+        last_sl_info["exit_price"][:] = -1
         last_sl_info["exit_size_type"][:] = -1
         last_sl_info["exit_type"][:] = -1
         last_sl_info["order_type"][:] = -1
@@ -5150,8 +5150,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         last_tsl_info["peak_price"][:] = np.nan
         last_tsl_info["stop"][:] = np.nan
         last_tsl_info["th"][:] = np.nan
-        last_tsl_info["exit_price"][:] = -1
         last_tsl_info["exit_size"][:] = np.nan
+        last_tsl_info["exit_price"][:] = -1
         last_tsl_info["exit_size_type"][:] = -1
         last_tsl_info["exit_type"][:] = -1
         last_tsl_info["order_type"][:] = -1
@@ -5166,8 +5166,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         last_tp_info["init_price"][:] = np.nan
         last_tp_info["init_position"][:] = np.nan
         last_tp_info["stop"][:] = np.nan
-        last_tp_info["exit_price"][:] = -1
         last_tp_info["exit_size"][:] = np.nan
+        last_tp_info["exit_price"][:] = -1
         last_tp_info["exit_size_type"][:] = -1
         last_tp_info["exit_type"][:] = -1
         last_tp_info["order_type"][:] = -1
@@ -5181,8 +5181,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         last_td_info["init_idx"][:] = -1
         last_td_info["init_position"][:] = np.nan
         last_td_info["stop"][:] = -1
-        last_td_info["exit_price"][:] = -1
         last_td_info["exit_size"][:] = np.nan
+        last_td_info["exit_price"][:] = -1
         last_td_info["exit_size_type"][:] = -1
         last_td_info["exit_type"][:] = -1
         last_td_info["order_type"][:] = -1
@@ -5197,8 +5197,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         last_dt_info["init_idx"][:] = -1
         last_dt_info["init_position"][:] = np.nan
         last_dt_info["stop"][:] = -1
-        last_dt_info["exit_price"][:] = -1
         last_dt_info["exit_size"][:] = np.nan
+        last_dt_info["exit_price"][:] = -1
         last_dt_info["exit_size_type"][:] = -1
         last_dt_info["exit_type"][:] = -1
         last_dt_info["order_type"][:] = -1
@@ -5609,16 +5609,16 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                 for ci in range(group_len):
                     col = from_col + ci
 
-                    order_info["bar_zone"][col] = -1
-                    order_info["signal_idx"][col] = -1
-                    order_info["creation_idx"][col] = -1
+                    order_info["bar_zone"][col] = BarZone.Close
+                    order_info["signal_idx"][col] = i
+                    order_info["creation_idx"][col] = i
                     order_info["idx"][col] = i
-                    order_info["val_price"][col] = np.nan
-                    order_info["price"][col] = np.nan
+                    order_info["val_price"][col] = last_val_price[col]
                     order_info["size"][col] = np.nan
+                    order_info["price"][col] = np.nan
                     order_info["size_type"][col] = -1
                     order_info["direction"][col] = -1
-                    order_info["type"][col] = -1
+                    order_info["type"][col] = OrderType.Market
                     order_info["stop_type"][col] = -1
 
                     is_long_entry = (last_signal[col] >> 10) & 1
@@ -5691,8 +5691,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         _signal_i = last_limit_info["signal_idx"][col]
                         _creation_i = last_limit_info["creation_idx"][col]
                         _init_i = last_limit_info["init_idx"][col]
-                        _price = last_limit_info["init_price"][col]
                         _size = last_limit_info["init_size"][col]
+                        _price = last_limit_info["init_price"][col]
                         _size_type = last_limit_info["init_size_type"][col]
                         _direction = last_limit_info["init_direction"][col]
                         _stop_type = last_limit_info["init_stop_type"][col]
@@ -5746,8 +5746,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             last_limit_info["signal_idx"][col] = -1
                             last_limit_info["creation_idx"][col] = -1
                             last_limit_info["init_idx"][col] = -1
-                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size"][col] = np.nan
+                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size_type"][col] = -1
                             last_limit_info["init_direction"][col] = -1
                             last_limit_info["delta"][col] = np.nan
@@ -5969,8 +5969,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             stop_hit_on_close = sl_stop_hit_on_close
                             _stop_type = StopType.SL
                             _init_i = last_sl_info["init_idx"][col]
-                            _stop_exit_price = last_sl_info["exit_price"][col]
                             _stop_exit_size = last_sl_info["exit_size"][col]
+                            _stop_exit_price = last_sl_info["exit_price"][col]
                             _stop_exit_size_type = last_sl_info["exit_size_type"][col]
                             _stop_exit_type = last_sl_info["exit_type"][col]
                             _stop_order_type = last_sl_info["order_type"][col]
@@ -6003,8 +6003,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             else:
                                 _stop_type = StopType.TTP
                             _init_i = last_tsl_info["init_idx"][col]
-                            _stop_exit_price = last_tsl_info["exit_price"][col]
                             _stop_exit_size = last_tsl_info["exit_size"][col]
+                            _stop_exit_price = last_tsl_info["exit_price"][col]
                             _stop_exit_size_type = last_tsl_info["exit_size_type"][col]
                             _stop_exit_type = last_tsl_info["exit_type"][col]
                             _stop_order_type = last_tsl_info["order_type"][col]
@@ -6034,8 +6034,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             stop_hit_on_close = tp_stop_hit_on_close
                             _stop_type = StopType.TP
                             _init_i = last_tp_info["init_idx"][col]
-                            _stop_exit_price = last_tp_info["exit_price"][col]
                             _stop_exit_size = last_tp_info["exit_size"][col]
+                            _stop_exit_price = last_tp_info["exit_price"][col]
                             _stop_exit_size_type = last_tp_info["exit_size_type"][col]
                             _stop_exit_type = last_tp_info["exit_type"][col]
                             _stop_order_type = last_tp_info["order_type"][col]
@@ -6065,8 +6065,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             stop_hit_on_close = td_stop_hit_on_close
                             _stop_type = StopType.TD
                             _init_i = last_td_info["init_idx"][col]
-                            _stop_exit_price = last_td_info["exit_price"][col]
                             _stop_exit_size = last_td_info["exit_size"][col]
+                            _stop_exit_price = last_td_info["exit_price"][col]
                             _stop_exit_size_type = last_td_info["exit_size_type"][col]
                             _stop_exit_type = last_td_info["exit_type"][col]
                             _stop_order_type = last_td_info["order_type"][col]
@@ -6096,8 +6096,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             stop_hit_on_close = dt_stop_hit_on_close
                             _stop_type = StopType.DT
                             _init_i = last_dt_info["init_idx"][col]
-                            _stop_exit_price = last_dt_info["exit_price"][col]
                             _stop_exit_size = last_dt_info["exit_size"][col]
+                            _stop_exit_price = last_dt_info["exit_price"][col]
                             _stop_exit_size_type = last_dt_info["exit_size_type"][col]
                             _stop_exit_type = last_dt_info["exit_type"][col]
                             _stop_order_type = last_dt_info["order_type"][col]
@@ -6470,8 +6470,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             order_info["creation_idx"][col] = exec_limit_creation_i
                             order_info["idx"][col] = exec_limit_init_i
                             order_info["val_price"][col] = exec_limit_val_price
-                            order_info["price"][col] = exec_limit_price
                             order_info["size"][col] = exec_limit_size
+                            order_info["price"][col] = exec_limit_price
                             order_info["size_type"][col] = exec_limit_size_type
                             order_info["direction"][col] = exec_limit_direction
                             order_info["type"][col] = OrderType.Limit
@@ -6482,8 +6482,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             last_limit_info["signal_idx"][col] = -1
                             last_limit_info["creation_idx"][col] = -1
                             last_limit_info["init_idx"][col] = -1
-                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size"][col] = np.nan
+                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size_type"][col] = -1
                             last_limit_info["init_direction"][col] = -1
                             last_limit_info["init_stop_type"][col] = -1
@@ -6507,8 +6507,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 last_limit_info["signal_idx"][col] = exec_stop_init_i
                                 last_limit_info["creation_idx"][col] = i
                                 last_limit_info["init_idx"][col] = i
-                                last_limit_info["init_price"][col] = exec_stop_price
                                 last_limit_info["init_size"][col] = exec_stop_size
+                                last_limit_info["init_price"][col] = exec_stop_price
                                 last_limit_info["init_size_type"][col] = exec_stop_size_type
                                 last_limit_info["init_direction"][col] = exec_stop_direction
                                 last_limit_info["init_stop_type"][col] = exec_stop_stop_type
@@ -6525,8 +6525,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 order_info["creation_idx"][col] = i
                                 order_info["idx"][col] = i
                                 order_info["val_price"][col] = exec_stop_val_price
-                                order_info["price"][col] = exec_stop_price
                                 order_info["size"][col] = exec_stop_size
+                                order_info["price"][col] = exec_stop_price
                                 order_info["size_type"][col] = exec_stop_size_type
                                 order_info["direction"][col] = exec_stop_direction
                                 order_info["type"][col] = exec_stop_type
@@ -6539,8 +6539,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             last_sl_info["init_price"][col] = np.nan
                             last_sl_info["init_position"][col] = np.nan
                             last_sl_info["stop"][col] = np.nan
-                            last_sl_info["exit_price"][col] = -1
                             last_sl_info["exit_size"][col] = np.nan
+                            last_sl_info["exit_price"][col] = -1
                             last_sl_info["exit_size_type"][col] = -1
                             last_sl_info["exit_type"][col] = -1
                             last_sl_info["order_type"][col] = -1
@@ -6572,8 +6572,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             last_tp_info["init_price"][col] = np.nan
                             last_tp_info["init_position"][col] = np.nan
                             last_tp_info["stop"][col] = np.nan
-                            last_tp_info["exit_price"][col] = -1
                             last_tp_info["exit_size"][col] = np.nan
+                            last_tp_info["exit_price"][col] = -1
                             last_tp_info["exit_size_type"][col] = -1
                             last_tp_info["exit_type"][col] = -1
                             last_tp_info["order_type"][col] = -1
@@ -6601,8 +6601,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             last_dt_info["init_idx"][col] = -1
                             last_dt_info["init_position"][col] = np.nan
                             last_dt_info["stop"][col] = -1
-                            last_dt_info["exit_price"][col] = -1
                             last_dt_info["exit_size"][col] = np.nan
+                            last_dt_info["exit_price"][col] = -1
                             last_dt_info["exit_size_type"][col] = -1
                             last_dt_info["exit_type"][col] = -1
                             last_dt_info["order_type"][col] = -1
@@ -6629,8 +6629,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_limit_info["signal_idx"][col] = _i
                                     last_limit_info["creation_idx"][col] = i
                                     last_limit_info["init_idx"][col] = _i
-                                    last_limit_info["init_price"][col] = exec_user_price
                                     last_limit_info["init_size"][col] = exec_user_size
+                                    last_limit_info["init_price"][col] = exec_user_price
                                     last_limit_info["init_size_type"][col] = exec_user_size_type
                                     last_limit_info["init_direction"][col] = exec_user_direction
                                     last_limit_info["init_stop_type"][col] = -1
@@ -6647,12 +6647,57 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     order_info["creation_idx"][col] = i
                                     order_info["idx"][col] = _i
                                     order_info["val_price"][col] = exec_user_val_price
-                                    order_info["price"][col] = exec_user_price
                                     order_info["size"][col] = exec_user_size
+                                    order_info["price"][col] = exec_user_price
                                     order_info["size_type"][col] = exec_user_size_type
                                     order_info["direction"][col] = exec_user_direction
                                     order_info["type"][col] = exec_user_type
                                     order_info["stop_type"][col] = exec_user_stop_type
+
+                for col in range(from_col, to_col):
+                    _i = order_info["idx"][col]
+
+                    order_info["fees"][col] = flex_select_nb(fees, _i, col)
+                    order_info["fixed_fees"][col] = flex_select_nb(fixed_fees_, _i, col)
+                    order_info["slippage"][col] = float(flex_select_nb(slippage_, _i, col))
+                    order_info["min_size"][col] = flex_select_nb(min_size_, _i, col)
+                    order_info["max_size"][col] = flex_select_nb(max_size_, _i, col)
+                    order_info["size_granularity"][col] = flex_select_nb(size_granularity_, _i, col)
+                    order_info["cash_limit"][col] = flex_select_nb(cash_limit_, _i, col)
+                    order_info["leverage"][col] = flex_select_nb(leverage_, _i, col)
+                    order_info["leverage_mode"][col] = flex_select_nb(leverage_mode_, _i, col)
+                    order_info["reject_prob"][col] = flex_select_nb(reject_prob_, _i, col)
+                    order_info["price_area_vio_mode"][col] = flex_select_nb(price_area_vio_mode_, _i, col)
+                    order_info["allow_partial"][col] = flex_select_nb(allow_partial_, _i, col)
+                    order_info["raise_reject"][col] = flex_select_nb(raise_reject_, _i, col)
+                    order_info["log"][col] = flex_select_nb(log_, _i, col)
+
+                    if order_info["type"][col] == OrderType.Limit:
+                        order_info["slippage"][col] = 0.0
+                    _min_size = flex_select_nb(min_size_, _i, col)
+                    _max_size = flex_select_nb(max_size_, _i, col)
+                    _size_type = flex_select_nb(size_type_, _i, col)
+                    if _size_type != order_info["size_type"][col]:
+                        if not np.isnan(_min_size):
+                            order_info["min_size"][col], _ = resolve_size_nb(
+                                size=_min_size,
+                                size_type=_size_type,
+                                position=last_position[col],
+                                val_price=last_val_price[col],
+                                value=last_value[group] if cash_sharing else last_value[col],
+                                target_size_type=order_info["size_type"][col],
+                                as_requirement=True,
+                            )
+                        if not np.isnan(_max_size):
+                            order_info["max_size"][col], _ = resolve_size_nb(
+                                size=_max_size,
+                                size_type=_size_type,
+                                position=last_position[col],
+                                val_price=last_val_price[col],
+                                value=last_value[group] if cash_sharing else last_value[col],
+                                target_size_type=order_info["size_type"][col],
+                                as_requirement=True,
+                            )
 
                 pre_order_segment_ctx = FSPreOrderSegmentContext(
                     target_shape=target_shape,
@@ -6804,54 +6849,25 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         value_before = value_now = last_value[group] if cash_sharing else last_value[col]
                         return_before = return_now = last_return[group] if cash_sharing else last_return[col]
 
-                        _i = order_info["idx"][col]
-                        if order_info["type"][col] == OrderType.Limit:
-                            _slippage = 0.0
-                        else:
-                            _slippage = float(flex_select_nb(slippage_, _i, col))
-                        _min_size = flex_select_nb(min_size_, _i, col)
-                        _max_size = flex_select_nb(max_size_, _i, col)
-                        _size_type = flex_select_nb(size_type_, _i, col)
-                        if _size_type != order_info["size_type"][col]:
-                            if not np.isnan(_min_size):
-                                _min_size, _ = resolve_size_nb(
-                                    size=_min_size,
-                                    size_type=_size_type,
-                                    position=position_now,
-                                    val_price=val_price_now,
-                                    value=value_now,
-                                    target_size_type=order_info["size_type"][col],
-                                    as_requirement=True,
-                                )
-                            if not np.isnan(_max_size):
-                                _max_size, _ = resolve_size_nb(
-                                    size=_max_size,
-                                    size_type=_size_type,
-                                    position=position_now,
-                                    val_price=val_price_now,
-                                    value=value_now,
-                                    target_size_type=order_info["size_type"][col],
-                                    as_requirement=True,
-                                )
                         order = order_nb(
                             size=order_info["size"][col],
                             price=order_info["price"][col],
                             size_type=order_info["size_type"][col],
                             direction=order_info["direction"][col],
-                            fees=flex_select_nb(fees_, _i, col),
-                            fixed_fees=flex_select_nb(fixed_fees_, _i, col),
-                            slippage=_slippage,
-                            min_size=_min_size,
-                            max_size=_max_size,
-                            size_granularity=flex_select_nb(size_granularity_, _i, col),
-                            cash_limit=flex_select_nb(cash_limit_, _i, col),
-                            leverage=flex_select_nb(leverage_, _i, col),
-                            leverage_mode=flex_select_nb(leverage_mode_, _i, col),
-                            reject_prob=flex_select_nb(reject_prob_, _i, col),
-                            price_area_vio_mode=flex_select_nb(price_area_vio_mode_, _i, col),
-                            allow_partial=flex_select_nb(allow_partial_, _i, col),
-                            raise_reject=flex_select_nb(raise_reject_, _i, col),
-                            log=flex_select_nb(log_, _i, col),
+                            fees=order_info["fees"][col],
+                            fixed_fees=order_info["fixed_fees"][col],
+                            slippage=order_info["slippage"][col],
+                            min_size=order_info["min_size"][col],
+                            max_size=order_info["max_size"][col],
+                            size_granularity=order_info["size_granularity"][col],
+                            cash_limit=order_info["cash_limit"][col],
+                            leverage=order_info["leverage"][col],
+                            leverage_mode=order_info["leverage_mode"][col],
+                            reject_prob=order_info["reject_prob"][col],
+                            price_area_vio_mode=order_info["price_area_vio_mode"][col],
+                            allow_partial=order_info["allow_partial"][col],
+                            raise_reject=order_info["raise_reject"][col],
+                            log=order_info["log"][col],
                         )
 
                         price_area = PriceArea(
@@ -6919,8 +6935,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 last_sl_info["init_price"][col] = np.nan
                                 last_sl_info["init_position"][col] = np.nan
                                 last_sl_info["stop"][col] = np.nan
-                                last_sl_info["exit_price"][col] = -1
                                 last_sl_info["exit_size"][col] = np.nan
+                                last_sl_info["exit_price"][col] = -1
                                 last_sl_info["exit_size_type"][col] = -1
                                 last_sl_info["exit_type"][col] = -1
                                 last_sl_info["order_type"][col] = -1
@@ -6937,8 +6953,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 last_tsl_info["peak_price"][col] = np.nan
                                 last_tsl_info["stop"][col] = np.nan
                                 last_tsl_info["th"][col] = np.nan
-                                last_tsl_info["exit_price"][col] = -1
                                 last_tsl_info["exit_size"][col] = np.nan
+                                last_tsl_info["exit_price"][col] = -1
                                 last_tsl_info["exit_size_type"][col] = -1
                                 last_tsl_info["exit_type"][col] = -1
                                 last_tsl_info["order_type"][col] = -1
@@ -6952,8 +6968,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 last_tp_info["init_price"][col] = np.nan
                                 last_tp_info["init_position"][col] = np.nan
                                 last_tp_info["stop"][col] = np.nan
-                                last_tp_info["exit_price"][col] = -1
                                 last_tp_info["exit_size"][col] = np.nan
+                                last_tp_info["exit_price"][col] = -1
                                 last_tp_info["exit_size_type"][col] = -1
                                 last_tp_info["exit_type"][col] = -1
                                 last_tp_info["order_type"][col] = -1
@@ -6966,8 +6982,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 last_td_info["init_idx"][col] = -1
                                 last_td_info["init_position"][col] = np.nan
                                 last_td_info["stop"][col] = -1
-                                last_td_info["exit_price"][col] = -1
                                 last_td_info["exit_size"][col] = np.nan
+                                last_td_info["exit_price"][col] = -1
                                 last_td_info["exit_size_type"][col] = -1
                                 last_td_info["exit_type"][col] = -1
                                 last_td_info["order_type"][col] = -1
@@ -6981,8 +6997,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 last_dt_info["init_idx"][col] = -1
                                 last_dt_info["init_position"][col] = np.nan
                                 last_dt_info["stop"][col] = -1
-                                last_dt_info["exit_price"][col] = -1
                                 last_dt_info["exit_size"][col] = np.nan
+                                last_dt_info["exit_price"][col] = -1
                                 last_dt_info["exit_size_type"][col] = -1
                                 last_dt_info["exit_type"][col] = -1
                                 last_dt_info["order_type"][col] = -1
@@ -7151,8 +7167,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_sl_info["init_price"][col] = new_init_price
                                     last_sl_info["init_position"][col] = position_now
                                     last_sl_info["stop"][col] = _sl_stop
-                                    last_sl_info["exit_price"][col] = _stop_exit_price
                                     last_sl_info["exit_size"][col] = np.nan
+                                    last_sl_info["exit_price"][col] = _stop_exit_price
                                     last_sl_info["exit_size_type"][col] = -1
                                     last_sl_info["exit_type"][col] = _stop_exit_type
                                     last_sl_info["order_type"][col] = _stop_order_type
@@ -7170,8 +7186,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_tsl_info["peak_price"][col] = new_init_price
                                     last_tsl_info["stop"][col] = _tsl_stop
                                     last_tsl_info["th"][col] = _tsl_th
-                                    last_tsl_info["exit_price"][col] = _stop_exit_price
                                     last_tsl_info["exit_size"][col] = np.nan
+                                    last_tsl_info["exit_price"][col] = _stop_exit_price
                                     last_tsl_info["exit_size_type"][col] = -1
                                     last_tsl_info["exit_type"][col] = _stop_exit_type
                                     last_tsl_info["order_type"][col] = _stop_order_type
@@ -7185,8 +7201,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_tp_info["init_price"][col] = new_init_price
                                     last_tp_info["init_position"][col] = position_now
                                     last_tp_info["stop"][col] = _tp_stop
-                                    last_tp_info["exit_price"][col] = _stop_exit_price
                                     last_tp_info["exit_size"][col] = np.nan
+                                    last_tp_info["exit_price"][col] = _stop_exit_price
                                     last_tp_info["exit_size_type"][col] = -1
                                     last_tp_info["exit_type"][col] = _stop_exit_type
                                     last_tp_info["order_type"][col] = _stop_order_type
@@ -7199,8 +7215,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_td_info["init_idx"][col] = i
                                     last_td_info["init_position"][col] = position_now
                                     last_td_info["stop"][col] = _td_stop
-                                    last_td_info["exit_price"][col] = _stop_exit_price
                                     last_td_info["exit_size"][col] = np.nan
+                                    last_td_info["exit_price"][col] = _stop_exit_price
                                     last_td_info["exit_size_type"][col] = -1
                                     last_td_info["exit_type"][col] = _stop_exit_type
                                     last_td_info["order_type"][col] = _stop_order_type
@@ -7214,8 +7230,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_dt_info["init_idx"][col] = i
                                     last_dt_info["init_position"][col] = position_now
                                     last_dt_info["stop"][col] = _dt_stop
-                                    last_dt_info["exit_price"][col] = _stop_exit_price
                                     last_dt_info["exit_size"][col] = np.nan
+                                    last_dt_info["exit_price"][col] = _stop_exit_price
                                     last_dt_info["exit_size_type"][col] = -1
                                     last_dt_info["exit_type"][col] = _stop_exit_type
                                     last_dt_info["order_type"][col] = _stop_order_type
@@ -7233,8 +7249,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         last_sl_info["init_price"][col] = new_init_price
                                         last_sl_info["init_position"][col] = position_now
                                         last_sl_info["stop"][col] = _sl_stop
-                                        last_sl_info["exit_price"][col] = _stop_exit_price
                                         last_sl_info["exit_size"][col] = np.nan
+                                        last_sl_info["exit_price"][col] = _stop_exit_price
                                         last_sl_info["exit_size_type"][col] = -1
                                         last_sl_info["exit_type"][col] = _stop_exit_type
                                         last_sl_info["order_type"][col] = _stop_order_type
@@ -7252,8 +7268,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         last_tsl_info["peak_price"][col] = new_init_price
                                         last_tsl_info["stop"][col] = _tsl_stop
                                         last_tsl_info["th"][col] = _tsl_th
-                                        last_tsl_info["exit_price"][col] = _stop_exit_price
                                         last_tsl_info["exit_size"][col] = np.nan
+                                        last_tsl_info["exit_price"][col] = _stop_exit_price
                                         last_tsl_info["exit_size_type"][col] = -1
                                         last_tsl_info["exit_type"][col] = _stop_exit_type
                                         last_tsl_info["order_type"][col] = _stop_order_type
@@ -7267,8 +7283,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         last_tp_info["init_price"][col] = new_init_price
                                         last_tp_info["init_position"][col] = position_now
                                         last_tp_info["stop"][col] = _tp_stop
-                                        last_tp_info["exit_price"][col] = _stop_exit_price
                                         last_tp_info["exit_size"][col] = np.nan
+                                        last_tp_info["exit_price"][col] = _stop_exit_price
                                         last_tp_info["exit_size_type"][col] = -1
                                         last_tp_info["exit_type"][col] = _stop_exit_type
                                         last_tp_info["order_type"][col] = _stop_order_type
@@ -7283,8 +7299,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         last_td_info["init_idx"][col] = i
                                         last_td_info["init_position"][col] = position_now
                                         last_td_info["stop"][col] = _td_stop
-                                        last_td_info["exit_price"][col] = _stop_exit_price
                                         last_td_info["exit_size"][col] = np.nan
+                                        last_td_info["exit_price"][col] = _stop_exit_price
                                         last_td_info["exit_size_type"][col] = -1
                                         last_td_info["exit_type"][col] = _stop_exit_type
                                         last_td_info["order_type"][col] = _stop_order_type
@@ -7300,8 +7316,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         last_dt_info["init_idx"][col] = i
                                         last_dt_info["init_position"][col] = position_now
                                         last_dt_info["stop"][col] = _dt_stop
-                                        last_dt_info["exit_price"][col] = _stop_exit_price
                                         last_dt_info["exit_size"][col] = np.nan
+                                        last_dt_info["exit_price"][col] = _stop_exit_price
                                         last_dt_info["exit_size_type"][col] = -1
                                         last_dt_info["exit_type"][col] = _stop_exit_type
                                         last_dt_info["order_type"][col] = _stop_order_type
