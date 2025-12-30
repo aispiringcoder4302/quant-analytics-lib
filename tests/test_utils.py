@@ -1,11 +1,16 @@
 import asyncio
 import inspect
 import os
+import textwrap
+import types
 from collections import namedtuple
 from copy import copy, deepcopy
-from datetime import datetime as _datetime, timedelta as _timedelta, time as _time, timezone as _timezone
+from datetime import datetime as _datetime
+from datetime import time as _time
+from datetime import timedelta as _timedelta
+from datetime import timezone as _timezone
 from functools import wraps
-from itertools import product, combinations
+from itertools import combinations, product
 
 import pytest
 from numba import njit
@@ -13,29 +18,30 @@ from numba.core.registry import CPUDispatcher
 from pandas.tseries.frequencies import to_offset
 
 import vectorbtpro as vbt
-from vectorbtpro._dtypes import *
 from tests.utils import *
+from vectorbtpro._dtypes import *
 from vectorbtpro.utils import (
-    checks,
-    config,
-    decorators,
-    math_,
     array_,
-    random_,
-    mapping,
-    enum_,
-    params,
     attr_,
+    checks,
+    chunking,
+    config,
     datetime_,
+    decorators,
+    enum_,
+    execution,
+    hashing,
+    jitting,
+    mapping,
+    math_,
+    params,
+    parsing,
+    pickling,
+    random_,
+    refs,
     schedule_,
     tagging,
     template,
-    parsing,
-    execution,
-    pickling,
-    chunking,
-    jitting,
-    hashing,
 )
 
 pathos_available = True
@@ -1295,8 +1301,10 @@ class TestChecks:
         assert checks.is_deep_equal(0, 0)
         assert not checks.is_deep_equal(0, False)
         assert not checks.is_deep_equal(0, 1)
-        assert checks.is_deep_equal(lambda x: x, lambda x: x)
+        assert not checks.is_deep_equal(lambda x: x, lambda x: x)
         assert not checks.is_deep_equal(lambda x: x, lambda x: 2 * x)
+        y = lambda x: x + 1
+        assert checks.is_deep_equal(y, y)
 
     def test_is_instance_of(self):
         class _A:
@@ -2384,11 +2392,11 @@ class TestParams:
             ([2, 2], (), [3, 4], {}),
         ]
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0].index,
             pd.MultiIndex.from_tuples([(1, 0), (1, 1)], names=["a", "param_config"]),
         )
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1].index,
             pd.MultiIndex.from_tuples([(2, 0), (2, 1)], names=["a", "param_config"]),
         )
         assert fp(vbt.Param([1, 2], mono_reduce=True), param_configs=param_configs, _mono_chunk_len=2)[0] == [
@@ -2396,11 +2404,11 @@ class TestParams:
             (2, (), [3, 4], {}),
         ]
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0].index,
             pd.MultiIndex.from_tuples([(1, 0), (1, 1)], names=["a", "param_config"]),
         )
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1].index,
             pd.MultiIndex.from_tuples([(2, 0), (2, 1)], names=["a", "param_config"]),
         )
         assert fp(vbt.Param([1, 2]), hello="world", param_configs=param_configs, _mono_chunk_len=2)[0] == [
@@ -2408,11 +2416,11 @@ class TestParams:
             ([2, 2], (), [3, 4], {"hello": "world"}),
         ]
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0].index,
             pd.MultiIndex.from_tuples([(1, 0), (1, 1)], names=["a", "param_config"]),
         )
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1].index,
             pd.MultiIndex.from_tuples([(2, 0), (2, 1)], names=["a", "param_config"]),
         )
         assert fp(
@@ -2426,11 +2434,11 @@ class TestParams:
             ([2, 2], (), [3, 4], {"hello": ["world", "world"]}),
         ]
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0].index,
             pd.MultiIndex.from_tuples([(1, 0), (1, 1)], names=["a", "param_config"]),
         )
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1].index,
             pd.MultiIndex.from_tuples([(2, 0), (2, 1)], names=["a", "param_config"]),
         )
         assert fp(
@@ -2444,11 +2452,11 @@ class TestParams:
             (2, (), [3, 4], {"hello": "world"}),
         ]
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0].index,
             pd.MultiIndex.from_tuples([(1, 0), (1, 1)], names=["a", "param_config"]),
         )
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1].index,
             pd.MultiIndex.from_tuples([(2, 0), (2, 1)], names=["a", "param_config"]),
         )
         assert fp(
@@ -2461,11 +2469,11 @@ class TestParams:
             (4, (), 7, {}),
         ]
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][0].index,
             pd.MultiIndex.from_tuples([(1, 0), (1, 1)], names=["a", "param_config"]),
         )
         assert_index_equal(
-            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1],
+            fp(vbt.Param([1, 2]), param_configs=param_configs, _mono_chunk_len=2)[1][1].index,
             pd.MultiIndex.from_tuples([(2, 0), (2, 1)], names=["a", "param_config"]),
         )
         assert (
@@ -3903,10 +3911,10 @@ class TestJitting:
         assert dict(func_my.config) == dict(test="test")
 
 
-# ############# module_ ############# #
+# ############# refs ############# #
 
 
-class TestModule:
+class TestRefs:
     def test_get_api_ref(self):
         pf = vbt.PF.from_holding([1, 2, 3])
 
@@ -3987,6 +3995,202 @@ class TestModule:
         assert vbt.get_refname("ADX") == "vectorbtpro.indicators.custom.adx.ADX"
         assert vbt.get_refname("ADX.adx") == "vectorbtpro.indicators.custom.adx.ADX.adx"
         assert vbt.get_refname("ADX.adx_above") == "vectorbtpro.indicators.custom.adx.ADX.adx_above"
+
+    def test_RefIndex(self):
+        ref_index = vbt.RefIndex()
+        ref_info = ref_index.get_info("DHitMeta")
+        assert isinstance(ref_info, refs.RefInfo)
+        assert ref_info.refname == "vectorbtpro.utils.refs.DHitMeta"
+        assert ref_info.container == "vectorbtpro.utils.refs"
+        assert ref_info.direct_members == [
+            "vectorbtpro.utils.refs.DHitMeta.is_builtin",
+            "vectorbtpro.utils.refs.DHitMeta.is_private",
+            "vectorbtpro.utils.refs.DHitMeta.is_unreachable",
+        ]
+        assert ref_info.nested_members == [
+            "vectorbtpro.utils.attr_.DefineMixin.asdict",
+            "vectorbtpro.utils.attr_.DefineMixin.assert_field_not_missing",
+            "vectorbtpro.utils.refs.DHitMeta.block",
+            "vectorbtpro.utils.base.Base.chat",
+            "vectorbtpro.utils.refs.DHitMeta.col_offset",
+            "vectorbtpro.utils.refs.DHitMeta.end_col_offset",
+            "vectorbtpro.utils.refs.DHitMeta.end_lineno",
+            "vectorbtpro.utils.attr_.DefineMixin.fields",
+            "vectorbtpro.utils.attr_.DefineMixin.fields_dict",
+            "vectorbtpro.utils.base.Base.find_api",
+            "vectorbtpro.utils.base.Base.find_assets",
+            "vectorbtpro.utils.base.Base.find_docs",
+            "vectorbtpro.utils.base.Base.find_examples",
+            "vectorbtpro.utils.base.Base.find_messages",
+            "vectorbtpro.utils.attr_.DefineMixin.get_field",
+            "vectorbtpro.utils.hashing.Hashable.get_hash",
+            "vectorbtpro.utils.hashing.Hashable.hash",
+            "vectorbtpro.utils.attr_.DefineMixin.hash_key",
+            "vectorbtpro.utils.attr_.DefineMixin.is_field_missing",
+            "vectorbtpro.utils.attr_.DefineMixin.is_field_optional",
+            "vectorbtpro.utils.attr_.DefineMixin.is_field_required",
+            "vectorbtpro.utils.refs.DHitMeta.lineno",
+            "vectorbtpro.utils.attr_.DefineMixin.merge_over",
+            "vectorbtpro.utils.attr_.DefineMixin.merge_with",
+            "vectorbtpro.utils.refs.DHitMeta.name",
+            "vectorbtpro.utils.refs.DHitMeta.refname",
+            "vectorbtpro.utils.attr_.DefineMixin.replace",
+            "vectorbtpro.utils.attr_.DefineMixin.resolve",
+            "vectorbtpro.utils.attr_.DefineMixin.resolve_field",
+            "vectorbtpro.utils.refs.DHitMeta.role",
+            "vectorbtpro.utils.refs.DHitMeta.scope_refname",
+            "vectorbtpro.utils.refs.DHitMeta.source_line",
+        ]
+        assert ref_info.direct_bases == ["vectorbtpro.utils.attr_.DefineMixin"]
+        assert ref_info.nested_bases == ["vectorbtpro.utils.hashing.Hashable", "vectorbtpro.utils.base.Base"]
+        assert ref_info.direct_dependencies == [
+            "vectorbtpro.utils.attr_.define",
+            "vectorbtpro.utils.attr_.DefineMixin",
+            "builtins.str",
+            "vectorbtpro.utils.attr_.define.field",
+            "builtins.int",
+            "typing.Optional",
+            "vectorbtpro.utils.refs.DBlock",
+            "vectorbtpro.utils.refs.DRole",
+        ]
+        assert ref_info.nested_dependencies == ["builtins.property", "builtins.bool"]
+
+    def test_RefGraph(self):
+        ref_graph = vbt.RefIndex(container_kinds=["module", "class"]).build_graph("DHitMeta")
+        assert list(ref_graph.G.nodes()) == [
+            "vectorbtpro.utils.refs.DHitMeta",
+            "vectorbtpro.utils.refs",
+            "vectorbtpro.utils.refs.DHitMeta.is_builtin",
+            "vectorbtpro.utils.refs.DHitMeta.is_private",
+            "vectorbtpro.utils.refs.DHitMeta.is_unreachable",
+            "vectorbtpro.utils.attr_.DefineMixin.asdict",
+            "vectorbtpro.utils.attr_.DefineMixin.assert_field_not_missing",
+            "vectorbtpro.utils.refs.DHitMeta.block",
+            "vectorbtpro.utils.base.Base.chat",
+            "vectorbtpro.utils.refs.DHitMeta.col_offset",
+            "vectorbtpro.utils.refs.DHitMeta.end_col_offset",
+            "vectorbtpro.utils.refs.DHitMeta.end_lineno",
+            "vectorbtpro.utils.attr_.DefineMixin.fields",
+            "vectorbtpro.utils.attr_.DefineMixin.fields_dict",
+            "vectorbtpro.utils.base.Base.find_api",
+            "vectorbtpro.utils.base.Base.find_assets",
+            "vectorbtpro.utils.base.Base.find_docs",
+            "vectorbtpro.utils.base.Base.find_examples",
+            "vectorbtpro.utils.base.Base.find_messages",
+            "vectorbtpro.utils.attr_.DefineMixin.get_field",
+            "vectorbtpro.utils.hashing.Hashable.get_hash",
+            "vectorbtpro.utils.hashing.Hashable.hash",
+            "vectorbtpro.utils.attr_.DefineMixin.hash_key",
+            "vectorbtpro.utils.attr_.DefineMixin.is_field_missing",
+            "vectorbtpro.utils.attr_.DefineMixin.is_field_optional",
+            "vectorbtpro.utils.attr_.DefineMixin.is_field_required",
+            "vectorbtpro.utils.refs.DHitMeta.lineno",
+            "vectorbtpro.utils.attr_.DefineMixin.merge_over",
+            "vectorbtpro.utils.attr_.DefineMixin.merge_with",
+            "vectorbtpro.utils.refs.DHitMeta.name",
+            "vectorbtpro.utils.refs.DHitMeta.refname",
+            "vectorbtpro.utils.attr_.DefineMixin.replace",
+            "vectorbtpro.utils.attr_.DefineMixin.resolve",
+            "vectorbtpro.utils.attr_.DefineMixin.resolve_field",
+            "vectorbtpro.utils.refs.DHitMeta.role",
+            "vectorbtpro.utils.refs.DHitMeta.scope_refname",
+            "vectorbtpro.utils.refs.DHitMeta.source_line",
+            "vectorbtpro.utils.attr_.DefineMixin",
+            "vectorbtpro.utils.hashing.Hashable",
+            "vectorbtpro.utils.base.Base",
+            "vectorbtpro.utils.attr_.define",
+            "vectorbtpro.utils.attr_.define.field",
+            "typing.Optional",
+            "vectorbtpro.utils.refs.DBlock",
+            "vectorbtpro.utils.refs.DRole",
+            "vectorbtpro.utils",
+            "vectorbtpro.utils.attr_",
+            "vectorbtpro.utils.hashing",
+            "vectorbtpro.utils.base",
+            "typing",
+            "vectorbtpro",
+        ]
+        assert list(ref_graph.G.edges()) == [
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DHitMeta.is_builtin"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DHitMeta.is_private"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DHitMeta.is_unreachable"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.asdict"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.assert_field_not_missing"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DHitMeta.block"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.base.Base.chat"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DHitMeta.col_offset"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DHitMeta.end_col_offset"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DHitMeta.end_lineno"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.fields"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.fields_dict"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.base.Base.find_api"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.base.Base.find_assets"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.base.Base.find_docs"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.base.Base.find_examples"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.base.Base.find_messages"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.get_field"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.hashing.Hashable.get_hash"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.hashing.Hashable.hash"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.hash_key"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.is_field_missing"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.is_field_optional"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.is_field_required"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DHitMeta.lineno"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.merge_over"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.merge_with"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DHitMeta.name"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DHitMeta.refname"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.replace"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.resolve"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin.resolve_field"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DHitMeta.role"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DHitMeta.scope_refname"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DHitMeta.source_line"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.DefineMixin"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.hashing.Hashable"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.base.Base"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.define"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.attr_.define.field"),
+            ("vectorbtpro.utils.refs.DHitMeta", "typing.Optional"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DBlock"),
+            ("vectorbtpro.utils.refs.DHitMeta", "vectorbtpro.utils.refs.DRole"),
+            ("vectorbtpro.utils.refs", "vectorbtpro.utils.refs.DHitMeta"),
+            ("vectorbtpro.utils.refs", "vectorbtpro.utils.refs.DBlock"),
+            ("vectorbtpro.utils.refs", "vectorbtpro.utils.refs.DRole"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.asdict"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.assert_field_not_missing"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.fields"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.fields_dict"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.get_field"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.hash_key"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.is_field_missing"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.is_field_optional"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.is_field_required"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.merge_over"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.merge_with"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.replace"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.resolve"),
+            ("vectorbtpro.utils.attr_.DefineMixin", "vectorbtpro.utils.attr_.DefineMixin.resolve_field"),
+            ("vectorbtpro.utils.hashing.Hashable", "vectorbtpro.utils.hashing.Hashable.get_hash"),
+            ("vectorbtpro.utils.hashing.Hashable", "vectorbtpro.utils.hashing.Hashable.hash"),
+            ("vectorbtpro.utils.base.Base", "vectorbtpro.utils.base.Base.chat"),
+            ("vectorbtpro.utils.base.Base", "vectorbtpro.utils.base.Base.find_api"),
+            ("vectorbtpro.utils.base.Base", "vectorbtpro.utils.base.Base.find_assets"),
+            ("vectorbtpro.utils.base.Base", "vectorbtpro.utils.base.Base.find_docs"),
+            ("vectorbtpro.utils.base.Base", "vectorbtpro.utils.base.Base.find_examples"),
+            ("vectorbtpro.utils.base.Base", "vectorbtpro.utils.base.Base.find_messages"),
+            ("vectorbtpro.utils.attr_.define", "vectorbtpro.utils.attr_.define.field"),
+            ("vectorbtpro.utils", "vectorbtpro.utils.refs"),
+            ("vectorbtpro.utils", "vectorbtpro.utils.attr_"),
+            ("vectorbtpro.utils", "vectorbtpro.utils.hashing"),
+            ("vectorbtpro.utils", "vectorbtpro.utils.base"),
+            ("vectorbtpro.utils.attr_", "vectorbtpro.utils.attr_.DefineMixin"),
+            ("vectorbtpro.utils.attr_", "vectorbtpro.utils.attr_.define"),
+            ("vectorbtpro.utils.hashing", "vectorbtpro.utils.hashing.Hashable"),
+            ("vectorbtpro.utils.base", "vectorbtpro.utils.base.Base"),
+            ("typing", "typing.Optional"),
+            ("vectorbtpro", "vectorbtpro.utils"),
+        ]
 
 
 # ############# knowledge ############# #

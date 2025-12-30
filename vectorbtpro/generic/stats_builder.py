@@ -58,7 +58,6 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
     def __init__(self) -> None:
         checks.assert_instance_of(self, Wrapping)
 
-        # Copy writeable attrs
         self._metrics = type(self)._metrics.copy()
 
     @property
@@ -78,6 +77,9 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
     ) -> tp.Any:
         """Resolve and return a configuration setting for `StatsBuilderMixin.stats`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.stats_builder`.
+
         Args:
             value (Optional[Any]): Provided value for the setting.
             key (str): Key identifying the stats setting.
@@ -85,9 +87,6 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
         Returns:
             Any: Resolved configuration setting.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.stats_builder`.
         """
         from vectorbtpro._settings import settings as _settings
 
@@ -163,6 +162,22 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         metric_settings: tp.KwargsLike = None,
     ) -> tp.Optional[tp.SeriesFrame]:
         """Compute various metrics on this object.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.stats_builder` and `StatsBuilderMixin.stats_defaults`.
+
+            See `vectorbtpro.utils.template` for template logic.
+
+        !!! tip
+            Optional (resolution) arguments are passed only if they appear in the function's signature,
+            while mandatory arguments are always passed. Optional arguments are defined via `settings`
+            (globally), whereas mandatory arguments can be set using default metric settings or
+            `{metric_name}_kwargs`. Overriding optional arguments does not make them mandatory;
+            use `pass_{arg}=True` to enforce passing.
+
+        !!! tip
+            Resolve and reuse object attributes wherever possible to leverage built-in caching,
+            even if global caching is disabled.
 
         Args:
             metrics (Optional[MaybeIterable[Union[str, Tuple[str, Kwargs]]]]): Metric or metrics to calculate.
@@ -293,24 +308,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         Returns:
             Optional[SeriesFrame]: Computed metrics as a Pandas Series
                 (for single-dimensional output) or DataFrame (for multi-dimensional output).
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.stats_builder` and `StatsBuilderMixin.stats_defaults`.
-
-            See `vectorbtpro.utils.template` for template logic.
-
-        !!! tip
-            Optional (resolution) arguments are passed only if they appear in the function's signature,
-            while mandatory arguments are always passed. Optional arguments are defined via `settings`
-            (globally), whereas mandatory arguments can be set using default metric settings or
-            `{metric_name}_kwargs`. Overriding optional arguments does not make them mandatory;
-            use `pass_{arg}=True` to enforce passing.
-
-        !!! tip
-            Resolve and reuse object attributes wherever possible to leverage built-in caching,
-            even if global caching is disabled.
         """
-        # Compute per column
         if column is None:
             if per_column is None:
                 per_column = self.resolve_stats_setting(per_column, "per_column")
@@ -328,7 +326,6 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                             results.append(self.stats(*_args, **_kwargs))
                     return pd.concat(results, keys=columns, axis=1)
 
-        # Resolve defaults
         dropna = self.resolve_stats_setting(dropna, "dropna")
         silence_warnings = self.resolve_stats_setting(silence_warnings, "silence_warnings")
         template_context = self.resolve_stats_setting(template_context, "template_context", merge=True)
@@ -336,7 +333,6 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         settings = self.resolve_stats_setting(settings, "settings", merge=True)
         metric_settings = self.resolve_stats_setting(metric_settings, "metric_settings", merge=True)
 
-        # Replace templates globally (not used at metric level)
         if len(template_context) > 0:
             sub_settings = substitute_templates(
                 settings,
@@ -347,14 +343,12 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         else:
             sub_settings = settings
 
-        # Resolve self
         reself = self.resolve_self(
             cond_kwargs=sub_settings,
             impacts_caching=False,
             silence_warnings=silence_warnings,
         )
 
-        # Prepare metrics
         metrics = reself.resolve_stats_setting(metrics, "metrics")
         if metrics == "all":
             metrics = reself.metrics
@@ -363,14 +357,12 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         if isinstance(metrics, (str, tuple)):
             metrics = [metrics]
 
-        # Prepare tags
         tags = reself.resolve_stats_setting(tags, "tags")
         if isinstance(tags, str) and tags == "all":
             tags = None
         if isinstance(tags, (str, tuple)):
             tags = [tags]
 
-        # Bring to the same shape
         new_metrics = []
         for i, metric in enumerate(metrics):
             if isinstance(metric, str):
@@ -380,7 +372,6 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
             new_metrics.append(metric)
         metrics = new_metrics
 
-        # Expand metrics
         new_metrics = []
         for i, (metric_name, _metric_settings) in enumerate(metrics):
             if isinstance(_metric_settings, CustomTemplate):
@@ -414,7 +405,6 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                 new_metrics.append((metric_name, _metric_settings))
         metrics = new_metrics
 
-        # Handle duplicate names
         metric_counts = Counter(list(map(lambda x: x[0], metrics)))
         metric_i = {k: -1 for k in metric_counts.keys()}
         metrics_dct = {}
@@ -424,12 +414,10 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                 metric_name = metric_name + "_" + str(metric_i[metric_name])
             metrics_dct[metric_name] = _metric_settings
 
-        # Check metric_settings
         missed_keys = set(metric_settings.keys()).difference(set(metrics_dct.keys()))
         if len(missed_keys) > 0:
             raise ValueError(f"Keys {missed_keys} in metric_settings could not be matched with any metric")
 
-        # Merge settings
         opt_arg_names_dct = {}
         custom_arg_names_dct = {}
         resolved_self_dct = {}
@@ -464,7 +452,6 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                 eval_id="merged_settings",
             )
 
-            # Filter by tag
             if tags is not None:
                 in_tags = merged_settings.get("tags", None)
                 if in_tags is None or not match_tags(tags, in_tags):
@@ -486,7 +473,6 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
             resolved_self_dct[metric_name] = custom_reself
             context_dct[metric_name] = context
 
-        # Filter metrics
         for metric_name, _metric_settings in list(metrics_dct.items()):
             custom_reself = resolved_self_dct[metric_name]
             context = context_dct[metric_name]
@@ -533,13 +519,11 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                         context_dct.pop(metric_name, None)
                         break
 
-        # Any metrics left?
         if len(metrics_dct) == 0:
             if not silence_warnings:
                 warn("No metrics to calculate")
             return None
 
-        # Compute stats
         arg_cache_dct = {}
         stats_dct = {}
         used_agg_func = False
@@ -550,12 +534,10 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                 custom_arg_names = custom_arg_names_dct[metric_name]
                 custom_reself = resolved_self_dct[metric_name]
 
-                # Clean up keys
                 for k, v in list(final_kwargs.items()):
                     if k.startswith("check_") or k.startswith("inv_check_") or k in ("tags",):
                         final_kwargs.pop(k, None)
 
-                # Get metric-specific values
                 _column = final_kwargs.get("column")
                 _group_by = final_kwargs.get("group_by")
                 _agg_func = final_kwargs.get("agg_func")
@@ -577,7 +559,6 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                     )
                 apply_to_timedelta = final_kwargs.pop("apply_to_timedelta", False)
 
-                # Resolve calc_func
                 if resolve_calc_func:
                     if not callable(calc_func):
                         passed_kwargs_out = {}
@@ -657,7 +638,6 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                             if "pass_column" not in final_kwargs:
                                 final_kwargs.pop("column", None)
 
-                    # Resolve arguments
                     if callable(calc_func):
                         func_arg_names = get_func_arg_names(calc_func)
                         for k in func_arg_names:
@@ -696,26 +676,20 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                             if k.startswith("pass_") or k.startswith("resolve_"):
                                 final_kwargs.pop(k, None)  # cleanup
 
-                        # Call calc_func
                         out = calc_func(**final_kwargs)
                     else:
-                        # calc_func is already a result
                         out = calc_func
                 else:
-                    # Do not resolve calc_func
                     out = calc_func(custom_reself, _metric_settings)
 
-                # Call post_calc_func
                 if post_calc_func is not None:
                     out = post_calc_func(custom_reself, out, _metric_settings)
 
-                # Post-process and store the metric
                 multiple = True
                 if not isinstance(out, dict):
                     multiple = False
                     out = {None: out}
                 for k, v in out.items():
-                    # Resolve title
                     if multiple:
                         if title is None:
                             t = str(k)
@@ -724,7 +698,6 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                     else:
                         t = title
 
-                    # Check result type
                     if checks.is_any_array(v) and not checks.is_series(v):
                         raise TypeError(
                             "calc_func must return either a scalar for one column/group, "
@@ -732,11 +705,9 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                             f"Not {type(v)}."
                         )
 
-                    # Handle apply_to_timedelta
                     if apply_to_timedelta and to_timedelta:
                         v = custom_reself.wrapper.arr_to_timedelta(v, silence_warnings=_silence_warnings)
 
-                    # Select column or aggregate
                     if checks.is_series(v):
                         if _column is None and v.shape[0] == 1:
                             v = v.iloc[0]
@@ -758,16 +729,14 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                                 )
                             continue
 
-                    # Store metric
                     if t in stats_dct:
                         if not _silence_warnings:
                             warn(f"Duplicate metric title {t!r}")
                     stats_dct[t] = v
-            except Exception as e:
+            except Exception:
                 warn(f"Metric {metric_name!r} raised an exception")
-                raise e
+                raise
 
-        # Return the stats
         if reself.wrapper.get_ndim(group_by=group_by) == 1:
             sr = pd.Series(
                 stats_dct,

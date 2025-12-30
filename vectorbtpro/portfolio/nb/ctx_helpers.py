@@ -13,7 +13,7 @@
 from vectorbtpro.base.flex_indexing import flex_select_col_nb
 from vectorbtpro.portfolio.nb import records as pf_records_nb
 from vectorbtpro.portfolio.nb.core import *
-from vectorbtpro.portfolio.nb.iter_ import select_nb
+from vectorbtpro.portfolio.nb.iter_ import select_from_col_nb
 from vectorbtpro.records import nb as records_nb
 
 
@@ -21,11 +21,11 @@ from vectorbtpro.records import nb as records_nb
 
 
 @register_jitted
-def get_col_position_nb(c: tp.NamedTuple, col: int) -> float:
+def get_col_position_nb(c: tp.AnySimContext, col: int) -> float:
     """Return the position of a specified column from the context.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -35,19 +35,11 @@ def get_col_position_nb(c: tp.NamedTuple, col: int) -> float:
 
 
 @register_jitted
-def get_position_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_position_nb(c: tp.AnyColumnContext) -> float:
     """Return the position of the current column based on the provided context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         float: Position value of the current column.
@@ -56,11 +48,11 @@ def get_position_nb(
 
 
 @register_jitted
-def col_in_position_nb(c: tp.NamedTuple, col: int) -> bool:
+def col_in_position_nb(c: tp.AnySimContext, col: int) -> bool:
     """Return whether a specified column is currently in a position.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -71,19 +63,11 @@ def col_in_position_nb(c: tp.NamedTuple, col: int) -> bool:
 
 
 @register_jitted
-def in_position_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> bool:
+def in_position_nb(c: tp.AnyColumnContext) -> bool:
     """Return whether the current column is in a position.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         bool: True if the current column's position is non-zero, otherwise False.
@@ -92,11 +76,11 @@ def in_position_nb(
 
 
 @register_jitted
-def col_in_long_position_nb(c: tp.NamedTuple, col: int) -> bool:
+def col_in_long_position_nb(c: tp.AnySimContext, col: int) -> bool:
     """Return whether a specified column is in a long position.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -107,19 +91,11 @@ def col_in_long_position_nb(c: tp.NamedTuple, col: int) -> bool:
 
 
 @register_jitted
-def in_long_position_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> bool:
+def in_long_position_nb(c: tp.AnyColumnContext) -> bool:
     """Return whether the current column is in a long position.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         bool: True if the current column's position is positive, otherwise False.
@@ -128,11 +104,11 @@ def in_long_position_nb(
 
 
 @register_jitted
-def col_in_short_position_nb(c: tp.NamedTuple, col: int) -> bool:
+def col_in_short_position_nb(c: tp.AnySimContext, col: int) -> bool:
     """Return whether a specified column is in a short position.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -143,19 +119,11 @@ def col_in_short_position_nb(c: tp.NamedTuple, col: int) -> bool:
 
 
 @register_jitted
-def in_short_position_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> bool:
+def in_short_position_nb(c: tp.AnyColumnContext) -> bool:
     """Return whether the current column is in a short position.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         bool: True if the current column's position is negative, otherwise False.
@@ -165,23 +133,13 @@ def in_short_position_nb(
 
 @register_jitted
 def get_n_active_positions_nb(
-    c: tp.Union[
-        GroupContext,
-        SegmentContext,
-        OrderContext,
-        PostOrderContext,
-        FlexOrderContext,
-        SignalSegmentContext,
-        SignalContext,
-        PostSignalContext,
-    ],
+    c: tp.AnyGroupContext,
     all_groups: bool = False,
 ) -> int:
     """Return the number of active positions in the current group or across all groups.
 
     Args:
-        c (Union[GroupContext, SegmentContext, OrderContext, PostOrderContext, FlexOrderContext, SignalSegmentContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyGroupContext): Relevant context.
         all_groups (bool): Flag indicating whether to count active positions across all groups.
 
     Returns:
@@ -203,11 +161,11 @@ def get_n_active_positions_nb(
 
 
 @register_jitted
-def get_col_cash_nb(c: tp.NamedTuple, col: int) -> float:
+def get_col_cash_nb(c: tp.AnySimContext, col: int) -> float:
     """Return the cash for a specified column.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -217,16 +175,16 @@ def get_col_cash_nb(c: tp.NamedTuple, col: int) -> float:
         ValueError: If cash sharing is enabled, indicating that cash cannot be retrieved for a single column.
     """
     if c.cash_sharing:
-        raise ValueError("Cannot get cash of a single column from a group with cash sharing. " "Use get_group_cash_nb.")
+        raise ValueError("Cannot get cash of a single column from a group with cash sharing. Use get_group_cash_nb.")
     return c.last_cash[col]
 
 
 @register_jitted
-def get_group_cash_nb(c: tp.NamedTuple, group: int) -> float:
+def get_group_cash_nb(c: tp.AnySimContext, group: int) -> float:
     """Return the cash for a specified group.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         group (int): Index of the group.
 
     Returns:
@@ -247,38 +205,46 @@ def get_group_cash_nb(c: tp.NamedTuple, group: int) -> float:
 
 
 @register_jitted
-def get_cash_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_col_or_group_cash_nb(c: tp.AnySimContext, col: int, group: int) -> float:
+    """Return the cash for a specified column or group based on cash sharing.
+
+    Args:
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
+        group (int): Index of the group.
+
+    Returns:
+        float: Cash value of the specified column if cash sharing is disabled;
+            otherwise, the cash value of the specified group.
+    """
+    if c.cash_sharing:
+        return get_group_cash_nb(c, group)
+    return get_col_cash_nb(c, col)
+
+
+@register_jitted
+def get_cash_nb(c: tp.AnyColumnContext) -> float:
     """Return the cash for the current column or group based on cash sharing.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         float: Cash value of the current column if cash sharing is disabled;
             otherwise, the cash value of the current group.
     """
-    if c.cash_sharing:
-        return get_group_cash_nb(c, c.group)
-    return get_col_cash_nb(c, c.col)
+    return get_col_or_group_cash_nb(c, c.col, c.group)
 
 
 # ############# Debt ############# #
 
 
 @register_jitted
-def get_col_debt_nb(c: tp.NamedTuple, col: int) -> float:
+def get_col_debt_nb(c: tp.AnySimContext, col: int) -> float:
     """Return the debt for a specified column.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -288,19 +254,11 @@ def get_col_debt_nb(c: tp.NamedTuple, col: int) -> float:
 
 
 @register_jitted
-def get_debt_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_debt_nb(c: tp.AnyColumnContext) -> float:
     """Return the debt for the current column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         float: Debt value of the current column.
@@ -312,11 +270,11 @@ def get_debt_nb(
 
 
 @register_jitted
-def get_col_locked_cash_nb(c: tp.NamedTuple, col: int) -> float:
+def get_col_locked_cash_nb(c: tp.AnySimContext, col: int) -> float:
     """Return the locked cash for a specified column.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -326,19 +284,11 @@ def get_col_locked_cash_nb(c: tp.NamedTuple, col: int) -> float:
 
 
 @register_jitted
-def get_locked_cash_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_locked_cash_nb(c: tp.AnyColumnContext) -> float:
     """Return the locked cash for the current column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         float: Locked cash value of the current column.
@@ -350,11 +300,11 @@ def get_locked_cash_nb(
 
 
 @register_jitted
-def get_col_free_cash_nb(c: tp.NamedTuple, col: int) -> float:
+def get_col_free_cash_nb(c: tp.AnySimContext, col: int) -> float:
     """Return the free cash for a specified column.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -366,17 +316,17 @@ def get_col_free_cash_nb(c: tp.NamedTuple, col: int) -> float:
     """
     if c.cash_sharing:
         raise ValueError(
-            "Cannot get free cash of a single column from a group with cash sharing. " "Use get_group_free_cash_nb."
+            "Cannot get free cash of a single column from a group with cash sharing. Use get_group_free_cash_nb."
         )
     return c.last_free_cash[col]
 
 
 @register_jitted
-def get_group_free_cash_nb(c: tp.NamedTuple, group: int) -> float:
+def get_group_free_cash_nb(c: tp.AnySimContext, group: int) -> float:
     """Return the free cash for a specified group.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         group (int): Index of the group.
 
     Returns:
@@ -397,35 +347,43 @@ def get_group_free_cash_nb(c: tp.NamedTuple, group: int) -> float:
 
 
 @register_jitted
-def get_free_cash_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_col_or_group_free_cash_nb(c: tp.AnySimContext, col: int, group: int) -> float:
+    """Return the free cash for a specified column or group based on cash sharing.
+
+    Args:
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
+        group (int): Index of the group.
+
+    Returns:
+        float: Free cash value of the specified column if cash sharing is disabled;
+            otherwise, the free cash value of the specified group.
+    """
+    if c.cash_sharing:
+        return get_group_free_cash_nb(c, group)
+    return get_col_free_cash_nb(c, col)
+
+
+@register_jitted
+def get_free_cash_nb(c: tp.AnyColumnContext) -> float:
     """Return the free cash for the current column or group based on cash sharing.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         float: Free cash value of the current column if cash sharing is disabled;
             otherwise, the free cash value of the current group.
     """
-    if c.cash_sharing:
-        return get_group_free_cash_nb(c, c.group)
-    return get_col_free_cash_nb(c, c.col)
+    return get_col_or_group_free_cash_nb(c, c.col, c.group)
 
 
 @register_jitted
-def col_has_free_cash_nb(c: tp.NamedTuple, col: int) -> float:
+def col_has_free_cash_nb(c: tp.AnySimContext, col: int) -> float:
     """Return whether a specified column has free cash available.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -435,11 +393,11 @@ def col_has_free_cash_nb(c: tp.NamedTuple, col: int) -> float:
 
 
 @register_jitted
-def group_has_free_cash_nb(c: tp.NamedTuple, group: int) -> float:
+def group_has_free_cash_nb(c: tp.AnySimContext, group: int) -> float:
     """Return whether a specified group has free cash available.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         group (int): Index of the group.
 
     Returns:
@@ -449,37 +407,44 @@ def group_has_free_cash_nb(c: tp.NamedTuple, group: int) -> float:
 
 
 @register_jitted
-def has_free_cash_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> bool:
-    """Return whether the current column or group with cash sharing has free cash available.
+def col_or_group_has_free_cash_nb(c: tp.AnySimContext, col: int, group: int) -> bool:
+    """Return whether a specified column or group with cash sharing has free cash available.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
+        group (int): Index of the group.
 
     Returns:
         bool: True if free cash is available, otherwise False.
     """
     if c.cash_sharing:
-        return group_has_free_cash_nb(c, c.group)
-    return col_has_free_cash_nb(c, c.col)
+        return group_has_free_cash_nb(c, group)
+    return col_has_free_cash_nb(c, col)
+
+
+@register_jitted
+def has_free_cash_nb(c: tp.AnyColumnContext) -> bool:
+    """Return whether the current column or group with cash sharing has free cash available.
+
+    Args:
+        c (AnyColumnContext): Relevant context.
+
+    Returns:
+        bool: True if free cash is available, otherwise False.
+    """
+    return col_or_group_has_free_cash_nb(c, c.col, c.group)
 
 
 # ############# Valuation price ############# #
 
 
 @register_jitted
-def get_col_val_price_nb(c: tp.NamedTuple, col: int) -> float:
+def get_col_val_price_nb(c: tp.AnySimContext, col: int) -> float:
     """Return the valuation price for a specified column.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -489,19 +454,11 @@ def get_col_val_price_nb(c: tp.NamedTuple, col: int) -> float:
 
 
 @register_jitted
-def get_val_price_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_val_price_nb(c: tp.AnyColumnContext) -> float:
     """Return the valuation price for the current column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         float: Valuation price of the current column.
@@ -513,12 +470,12 @@ def get_val_price_nb(
 
 
 @register_jitted
-def get_col_value_nb(c: tp.NamedTuple, col: int) -> float:
+def get_col_value_nb(c: tp.AnySimContext, col: int) -> float:
     """Retrieve the value of a specified column from the context.
 
     Args:
-        c (NamedTuple): Context.
-        col (int): Index of the column to retrieve the value from.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
 
     Returns:
         float: Value at the specified column.
@@ -528,18 +485,16 @@ def get_col_value_nb(c: tp.NamedTuple, col: int) -> float:
             for a single column.
     """
     if c.cash_sharing:
-        raise ValueError(
-            "Cannot get value of a single column from a group with cash sharing. " "Use get_group_value_nb."
-        )
+        raise ValueError("Cannot get value of a single column from a group with cash sharing. Use get_group_value_nb.")
     return c.last_value[col]
 
 
 @register_jitted
-def get_group_value_nb(c: tp.NamedTuple, group: int) -> float:
+def get_group_value_nb(c: tp.AnySimContext, group: int) -> float:
     """Retrieve the aggregated value of a specified group from the context.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         group (int): Index of the group to retrieve the value for.
 
     Returns:
@@ -560,38 +515,46 @@ def get_group_value_nb(c: tp.NamedTuple, group: int) -> float:
 
 
 @register_jitted
-def get_value_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_col_or_group_value_nb(c: tp.AnySimContext, col: int, group: int) -> float:
+    """Retrieve the value of a specified column or group based on cash sharing.
+
+    Args:
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
+        group (int): Index of the group.
+
+    Returns:
+        float: Value of the specified column if cash sharing is disabled;
+            otherwise, the aggregated group value.
+    """
+    if c.cash_sharing:
+        return get_group_value_nb(c, group)
+    return get_col_value_nb(c, col)
+
+
+@register_jitted
+def get_value_nb(c: tp.AnyColumnContext) -> float:
     """Retrieve the value of the current column or group based on cash sharing.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         float: Value of the current column, or if cash sharing is enabled, the aggregated group value.
     """
-    if c.cash_sharing:
-        return get_group_value_nb(c, c.group)
-    return get_col_value_nb(c, c.col)
+    return get_col_or_group_value_nb(c, c.col, c.group)
 
 
 # ############# Leverage ############# #
 
 
 @register_jitted
-def get_col_leverage_nb(c: tp.NamedTuple, col: int) -> float:
+def get_col_leverage_nb(c: tp.AnySimContext, col: int) -> float:
     """Calculate the leverage of a specified column based on its financial metrics.
 
     Args:
-        c (NamedTuple): Context.
-        col (int): Index of the column for which to calculate leverage.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
 
     Returns:
         float: Leverage computed as debt divided by locked cash, incremented by one if
@@ -609,19 +572,11 @@ def get_col_leverage_nb(c: tp.NamedTuple, col: int) -> float:
 
 
 @register_jitted
-def get_leverage_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_leverage_nb(c: tp.AnyColumnContext) -> float:
     """Retrieve the leverage of the current column from the context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         float: Leverage of the current column.
@@ -633,11 +588,11 @@ def get_leverage_nb(
 
 
 @register_jitted
-def get_col_position_value_nb(c: tp.NamedTuple, col: int) -> float:
+def get_col_position_value_nb(c: tp.AnySimContext, col: int) -> float:
     """Calculate the position value for a specified column.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -651,11 +606,11 @@ def get_col_position_value_nb(c: tp.NamedTuple, col: int) -> float:
 
 
 @register_jitted
-def get_group_position_value_nb(c: tp.NamedTuple, group: int) -> float:
+def get_group_position_value_nb(c: tp.AnySimContext, group: int) -> float:
     """Aggregate the position value for a specified group by summing the values of its constituent columns.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         group (int): Index of the group to calculate the total position value for.
 
     Returns:
@@ -674,19 +629,11 @@ def get_group_position_value_nb(c: tp.NamedTuple, group: int) -> float:
 
 
 @register_jitted
-def get_position_value_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_position_value_nb(c: tp.AnyColumnContext) -> float:
     """Retrieve the position value of the current column from the context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         float: Position value of the current column.
@@ -695,11 +642,11 @@ def get_position_value_nb(
 
 
 @register_jitted
-def get_col_allocation_nb(c: tp.NamedTuple, col: int, group: tp.Optional[int] = None) -> float:
+def get_col_allocation_nb(c: tp.AnySimContext, col: int, group: tp.Optional[int] = None) -> float:
     """Calculate the allocation of a specified column within its group.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
         group (Optional[int]): Index of the group.
 
@@ -733,19 +680,11 @@ def get_col_allocation_nb(c: tp.NamedTuple, col: int, group: tp.Optional[int] = 
 
 
 @register_jitted
-def get_allocation_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_allocation_nb(c: tp.AnyColumnContext) -> float:
     """Retrieve the allocation of the current column within its current group.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         float: Allocation ratio for the current column.
@@ -757,11 +696,11 @@ def get_allocation_nb(
 
 
 @register_jitted
-def get_col_order_count_nb(c: tp.NamedTuple, col: int) -> int:
+def get_col_order_count_nb(c: tp.AnySimContext, col: int) -> int:
     """Retrieve the number of order records for a specified column.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -771,19 +710,11 @@ def get_col_order_count_nb(c: tp.NamedTuple, col: int) -> int:
 
 
 @register_jitted
-def get_order_count_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> int:
+def get_order_count_nb(c: tp.AnyColumnContext) -> int:
     """Retrieve the number of order records for the current column from the context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         int: Count of order records for the current column.
@@ -792,11 +723,11 @@ def get_order_count_nb(
 
 
 @register_jitted
-def get_col_order_records_nb(c: tp.NamedTuple, col: int) -> tp.RecordArray:
+def get_col_order_records_nb(c: tp.AnySimContext, col: int) -> tp.RecordArray:
     """Retrieve the order records for a specified column.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -807,19 +738,11 @@ def get_col_order_records_nb(c: tp.NamedTuple, col: int) -> tp.RecordArray:
 
 
 @register_jitted
-def get_order_records_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> tp.RecordArray:
+def get_order_records_nb(c: tp.AnyColumnContext) -> tp.RecordArray:
     """Retrieve the order records for the current column from the context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         RecordArray: Order records for the current column.
@@ -828,11 +751,11 @@ def get_order_records_nb(
 
 
 @register_jitted
-def col_has_orders_nb(c: tp.NamedTuple, col: int) -> bool:
+def col_has_orders_nb(c: tp.AnySimContext, col: int) -> bool:
     """Determine whether any order records exist for a specified column.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -842,19 +765,11 @@ def col_has_orders_nb(c: tp.NamedTuple, col: int) -> bool:
 
 
 @register_jitted
-def has_orders_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> bool:
+def has_orders_nb(c: tp.AnyColumnContext) -> bool:
     """Determine whether any order records exist for the current column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         bool: True if there is at least one order record for the current column, otherwise False.
@@ -863,11 +778,11 @@ def has_orders_nb(
 
 
 @register_jitted
-def get_col_last_order_nb(c: tp.NamedTuple, col: int) -> tp.Record:
+def get_col_last_order_nb(c: tp.AnySimContext, col: int) -> tp.Record:
     """Retrieve the last order record for a specified column.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnySimContext): Relevant context.
         col (int): Index of the column.
 
     Returns:
@@ -882,19 +797,11 @@ def get_col_last_order_nb(c: tp.NamedTuple, col: int) -> tp.Record:
 
 
 @register_jitted
-def get_last_order_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> tp.Record:
+def get_last_order_nb(c: tp.AnyColumnContext) -> tp.Record:
     """Retrieve the last order record for the current column from the context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         Record: Last order record for the current column.
@@ -906,17 +813,11 @@ def get_last_order_nb(
 
 
 @register_jitted
-def order_filled_nb(
-    c: tp.Union[
-        PostOrderContext,
-        PostSignalContext,
-    ]
-) -> bool:
+def order_filled_nb(c: tp.AnyPostOrderContext) -> bool:
     """Determine if the order has been filled.
 
     Args:
-        c (Union[PostOrderContext, PostSignalContext]):
-            Relevant context.
+        c (AnyPostOrderContext): Relevant context.
 
     Returns:
         bool: True if the order status is filled, otherwise False.
@@ -925,17 +826,11 @@ def order_filled_nb(
 
 
 @register_jitted
-def order_opened_position_nb(
-    c: tp.Union[
-        PostOrderContext,
-        PostSignalContext,
-    ]
-) -> bool:
+def order_opened_position_nb(c: tp.AnyPostOrderContext) -> bool:
     """Determine if the order has opened a new position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalContext]):
-            Relevant context.
+        c (AnyPostOrderContext): Relevant context.
 
     Returns:
         bool: True if the order either reversed a position or changed the position from
@@ -946,17 +841,11 @@ def order_opened_position_nb(
 
 
 @register_jitted
-def order_increased_position_nb(
-    c: tp.Union[
-        PostOrderContext,
-        PostSignalContext,
-    ]
-) -> bool:
+def order_increased_position_nb(c: tp.AnyPostOrderContext) -> bool:
     """Determine if the order has opened a new position or increased an existing position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalContext]):
-            Relevant context.
+        c (AnyPostOrderContext): Relevant context.
 
     Returns:
         bool: True if the order resulted in a new position or increased the absolute size of
@@ -969,17 +858,11 @@ def order_increased_position_nb(
 
 
 @register_jitted
-def order_decreased_position_nb(
-    c: tp.Union[
-        PostOrderContext,
-        PostSignalContext,
-    ]
-) -> bool:
+def order_decreased_position_nb(c: tp.AnyPostOrderContext) -> bool:
     """Determine if the order has decreased or closed an existing position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalContext]):
-            Relevant context.
+        c (AnyPostOrderContext): Relevant context.
 
     Returns:
         bool: True if the order reduced the position size, closed the position, or
@@ -994,17 +877,11 @@ def order_decreased_position_nb(
 
 
 @register_jitted
-def order_closed_position_nb(
-    c: tp.Union[
-        PostOrderContext,
-        PostSignalContext,
-    ]
-) -> bool:
+def order_closed_position_nb(c: tp.AnyPostOrderContext) -> bool:
     """Determine if the order has completely closed an existing position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalContext]):
-            Relevant context.
+        c (AnyPostOrderContext): Relevant context.
 
     Returns:
         bool: True if there was an existing position and the current position is zero,
@@ -1015,17 +892,11 @@ def order_closed_position_nb(
 
 
 @register_jitted
-def order_reversed_position_nb(
-    c: tp.Union[
-        PostOrderContext,
-        PostSignalContext,
-    ]
-) -> bool:
+def order_reversed_position_nb(c: tp.AnyPostOrderContext) -> bool:
     """Check whether the order has reversed an existing position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
 
     Returns:
         bool: True if the order reverses an existing position, otherwise False.
@@ -1038,12 +909,12 @@ def order_reversed_position_nb(
 
 
 @register_jitted
-def get_col_limit_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
+def get_col_limit_info_nb(c: tp.AnySimContext, col: int) -> tp.Record:
     """Get limit order information for the specified column.
 
     Args:
-        c (NamedTuple): Context.
-        col (int): Column index from which to retrieve the limit order information.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
 
     Returns:
         Record: Limit order information for the specified column.
@@ -1052,17 +923,11 @@ def get_col_limit_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
 
 
 @register_jitted
-def get_limit_info_nb(
-    c: tp.Union[
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> tp.Record:
+def get_limit_info_nb(c: tp.AnyPostOrderContext) -> tp.Record:
     """Get limit order information for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyPostOrderContext): Relevant context.
 
     Returns:
         Record: Limit order information for the current column.
@@ -1071,12 +936,12 @@ def get_limit_info_nb(
 
 
 @register_jitted
-def get_col_limit_target_price_nb(c: tp.NamedTuple, col: int) -> float:
+def get_col_limit_target_price_nb(c: tp.AnySimContext, col: int) -> float:
     """Get target price of the limit order for the specified column.
 
     Args:
-        c (NamedTuple): Context.
-        col (int): Column index for retrieving the limit order target price.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
 
     Returns:
         float: Target price of the limit order or NaN if no active position.
@@ -1088,17 +953,11 @@ def get_col_limit_target_price_nb(c: tp.NamedTuple, col: int) -> float:
 
 
 @register_jitted
-def get_limit_target_price_nb(
-    c: tp.Union[
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_limit_target_price_nb(c: tp.AnyPostOrderContext) -> float:
     """Get target price of the limit order for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyPostOrderContext): Relevant context.
 
     Returns:
         float: Target price of the limit order or NaN if no active position.
@@ -1110,12 +969,12 @@ def get_limit_target_price_nb(
 
 
 @register_jitted
-def get_col_sl_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
+def get_col_sl_info_nb(c: tp.AnySimContext, col: int) -> tp.Record:
     """Get stop-loss (SL) order information for the specified column.
 
     Args:
-        c (NamedTuple): Context.
-        col (int): Column index from which to retrieve the SL order information.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
 
     Returns:
         Record: Stop-loss order information for the specified column.
@@ -1124,17 +983,11 @@ def get_col_sl_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
 
 
 @register_jitted
-def get_sl_info_nb(
-    c: tp.Union[
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> tp.Record:
+def get_sl_info_nb(c: tp.AnyPostOrderContext) -> tp.Record:
     """Get stop-loss (SL) order information for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyPostOrderContext): Relevant context.
 
     Returns:
         Record: Stop-loss order information for the current column.
@@ -1143,12 +996,12 @@ def get_sl_info_nb(
 
 
 @register_jitted
-def get_col_sl_target_price_nb(c: tp.NamedTuple, col: int) -> float:
+def get_col_sl_target_price_nb(c: tp.AnySimContext, col: int) -> float:
     """Get target price of the stop-loss (SL) order for the specified column.
 
     Args:
-        c (NamedTuple): Context.
-        col (int): Column index for retrieving the SL target price.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
 
     Returns:
         float: Target price of the SL order or NaN if no active position.
@@ -1161,17 +1014,11 @@ def get_col_sl_target_price_nb(c: tp.NamedTuple, col: int) -> float:
 
 
 @register_jitted
-def get_sl_target_price_nb(
-    c: tp.Union[
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_sl_target_price_nb(c: tp.AnyPostOrderContext) -> float:
     """Get target price of the stop-loss (SL) order for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyPostOrderContext): Relevant context.
 
     Returns:
         float: Target price of the SL order or NaN if no active position.
@@ -1180,12 +1027,12 @@ def get_sl_target_price_nb(
 
 
 @register_jitted
-def get_col_tsl_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
+def get_col_tsl_info_nb(c: tp.AnySimContext, col: int) -> tp.Record:
     """Get trailing stop-loss (TSL/TTP) order information for the specified column.
 
     Args:
-        c (NamedTuple): Context.
-        col (int): Column index from which to retrieve the TSL/TTP order information.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
 
     Returns:
         Record: Trailing stop-loss order information for the specified column.
@@ -1194,17 +1041,11 @@ def get_col_tsl_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
 
 
 @register_jitted
-def get_tsl_info_nb(
-    c: tp.Union[
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> tp.Record:
+def get_tsl_info_nb(c: tp.AnyPostOrderContext) -> tp.Record:
     """Get trailing stop-loss (TSL/TTP) order information for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyPostOrderContext): Relevant context.
 
     Returns:
         Record: Trailing stop-loss order information for the current column.
@@ -1213,12 +1054,12 @@ def get_tsl_info_nb(
 
 
 @register_jitted
-def get_col_tsl_target_price_nb(c: tp.NamedTuple, col: int) -> float:
+def get_col_tsl_target_price_nb(c: tp.AnySimContext, col: int) -> float:
     """Get target price of the trailing stop-loss (TSL/TTP) order for the specified column.
 
     Args:
-        c (NamedTuple): Context.
-        col (int): Column index for retrieving the TSL/TTP target price.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
 
     Returns:
         float: Target price of the TSL/TTP order or NaN if no active position.
@@ -1231,17 +1072,11 @@ def get_col_tsl_target_price_nb(c: tp.NamedTuple, col: int) -> float:
 
 
 @register_jitted
-def get_tsl_target_price_nb(
-    c: tp.Union[
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_tsl_target_price_nb(c: tp.AnyPostOrderContext) -> float:
     """Get target price of the trailing stop-loss (TSL/TTP) order for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyPostOrderContext): Relevant context.
 
     Returns:
         float: Target price of the TSL/TTP order or NaN if no active position.
@@ -1250,12 +1085,12 @@ def get_tsl_target_price_nb(
 
 
 @register_jitted
-def get_col_tp_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
+def get_col_tp_info_nb(c: tp.AnySimContext, col: int) -> tp.Record:
     """Get take-profit (TP) order information for the specified column.
 
     Args:
-        c (NamedTuple): Context.
-        col (int): Column index from which to retrieve the TP order information.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
 
     Returns:
         Record: Take-profit order information for the specified column.
@@ -1264,17 +1099,11 @@ def get_col_tp_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
 
 
 @register_jitted
-def get_tp_info_nb(
-    c: tp.Union[
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> tp.Record:
+def get_tp_info_nb(c: tp.AnyPostOrderContext) -> tp.Record:
     """Get take-profit (TP) order information for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyPostOrderContext): Relevant context.
 
     Returns:
         Record: Take-profit order information for the current column.
@@ -1283,12 +1112,12 @@ def get_tp_info_nb(
 
 
 @register_jitted
-def get_col_tp_target_price_nb(c: tp.NamedTuple, col: int) -> float:
+def get_col_tp_target_price_nb(c: tp.AnySimContext, col: int) -> float:
     """Get target price of the take-profit (TP) order for the specified column.
 
     Args:
-        c (NamedTuple): Context.
-        col (int): Column index for retrieving the TP target price.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
 
     Returns:
         float: Target price of the TP order or NaN if no active position.
@@ -1301,17 +1130,11 @@ def get_col_tp_target_price_nb(c: tp.NamedTuple, col: int) -> float:
 
 
 @register_jitted
-def get_tp_target_price_nb(
-    c: tp.Union[
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> float:
+def get_tp_target_price_nb(c: tp.AnyPostOrderContext) -> float:
     """Get target price of the take-profit (TP) order for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyPostOrderContext): Relevant context.
 
     Returns:
         float: Target price of the TP order or NaN if no active position.
@@ -1324,7 +1147,7 @@ def get_tp_target_price_nb(
 
 @register_jitted
 def get_col_entry_trade_records_nb(
-    c: tp.NamedTuple,
+    c: tp.AnyRowContext,
     col: int,
     init_position: tp.FlexArray1dLike = 0.0,
     init_price: tp.FlexArray1dLike = np.nan,
@@ -1332,8 +1155,8 @@ def get_col_entry_trade_records_nb(
     """Get entry trade records for the specified column up to the current point.
 
     Args:
-        c (NamedTuple): Context.
-        col (int): Column index for which to retrieve entry trade records.
+        c (AnyRowContext): Relevant context.
+        col (int): Index of the column.
         init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
@@ -1359,20 +1182,14 @@ def get_col_entry_trade_records_nb(
 
 @register_jitted
 def get_entry_trade_records_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
+    c: tp.AnyColumnContext,
     init_position: tp.FlexArray1dLike = 0.0,
     init_price: tp.FlexArray1dLike = np.nan,
 ) -> tp.Array1d:
     """Get entry trade records for the current column up to the current point.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
         init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
@@ -1388,7 +1205,7 @@ def get_entry_trade_records_nb(
 
 @register_jitted
 def get_col_exit_trade_records_nb(
-    c: tp.NamedTuple,
+    c: tp.AnyRowContext,
     col: int,
     init_position: tp.FlexArray1dLike = 0.0,
     init_price: tp.FlexArray1dLike = np.nan,
@@ -1396,8 +1213,8 @@ def get_col_exit_trade_records_nb(
     """Get exit trade records for the specified column up to the current point.
 
     Args:
-        c (NamedTuple): Context.
-        col (int): Column index for which to retrieve exit trade records.
+        c (AnyRowContext): Relevant context.
+        col (int): Index of the column.
         init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
@@ -1423,20 +1240,14 @@ def get_col_exit_trade_records_nb(
 
 @register_jitted
 def get_exit_trade_records_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
+    c: tp.AnyColumnContext,
     init_position: tp.FlexArray1dLike = 0.0,
     init_price: tp.FlexArray1dLike = np.nan,
 ) -> tp.Array1d:
     """Get exit trade records for the current column up to the current point.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
         init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
@@ -1452,7 +1263,7 @@ def get_exit_trade_records_nb(
 
 @register_jitted
 def get_col_position_records_nb(
-    c: tp.NamedTuple,
+    c: tp.AnySimContext,
     col: int,
     init_position: tp.FlexArray1dLike = 0.0,
     init_price: tp.FlexArray1dLike = np.nan,
@@ -1460,8 +1271,8 @@ def get_col_position_records_nb(
     """Get position records for the specified column up to the current point.
 
     Args:
-        c (NamedTuple): Context.
-        col (int): Column index for which to retrieve position records.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
         init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
@@ -1480,20 +1291,14 @@ def get_col_position_records_nb(
 
 @register_jitted
 def get_position_records_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
+    c: tp.AnyColumnContext,
     init_position: tp.FlexArray1dLike = 0.0,
     init_price: tp.FlexArray1dLike = np.nan,
 ) -> tp.Array1d:
     """Get position records for the current column up to the current point.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
         init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
@@ -1508,13 +1313,13 @@ def get_position_records_nb(
 
 
 @register_jitted
-def stop_group_sim_nb(c: tp.NamedTuple, group: int) -> None:
+def stop_group_sim_nb(c: tp.AnyRowContext, group: int) -> None:
     """Stop simulation for a specific group.
 
     This function sets the simulation end index for the specified group to the next row.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnyRowContext): Relevant context.
         group (int): Index of the group for which the simulation is to be stopped.
 
     Returns:
@@ -1524,22 +1329,11 @@ def stop_group_sim_nb(c: tp.NamedTuple, group: int) -> None:
 
 
 @register_jitted
-def stop_sim_nb(
-    c: tp.Union[
-        SegmentContext,
-        OrderContext,
-        PostOrderContext,
-        FlexOrderContext,
-        SignalSegmentContext,
-        SignalContext,
-        PostSignalContext,
-    ],
-) -> None:
+def stop_sim_nb(c: tp.AnyGroupContext) -> None:
     """Stop simulation for the current group.
 
     Args:
-        c (Union[SegmentContext, OrderContext, PostOrderContext, FlexOrderContext, SignalSegmentContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (tp.AnyGroupContext): Relevant context.
 
     Returns:
         None: This function modifies the context in place.
@@ -1551,89 +1345,111 @@ def stop_sim_nb(
 
 
 @register_jitted
-def get_exec_state_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
+def get_col_exec_state_nb(
+    c: tp.AnySimContext,
+    col: int,
+    group: int,
     val_price: tp.Optional[int] = None,
 ) -> ExecState:
-    """Compute the execution state from the simulation context.
+    """Compute the execution state for the specified column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
+        group (int): Index of the group.
         val_price (Optional[float]): Valuation price of the asset.
 
     Returns:
-        ExecState: Updated execution state with attributes such as cash, position, debt,
-            locked cash, free cash, value price, and overall value.
+        ExecState: Updated execution state for the specified column.
     """
     if val_price is not None:
         _val_price = float(val_price)
         value = float(
             update_value_nb(
-                cash_before=get_cash_nb(c),
-                cash_now=get_cash_nb(c),
-                position_before=get_position_nb(c),
-                position_now=get_position_nb(c),
-                val_price_before=get_val_price_nb(c),
+                cash_before=get_col_or_group_cash_nb(c, col, group),
+                cash_now=get_col_or_group_cash_nb(c, col, group),
+                position_before=get_col_position_nb(c, col),
+                position_now=get_col_position_nb(c, col),
+                val_price_before=get_col_val_price_nb(c, col),
                 val_price_now=_val_price,
-                value_before=get_value_nb(c),
+                value_before=get_col_or_group_value_nb(c, col, group),
             )
         )
     else:
-        _val_price = float(get_val_price_nb(c))
-        value = float(get_value_nb(c))
+        _val_price = float(get_col_val_price_nb(c, col))
+        value = float(get_col_or_group_value_nb(c, col, group))
     return ExecState(
-        cash=get_cash_nb(c),
-        position=get_position_nb(c),
-        debt=get_debt_nb(c),
-        locked_cash=get_locked_cash_nb(c),
-        free_cash=get_free_cash_nb(c),
+        cash=get_col_or_group_cash_nb(c, col, group),
+        position=get_col_position_nb(c, col),
+        debt=get_col_debt_nb(c, col),
+        locked_cash=get_col_locked_cash_nb(c, col),
+        free_cash=get_col_or_group_free_cash_nb(c, col, group),
         val_price=_val_price,
         value=value,
     )
 
 
 @register_jitted
-def get_price_area_nb(c: tp.NamedTuple) -> PriceArea:
-    """Retrieve price area values from the simulation context.
+def get_exec_state_nb(c: tp.AnyColumnContext, val_price: tp.Optional[int] = None) -> ExecState:
+    """Compute the execution state for the current column.
 
     Args:
-        c (NamedTuple): Context.
+        c (AnyColumnContext): Relevant context.
+        val_price (Optional[float]): Valuation price of the asset.
 
     Returns:
-        PriceArea: Selected price area with open, high, low, and
-            close values for the current simulation step.
+        ExecState: Updated execution state for the current column.
+    """
+    return get_col_exec_state_nb(c, c.col, c.group, val_price=val_price)
+
+
+@register_jitted
+def get_col_price_area_nb(c: tp.AnySimContext, col: int) -> PriceArea:
+    """Retrieve the price area for the specified column.
+
+    Args:
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
+
+    Returns:
+        PriceArea: Price area for the specified column.
     """
     return PriceArea(
-        open=select_nb(c, c.open, i=c.i),
-        high=select_nb(c, c.high, i=c.i),
-        low=select_nb(c, c.low, i=c.i),
-        close=select_nb(c, c.close, i=c.i),
+        open=select_from_col_nb(c, col, c.open),
+        high=select_from_col_nb(c, col, c.high),
+        low=select_from_col_nb(c, col, c.low),
+        close=select_from_col_nb(c, col, c.close),
     )
 
 
 @register_jitted
-def get_order_size_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
+def get_price_area_nb(c: tp.AnyColumnContext) -> PriceArea:
+    """Retrieve the price area for the current column.
+
+    Args:
+        c (AnyColumnContext): Relevant context.
+
+    Returns:
+        PriceArea: Price area for the current column.
+    """
+    return get_col_price_area_nb(c, c.col)
+
+
+@register_jitted
+def get_col_order_size_nb(
+    c: tp.AnySimContext,
+    col: int,
+    group: int,
     size: float,
     size_type: int = SizeType.Amount,
     val_price: tp.Optional[int] = None,
 ) -> float:
-    """Calculate the order size based on the simulation context and provided parameters.
+    """Convert size specification into an absolute asset amount for the specified column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
+        group (int): Index of the group.
         size (float): Order size.
         size_type (int): Type of order size.
 
@@ -1641,38 +1457,62 @@ def get_order_size_nb(
         val_price (Optional[float]): Valuation price of the asset.
 
     Returns:
-        float: Computed order size.
+        float: Absolute asset amount for the specified column.
     """
-    exec_state = get_exec_state_nb(c, val_price=val_price)
+    exec_state = get_col_exec_state_nb(c, col, group, val_price=val_price)
     if size_type == SizeType.Percent100 or size_type == SizeType.Percent:
         raise ValueError("Size type Percent(100) is not supported")
     return resolve_size_nb(
         size=size,
         size_type=size_type,
-        position=get_position_nb(c),
+        position=get_col_position_nb(c, col),
         val_price=exec_state.val_price,
         value=exec_state.value,
     )[0]
 
 
 @register_jitted
-def get_order_value_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
+def get_order_size_nb(
+    c: tp.AnyColumnContext,
+    size: float,
+    size_type: int = SizeType.Amount,
+    val_price: tp.Optional[int] = None,
+) -> float:
+    """Convert size specification into an absolute asset amount for the current column.
+
+    Args:
+        c (AnyColumnContext): Relevant context.
+        size (float): Order size.
+        size_type (int): Type of order size.
+
+            Percent sizes are not supported. See `vectorbtpro.portfolio.enums.SizeType`.
+        val_price (Optional[float]): Valuation price of the asset.
+
+    Returns:
+        float: Absolute asset amount for the current column.
+    """
+    return get_col_order_size_nb(c, c.col, c.group, size=size, size_type=size_type, val_price=val_price)
+
+
+@register_jitted
+def get_col_order_value_nb(
+    c: tp.AnySimContext,
+    col: int,
+    group: int,
     size: float,
     size_type: int = SizeType.Amount,
     direction: int = Direction.Both,
     val_price: tp.Optional[int] = None,
 ) -> float:
-    """Calculate the approximate order value from the execution state and order parameters.
+    """Convert size specification into an approximated order value for the specified column.
+
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnySimContext): Relevant context.
+        col (int): Index of the column.
+        group (int): Index of the group.
         size (float): Order size.
         size_type (int): Type of order size.
 
@@ -1683,9 +1523,9 @@ def get_order_value_nb(
         val_price (Optional[float]): Valuation price of the asset.
 
     Returns:
-        float: Approximated order value.
+        float: Approximated order value for the specified column.
     """
-    exec_state = get_exec_state_nb(c, val_price=val_price)
+    exec_state = get_col_exec_state_nb(c, col, group, val_price=val_price)
     return approx_order_value_nb(
         exec_state,
         size=size,
@@ -1695,22 +1535,59 @@ def get_order_value_nb(
 
 
 @register_jitted
-def get_order_result_nb(
-    c: tp.Union[
-        OrderContext,
-        PostOrderContext,
-        SignalContext,
-        PostSignalContext,
-    ],
+def get_order_value_nb(
+    c: tp.AnyColumnContext,
+    size: float,
+    size_type: int = SizeType.Amount,
+    direction: int = Direction.Both,
+    val_price: tp.Optional[int] = None,
+) -> float:
+    """Convert size specification into an approximated order value for the current column.
+
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
+
+    Args:
+        c (AnyColumnContext): Relevant context.
+        size (float): Order size.
+        size_type (int): Type of order size.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        direction (int): Order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+        val_price (Optional[float]): Valuation price of the asset.
+
+    Returns:
+        float: Approximated order value for the current column.
+    """
+    return get_col_order_value_nb(
+        c,
+        c.col,
+        c.group,
+        size=size,
+        size_type=size_type,
+        direction=direction,
+        val_price=val_price,
+    )
+
+
+@register_jitted
+def get_col_order_result_nb(
+    c: tp.AnyColumnContext,
+    col: int,
+    group: int,
     order: Order,
     val_price: tp.Optional[float] = None,
     update_value: bool = False,
 ) -> tp.Tuple[OrderResult, ExecState]:
-    """Obtain the order result and updated execution state without modifying the simulation state.
+    """Obtain the order result and updated execution state without modifying the simulation state
+    for the specified column.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Relevant context.
+        c (AnyColumnContext): Relevant context.
+        col (int): Index of the column.
+        group (int): Index of the group.
         order (Order): Order to execute.
 
             See `vectorbtpro.portfolio.enums.Order`.
@@ -1719,13 +1596,83 @@ def get_order_result_nb(
 
     Returns:
         Tuple[OrderResult, ExecState]: Tuple containing the order result and
-            the updated execution state.
+            the updated execution state for the specified column.
     """
-    exec_state = get_exec_state_nb(c, val_price=val_price)
-    price_area = get_price_area_nb(c)
+    exec_state = get_col_exec_state_nb(c, col, group, val_price=val_price)
+    price_area = get_col_price_area_nb(c, col)
     return execute_order_nb(
         exec_state=exec_state,
         order=order,
         price_area=price_area,
         update_value=update_value,
     )
+
+
+@register_jitted
+def get_order_result_nb(
+    c: tp.AnyColumnContext,
+    order: Order,
+    val_price: tp.Optional[float] = None,
+    update_value: bool = False,
+) -> tp.Tuple[OrderResult, ExecState]:
+    """Obtain the order result and updated execution state without modifying the simulation state
+    for the current column.
+
+    Args:
+        c (AnyColumnContext): Relevant context.
+        order (Order): Order to execute.
+
+            See `vectorbtpro.portfolio.enums.Order`.
+        val_price (Optional[float]): Valuation price of the asset.
+        update_value (bool): Flag to update portfolio value with each order.
+
+    Returns:
+        Tuple[OrderResult, ExecState]: Tuple containing the order result and
+            the updated execution state for the current column.
+    """
+    return get_col_order_result_nb(
+        c,
+        c.col,
+        c.group,
+        order=order,
+        val_price=val_price,
+        update_value=update_value,
+    )
+
+
+@register_jitted
+def fill_col_order_info_nb(
+    c: tp.FSPreOrderSegmentContext,
+    col: int,
+    order: Order,
+) -> None:
+    """Fill in order information for the specified column before order execution.
+
+    Args:
+        c (FSPreOrderSegmentContext): Relevant context.
+        col (int): Index of the column.
+        order (Order): Order to execute.
+
+            See `vectorbtpro.portfolio.enums.Order`.
+
+    Returns:
+        None: This function modifies the context in place.
+    """
+    c.order_info["size"][col] = order.size
+    c.order_info["price"][col] = order.price
+    c.order_info["size_type"][col] = order.size_type
+    c.order_info["direction"][col] = order.direction
+    c.order_info["fees"][col] = order.fees
+    c.order_info["fixed_fees"][col] = order.fixed_fees
+    c.order_info["slippage"][col] = order.slippage
+    c.order_info["min_size"][col] = order.min_size
+    c.order_info["max_size"][col] = order.max_size
+    c.order_info["size_granularity"][col] = order.size_granularity
+    c.order_info["cash_limit"][col] = order.cash_limit
+    c.order_info["leverage"][col] = order.leverage
+    c.order_info["leverage_mode"][col] = order.leverage_mode
+    c.order_info["reject_prob"][col] = order.reject_prob
+    c.order_info["price_area_vio_mode"][col] = order.price_area_vio_mode
+    c.order_info["allow_partial"][col] = order.allow_partial
+    c.order_info["raise_reject"][col] = order.raise_reject
+    c.order_info["log"][col] = order.log

@@ -172,19 +172,19 @@ __pdoc__[
 
 Fields:
     MinMax: Rescales an array from its min-max range to match the min-max range of another array.
-        
+
         For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` yields `[12.0, 11.0, 10.0]`
-        
+
         Use this to search for patterns irrespective of their vertical scale.
     Rebase: Rebases an array to the first value of another array.
-    
+
         For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` yields `[10.0, 6.6, 3.3]`
-        
+
         Use this to search for percentage changes.
     Disable: Disables rescaling, leaving the array unchanged.
-    
+
         For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` yields `[3.0, 2.0, 1.0]`
-        
+
         Use this to search for particular numbers.
 """
 

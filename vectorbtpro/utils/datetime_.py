@@ -242,26 +242,22 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
             unit = "s"
         elif unit == "m":  # case!
             unit = "min"
-        # hour
         elif unit.lower() == "h":
             unit = "h"
         elif unit.lower() in ("businesshour", "bh"):
             unit = "bh"
         elif unit.lower() in ("custombusinesshour", "cbh"):
             unit = "cbh"
-        # day
         elif unit.lower() == "d":
             unit = "D"
         elif unit.lower() in ("b", "bd", "bday", "businessday"):
             unit = "B"
         elif unit.lower() in ("c", "cd", "cday", "custombusinessday"):
             unit = "C"
-        # week
         elif unit.lower() in ("w", "ws", "weekstart", "weekbegin"):
             unit = "W-MON"
         elif unit.lower() in ("we", "weekend"):
             unit = "W-SUN"
-        # month
         elif unit.lower() in ("m", "ms", "monthstart", "monthbegin"):
             unit = "MS"
         elif unit.lower() in ("me", "monthend"):
@@ -269,7 +265,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "M"
             else:
                 unit = "ME"
-        # business month
         elif unit.lower() in (
             "bm",
             "bms",
@@ -284,7 +279,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "BM"
             else:
                 unit = "BME"
-        # custom business month
         elif unit.lower() in (
             "cbm",
             "cbms",
@@ -299,7 +293,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "CBM"
             else:
                 unit = "CBME"
-        # semi-month
         elif unit.lower() in ("sm", "sms", "semimonthstart", "semimonthbegin"):
             unit = "SMS"
         elif unit.lower() in ("sme", "semimonthend"):
@@ -307,7 +300,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "SM"
             else:
                 unit = "SME"
-        # quarter
         elif unit.lower() in ("q", "qs", "quarterstart", "quarterbegin"):
             unit = "QS"
         elif unit.lower() in ("qe", "quarterend"):
@@ -315,7 +307,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "Q"
             else:
                 unit = "QE"
-        # business quarter
         elif unit.lower() in (
             "bq",
             "bqs",
@@ -330,10 +321,8 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "BQ"
             else:
                 unit = "BQE"
-        # retail quarter
         elif unit.lower() in ("req", "retailquarter", "fy5253quarter"):
             unit = "REQ"
-        # year
         elif unit.lower() in ("a", "y", "as", "ys", "yearstart", "yearbegin"):
             unit = year_prefix + "S"
         elif unit.lower() in ("ae", "ye", "yearend"):
@@ -341,7 +330,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = year_prefix
             else:
                 unit = year_prefix + "E"
-        # business year
         elif unit.lower() in (
             "ba",
             "by",
@@ -358,10 +346,8 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "B" + year_prefix
             else:
                 unit = "B" + year_prefix + "E"
-        # retail year
         elif unit.lower() in ("re", "retailyear", "fy5253"):
             unit = "RE"
-        # day of week
         elif unit.lower() in ("mon", "monday"):
             unit = "W-MON"
         elif unit.lower() in ("tue", "tuesday"):
@@ -376,7 +362,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
             unit = "W-SAT"
         elif unit.lower() in ("sun", "sunday"):
             unit = "W-SUN"
-        # month of year
         elif unit.lower() in ("jan", "january"):
             unit = year_prefix + "S-JAN"
         elif unit.lower() in ("feb", "february"):
@@ -565,7 +550,6 @@ def to_timedelta(freq: tp.FrequencyLike = 1, approximate: bool = False) -> tp.Pa
         if not isinstance(freq, BaseOffset):
             try:
                 if isinstance(freq, str) and not freq[0].isdigit():
-                    # Otherwise "ValueError: unit abbreviation w/o a number"
                     freq = pd.Timedelta(1, unit=freq)
                 else:
                     freq = pd.Timedelta(freq)
@@ -1108,6 +1092,9 @@ def to_timezone(
 
     If `to_fixed_offset` is True, converts the timezone to a fixed offset.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
         to_fixed_offset (Optional[bool]): Flag to convert the timezone to a fixed offset.
@@ -1116,9 +1103,6 @@ def to_timezone(
 
     Returns:
         tzinfo: Parsed timezone object.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     import dateparser
     from vectorbtpro._settings import settings
@@ -1175,6 +1159,9 @@ def to_timestamp(
     If `dt` is a string, parsing is attempted with Pandas and with dateparser if
     `parse_with_dateparser` is True. For numerical inputs, `dt` is interpreted using the specified `unit`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         dt (DatetimeLike): Datetime input to parse.
 
@@ -1188,9 +1175,6 @@ def to_timestamp(
 
     Returns:
         Timestamp: Parsed and timezone-adjusted timestamp.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 
@@ -1289,6 +1273,9 @@ def to_tzaware_timestamp(
     (or the default setting). To explicitly convert the timestamp to a different timezone, provide `tz`, which
     is processed by `to_timezone`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         dt (DatetimeLike): Datetime input to parse.
         naive_tz (TimezoneLike): Timezone specification for TZ-naive datetime (e.g., "UTC", "America/New_York").
@@ -1297,9 +1284,6 @@ def to_tzaware_timestamp(
 
     Returns:
         Timestamp: Timezone-aware timestamp.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 
@@ -1433,6 +1417,9 @@ def readable_datetime(
     of the input timestamp and an optional frequency parameter. Timezone information can be
     dropped based on configuration.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         dt (DatetimeLike): Datetime-like input to format.
         drop_tz (Optional[bool]): If True, exclude timezone information from the output.
@@ -1441,9 +1428,6 @@ def readable_datetime(
 
     Returns:
         str: Formatted human-readable datetime string.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 
@@ -1558,15 +1542,15 @@ def to_ns(obj: tp.ArrayLike, tz_naive_ns: tp.Optional[bool] = None) -> tp.ArrayL
     The function supports conversion of datetime, date, timedelta, and array-like objects,
     including Pandas and NumPy types. Timezone handling is determined by the `tz_naive_ns` flag.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         obj (ArrayLike): Object representing a time value.
         tz_naive_ns (Optional[bool]): Flag indicating whether to enforce a timezone-naive conversion.
 
     Returns:
         ArrayLike: Nanosecond representation of the input.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 
@@ -1716,6 +1700,9 @@ def prepare_dt_index(
     If `index` has an object dtype and `parse_index` is enabled, it attempts parsing with `pd.to_datetime`.
     When `parse_with_dateparser` is True, a fallback using `dateparser.parse` is applied.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         index (IndexLike): Input index to convert.
         parse_index (Optional[bool]): Flag to convert the index to a datetime index with `pd.to_datetime`.
@@ -1725,9 +1712,6 @@ def prepare_dt_index(
 
     Returns:
         Index: Converted index, which will be a DatetimeIndex if conversion succeeded.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     import dateparser
     from vectorbtpro._settings import settings
@@ -1918,6 +1902,9 @@ def infer_index_freq(
     If `freq_from_n` is an integer (positive or negative), the index is limited to the first or last
     N elements respectively.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         index (Index): Pandas datetime index.
         freq (Optional[FrequencyLike]): Frequency representation (string, offset, or timedelta).
@@ -1927,9 +1914,6 @@ def infer_index_freq(
 
     Returns:
         Union[None, int, float, PandasFrequency]: Inferred or converted frequency.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 

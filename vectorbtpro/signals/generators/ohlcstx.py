@@ -183,7 +183,7 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
     plot.__doc__ = inspect.cleandoc(
         """
         Plot OHLC, `{0}.{1}` and `{0}.exits`.
-    
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
 
@@ -211,7 +211,7 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
                 ```pycon
                 >>> ohlcstx.iloc[:, 0].plot().show()
                 ```
-            
+
                 ![](/assets/images/api/OHLCSTX.light.svg#only-light){: .iimg loading=lazy }
                 ![](/assets/images/api/OHLCSTX.dark.svg#only-dark){: .iimg loading=lazy }
             """
@@ -222,10 +222,6 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
 class _OHLCSTX(OHLCSTX):
     """Class representing an exit signal generator based on OHLC data and stop values.
 
-    See:
-        * `OHLCSTX.run` for the main entry point.
-        * `vectorbtpro.signals.nb.ohlc_stop_place_nb` for details on the exit placement.
-
     !!! tip
         All parameters may be provided as a single value (per frame) or as a NumPy array
         (per row, column, or element).
@@ -235,6 +231,10 @@ class _OHLCSTX(OHLCSTX):
     !!! warning
         The generator checks for an exit after every entry. If two entries occur consecutively,
         no exit signal is generated. Consider cleaning up entry signals before passing them, or use `OHLCSTCX`.
+
+    See:
+        * `OHLCSTX.run` for the main entry point.
+        * `vectorbtpro.signals.nb.ohlc_stop_place_nb` for details on the exit placement.
 
     Examples:
         Test each stop type:

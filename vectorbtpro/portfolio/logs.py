@@ -143,6 +143,7 @@ logs_field_config = ReadonlyConfig(
             req_min_size=dict(title="[REQ] Min Size"),
             req_max_size=dict(title="[REQ] Max Size"),
             req_size_granularity=dict(title="[REQ] Size Granularity"),
+            req_cash_limit=dict(title="[REQ] Cash Limit"),
             req_leverage=dict(title="[REQ] Leverage"),
             req_leverage_mode=dict(title="[REQ] Leverage Mode", mapping=LeverageMode),
             req_reject_prob=dict(title="[REQ] Rejection Prob"),

@@ -87,13 +87,13 @@ STX = SignalFactory(**stx_config).with_place_func(**stx_func_config)
 class _STX(STX):
     """Class representing an exit signal generator based on stop values.
 
-    See:
-        * `STX.run` for the main entry point.
-        * `vectorbtpro.signals.nb.stop_place_nb` for details on the exit placement.
-
     !!! tip
         All parameter values can be specified as a single value (per frame) or as a NumPy array
         (per row, column, or element). To generate multiple combinations, pass them as lists.
+
+    See:
+        * `STX.run` for the main entry point.
+        * `vectorbtpro.signals.nb.stop_place_nb` for details on the exit placement.
     """
 
     pass

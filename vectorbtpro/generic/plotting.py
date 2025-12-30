@@ -129,6 +129,9 @@ class TraceUpdater(Base):
     def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike, *args, **kwargs) -> None:
         """Update a single Plotly trace with new data.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             trace (BaseTraceType): Plotly trace to update.
             data (ArrayLike): New data for the trace.
@@ -137,14 +140,14 @@ class TraceUpdater(Base):
 
         Returns:
             None
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def update(self, *args, **kwargs) -> None:
         """Update all Plotly traces with new data.
+
+        !!! abstract
+            This method should be overridden in a subclass.
 
         Args:
             *args: Additional positional arguments.
@@ -152,15 +155,15 @@ class TraceUpdater(Base):
 
         Returns:
             None
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
 
 class Gauge(TraceType, TraceUpdater):
     """Class for creating a gauge plot.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
 
     Args:
         value (Optional[float]): Value to display on the gauge.
@@ -172,14 +175,11 @@ class Gauge(TraceType, TraceUpdater):
         trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Indicator`.
         add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
             for example, `dict(row=1, col=1)`.
+        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
 
             See `vectorbtpro.utils.figure.make_figure`.
-        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.plotting`.
 
     Examples:
         ```pycon
@@ -205,8 +205,8 @@ class Gauge(TraceType, TraceUpdater):
         cmap_name: str = "Spectral",
         trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
-        make_figure_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> None:
         TraceType.__init__(
@@ -217,8 +217,8 @@ class Gauge(TraceType, TraceUpdater):
             cmap_name=cmap_name,
             trace_kwargs=trace_kwargs,
             add_trace_kwargs=add_trace_kwargs,
-            make_figure_kwargs=make_figure_kwargs,
             fig=fig,
+            make_figure_kwargs=make_figure_kwargs,
             **layout_kwargs,
         )
 
@@ -232,9 +232,10 @@ class Gauge(TraceType, TraceUpdater):
             add_trace_kwargs = {}
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
             if "width" in layout_cfg:
-                # Calculate nice width and height
                 width = layout_cfg.get("width", None)
                 if width is not None:
                     width *= 0.7
@@ -344,10 +345,10 @@ class Bar(TraceType, TraceUpdater):
             Can be provided per trace as a sequence of dictionaries.
         add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
             for example, `dict(row=1, col=1)`.
+        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
 
             See `vectorbtpro.utils.figure.make_figure`.
-        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
     Examples:
@@ -373,8 +374,8 @@ class Bar(TraceType, TraceUpdater):
         x_labels: tp.Optional[tp.Labels] = None,
         trace_kwargs: tp.KwargsLikeSequence = None,
         add_trace_kwargs: tp.KwargsLike = None,
-        make_figure_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> None:
         TraceType.__init__(
@@ -384,8 +385,8 @@ class Bar(TraceType, TraceUpdater):
             x_labels=x_labels,
             trace_kwargs=trace_kwargs,
             add_trace_kwargs=add_trace_kwargs,
-            make_figure_kwargs=make_figure_kwargs,
             fig=fig,
+            make_figure_kwargs=make_figure_kwargs,
             **layout_kwargs,
         )
 
@@ -408,7 +409,9 @@ class Bar(TraceType, TraceUpdater):
             x_labels = clean_labels(x_labels)
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         for i, trace_name in enumerate(trace_names):
@@ -466,6 +469,9 @@ class Bar(TraceType, TraceUpdater):
 class Scatter(TraceType, TraceUpdater):
     """Class for creating a scatter plot.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+
     Args:
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
@@ -477,18 +483,15 @@ class Scatter(TraceType, TraceUpdater):
             Can be provided per trace as a sequence of dictionaries.
         add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
             for example, `dict(row=1, col=1)`.
+        use_webgl (Optional[bool]): Flag to use `plotly.graph_objects.Scattergl`.
+
+            If the global configuration is True and the data has more than 10,000 points,
+            this flag becomes True.
+        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
 
             See `vectorbtpro.utils.figure.make_figure`.
-        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-        use_gl (bool): Flag to use `plotly.graph_objects.Scattergl`.
-
-            Defaults to the global setting. If the global configuration is None and the data has
-            more than 10,000 points, this flag is set to True.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.plotting`.
 
     Examples:
         ```pycon
@@ -513,9 +516,9 @@ class Scatter(TraceType, TraceUpdater):
         x_labels: tp.Optional[tp.Labels] = None,
         trace_kwargs: tp.KwargsLikeSequence = None,
         add_trace_kwargs: tp.KwargsLike = None,
-        make_figure_kwargs: tp.KwargsLike = None,
+        use_webgl: tp.Optional[bool] = None,
         fig: tp.Optional[tp.BaseFigure] = None,
-        use_gl: tp.Optional[bool] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> None:
         TraceType.__init__(
@@ -525,8 +528,9 @@ class Scatter(TraceType, TraceUpdater):
             x_labels=x_labels,
             trace_kwargs=trace_kwargs,
             add_trace_kwargs=add_trace_kwargs,
-            make_figure_kwargs=make_figure_kwargs,
+            use_webgl=use_webgl,
             fig=fig,
+            make_figure_kwargs=make_figure_kwargs,
             **layout_kwargs,
         )
 
@@ -553,23 +557,23 @@ class Scatter(TraceType, TraceUpdater):
             x_labels = clean_labels(x_labels)
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         for i, trace_name in enumerate(trace_names):
             _trace_kwargs = resolve_dict(trace_kwargs, i=i)
-            _use_gl = _trace_kwargs.pop("use_gl", use_gl)
-            if _use_gl is None:
-                _use_gl = plotting_cfg["use_gl"]
-            if _use_gl is None:
-                _use_gl = _use_gl is None and data is not None and data.size >= 10000
+            _use_webgl = _trace_kwargs.pop("use_webgl", use_webgl)
+            if _use_webgl is None:
+                _use_webgl = plotting_cfg["use_webgl"] and data is not None and data.size >= 10_000
             trace_name = _trace_kwargs.pop("name", trace_name)
             if trace_name is not None:
                 trace_name = str(trace_name)
-            if _use_gl:
-                scatter_obj = go.Scattergl
+            if _use_webgl:
+                Scatter = go.Scattergl
             else:
-                scatter_obj = go.Scatter
+                Scatter = go.Scatter
             try:
                 from plotly_resampler.aggregation import AbstractFigureAggregator
 
@@ -586,14 +590,14 @@ class Scatter(TraceType, TraceUpdater):
                     dict(name=trace_name, showlegend=trace_name is not None),
                     _trace_kwargs,
                 )
-                trace = scatter_obj(**_trace_kwargs)
+                trace = Scatter(**_trace_kwargs)
                 fig.add_trace(trace, hf_x=x_labels, hf_y=data[:, i], **add_trace_kwargs)
             else:
                 _trace_kwargs = merge_dicts(
                     dict(x=x_labels, name=trace_name, showlegend=trace_name is not None),
                     _trace_kwargs,
                 )
-                trace = scatter_obj(**_trace_kwargs)
+                trace = Scatter(**_trace_kwargs)
                 if data is not None:
                     self.update_trace(trace, data, i)
                 fig.add_trace(trace, **add_trace_kwargs)
@@ -655,10 +659,10 @@ class Histogram(TraceType, TraceUpdater):
             Can be provided per trace as a sequence of dictionaries.
         add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
             for example, `dict(row=1, col=1)`.
+        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
 
             See `vectorbtpro.utils.figure.make_figure`.
-        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
     Examples:
@@ -686,8 +690,8 @@ class Histogram(TraceType, TraceUpdater):
         to_quantile: tp.Optional[float] = None,
         trace_kwargs: tp.KwargsLikeSequence = None,
         add_trace_kwargs: tp.KwargsLike = None,
-        make_figure_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> None:
         TraceType.__init__(
@@ -700,8 +704,8 @@ class Histogram(TraceType, TraceUpdater):
             to_quantile=to_quantile,
             trace_kwargs=trace_kwargs,
             add_trace_kwargs=add_trace_kwargs,
-            make_figure_kwargs=make_figure_kwargs,
             fig=fig,
+            make_figure_kwargs=make_figure_kwargs,
             **layout_kwargs,
         )
 
@@ -722,7 +726,9 @@ class Histogram(TraceType, TraceUpdater):
             trace_names = [trace_names]
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
             fig.update_layout(barmode="overlay")
         fig.update_layout(**layout_kwargs)
 
@@ -890,10 +896,10 @@ class Box(TraceType, TraceUpdater):
             Can be provided per trace as a sequence of dictionaries.
         add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
             for example, `dict(row=1, col=1)`.
+        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
 
             See `vectorbtpro.utils.figure.make_figure`.
-        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
     Examples:
@@ -921,8 +927,8 @@ class Box(TraceType, TraceUpdater):
         to_quantile: tp.Optional[float] = None,
         trace_kwargs: tp.KwargsLikeSequence = None,
         add_trace_kwargs: tp.KwargsLike = None,
-        make_figure_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> None:
         TraceType.__init__(
@@ -935,8 +941,8 @@ class Box(TraceType, TraceUpdater):
             to_quantile=to_quantile,
             trace_kwargs=trace_kwargs,
             add_trace_kwargs=add_trace_kwargs,
-            make_figure_kwargs=make_figure_kwargs,
             fig=fig,
+            make_figure_kwargs=make_figure_kwargs,
             **layout_kwargs,
         )
 
@@ -957,7 +963,9 @@ class Box(TraceType, TraceUpdater):
             trace_names = [trace_names]
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         for i, trace_name in enumerate(trace_names):
@@ -1099,6 +1107,9 @@ class Box(TraceType, TraceUpdater):
 class Heatmap(TraceType, TraceUpdater):
     """Class for creating a heatmap plot.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+
     Args:
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
@@ -1110,14 +1121,11 @@ class Heatmap(TraceType, TraceUpdater):
         trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Heatmap`.
         add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
             for example, `dict(row=1, col=1)`.
+        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
 
             See `vectorbtpro.utils.figure.make_figure`.
-        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.plotting`.
 
     Examples:
         ```pycon
@@ -1144,8 +1152,8 @@ class Heatmap(TraceType, TraceUpdater):
         is_y_category: bool = False,
         trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
-        make_figure_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> None:
         TraceType.__init__(
@@ -1155,8 +1163,8 @@ class Heatmap(TraceType, TraceUpdater):
             y_labels=y_labels,
             trace_kwargs=trace_kwargs,
             add_trace_kwargs=add_trace_kwargs,
-            make_figure_kwargs=make_figure_kwargs,
             fig=fig,
+            make_figure_kwargs=make_figure_kwargs,
             **layout_kwargs,
         )
 
@@ -1183,10 +1191,11 @@ class Heatmap(TraceType, TraceUpdater):
             y_labels = clean_labels(y_labels)
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
             max_width = layout_cfg.get("width", None)
             if max_width is not None:
-                # Calculate nice width and height
                 if data is not None:
                     x_len = data.shape[1]
                     y_len = data.shape[0]
@@ -1257,6 +1266,12 @@ class Heatmap(TraceType, TraceUpdater):
 class Volume(TraceType, TraceUpdater):
     """Class for creating a volume plot.
 
+    !!! note
+        Figure widgets currently have issues displaying NaNs. Use the `.show()` method for rendering.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+
     Args:
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
@@ -1268,17 +1283,11 @@ class Volume(TraceType, TraceUpdater):
         add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
             for example, `dict(row=1, col=1)`.
         scene_name (str): Name of the 3D scene.
+        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
 
             See `vectorbtpro.utils.figure.make_figure`.
-        fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
-
-    !!! note
-        Figure widgets currently have issues displaying NaNs. Use the `.show()` method for rendering.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.plotting`.
 
     Examples:
         ```pycon
@@ -1306,8 +1315,8 @@ class Volume(TraceType, TraceUpdater):
         trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         scene_name: str = "scene",
-        make_figure_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> None:
         TraceType.__init__(
@@ -1319,8 +1328,8 @@ class Volume(TraceType, TraceUpdater):
             trace_kwargs=trace_kwargs,
             add_trace_kwargs=add_trace_kwargs,
             scene_name=scene_name,
-            make_figure_kwargs=make_figure_kwargs,
             fig=fig,
+            make_figure_kwargs=make_figure_kwargs,
             **layout_kwargs,
         )
 
@@ -1365,15 +1374,14 @@ class Volume(TraceType, TraceUpdater):
         z_labels = np.asarray(z_labels)
 
         if fig is None:
-            fig = make_figure(**resolve_dict(make_figure_kwargs))
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
             if "width" in layout_cfg:
-                # Calculate nice width and height
                 width = layout_cfg.get("width", None)
                 if width is not None:
                     fig.update_layout(width=width, height=0.7 * width)
 
-        # Non-numeric data types are not supported by go.Volume, so use ticktext
-        # Note: Currently plotly displays the entire tick array, in future versions it will be more sensible
         more_layout = dict()
         more_layout[scene_name] = dict()
         if not np.issubdtype(x_labels.dtype, np.number):
@@ -1391,7 +1399,6 @@ class Volume(TraceType, TraceUpdater):
         fig.update_layout(**more_layout)
         fig.update_layout(**layout_kwargs)
 
-        # Arrays must have the same length as the flattened data array
         x = np.repeat(x_labels, len(y_labels) * len(z_labels))
         y = np.tile(np.repeat(y_labels, len(z_labels)), len(x_labels))
         z = np.tile(z_labels, len(x_labels) * len(y_labels))

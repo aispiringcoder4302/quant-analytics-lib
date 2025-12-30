@@ -32,13 +32,13 @@ from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.attr_ import get_dict_attr
 from vectorbtpro.utils.config import Configured
 from vectorbtpro.utils.config import merge_dicts, Config, ReadonlyConfig, HybridConfig
-from vectorbtpro.utils.source import suggest_module_path, cut_and_save_func
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.module_ import import_module_from_path
 from vectorbtpro.utils.params import Param
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import remove_dir
 from vectorbtpro.utils.random_ import set_seed
+from vectorbtpro.utils.source import suggest_module_path, cut_and_save_func
 from vectorbtpro.utils.template import CustomTemplate, RepFunc, substitute_templates
 
 __all__ = [
@@ -89,12 +89,12 @@ class MetaBasePreparer(type(Configured)):
 class BasePreparer(Configured, metaclass=MetaBasePreparer):
     """Base class for preparing target functions and arguments.
 
+    !!! warning
+        Most properties are force-cached - create a new instance to override any attribute.
+
     Args:
         arg_config (KwargsLike): Optional configuration for target function arguments.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! warning
-        Most properties are force-cached - create a new instance to override any attribute.
     """
 
     _expected_keys_mode: tp.ExpectedKeysMode = "disable"
@@ -121,10 +121,22 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
     def __init__(self, arg_config: tp.KwargsLike = None, **kwargs) -> None:
         Configured.__init__(self, arg_config=arg_config, **kwargs)
 
-        # Copy writeable attrs
         self._arg_config = type(self)._arg_config.copy()
         if arg_config is not None:
             self._arg_config = merge_dicts(self._arg_config, arg_config)
+
+        self.check_arg_config()
+
+    def check_arg_config(self) -> None:
+        """Check the argument configuration for deprecated aliases.
+
+        Raises:
+            ValueError: If a deprecated alias is used in the configuration.
+        """
+        for arg_name, arg_conf in self.arg_config.items():
+            if arg_name in self.config and "obsolete_by" in arg_conf:
+                obsolete_by = arg_conf["obsolete_by"]
+                raise ValueError(f"Argument {arg_name!r} is obsolete, use {obsolete_by!r} instead")
 
     @classmethod
     def map_enum_value(cls, value: tp.ArrayLike, look_for_type: tp.Optional[type] = None, **kwargs) -> tp.ArrayLike:
@@ -564,14 +576,14 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
     def find_target_func(cls, target_func_name: str) -> tp.Callable:
         """Find the target function by its name.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             target_func_name (str): Name of the target function.
 
         Returns:
             Callable: Found target function.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -679,7 +691,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """
         return dict(
             to_pd=False,
-            keep_flex=dict(cash_earnings=self.keep_inout_flex, _def=True),
+            keep_flex=dict(_def=True),
             wrapper_kwargs=dict(
                 freq=self.pre__freq,
                 group_by=self.group_by,
@@ -700,6 +712,21 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """
         arg_broadcast_kwargs = defaultdict(dict)
         for k, v in self.arg_config.items():
+            if v.get("full_shape", False) or v.get("rows_only", False) or v.get("cols_only", False):
+                if "keep_flex" not in arg_broadcast_kwargs:
+                    arg_broadcast_kwargs["keep_flex"] = {}
+                arg_broadcast_kwargs["keep_flex"][k] = False
+                if "min_ndim" not in arg_broadcast_kwargs:
+                    arg_broadcast_kwargs["min_ndim"] = {}
+                arg_broadcast_kwargs["min_ndim"][k] = 2
+            if v.get("rows_only", False):
+                if "axis" not in arg_broadcast_kwargs:
+                    arg_broadcast_kwargs["axis"] = {}
+                arg_broadcast_kwargs["axis"][k] = 0
+            if v.get("cols_only", False):
+                if "axis" not in arg_broadcast_kwargs:
+                    arg_broadcast_kwargs["axis"] = {}
+                arg_broadcast_kwargs["axis"][k] = 1
             if v.get("broadcast", False):
                 broadcast_kwargs = v.get("broadcast_kwargs", None)
                 if broadcast_kwargs is None:

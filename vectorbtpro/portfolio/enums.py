@@ -14,6 +14,7 @@ import numpy as np
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._dtypes import *
+from vectorbtpro.signals.enums import StopType
 from vectorbtpro.utils.formatting import prettify_doc
 
 __pdoc__all__ = __all__ = [
@@ -64,9 +65,12 @@ __pdoc__all__ = __all__ = [
     "Order",
     "NoOrder",
     "OrderResult",
-    "SignalSegmentContext",
-    "SignalContext",
-    "PostSignalContext",
+    "FSSimulationContext",
+    "FSGroupContext",
+    "FSSegmentContext",
+    "FSSignalContext",
+    "FSPreOrderSegmentContext",
+    "FSPostOrderContext",
     "FSInOutputs",
     "FOInOutputs",
     "order_fields",
@@ -81,8 +85,8 @@ __pdoc__all__ = __all__ = [
     "alloc_range_dt",
     "alloc_point_fields",
     "alloc_point_dt",
-    "main_info_fields",
-    "main_info_dt",
+    "order_info_fields",
+    "order_info_dt",
     "limit_info_fields",
     "limit_info_dt",
     "sl_info_fields",
@@ -132,22 +136,22 @@ __pdoc__[
 
 Fields:
     Open: Open price.
-        
+
         Replaced by `-np.inf`.
     Close: Close price.
-        
+
         Replaced by `np.inf`.
     NextOpen: Next open price.
-        
+
         Replaced by `-np.inf` with `from_ago` set to 1.
     NextClose: Next close price.
-        
+
         Replaced by `np.inf` with `from_ago` set to 1.
     NextValidOpen: Next valid (non-NA) open price.
-        
+
         Replaced by `-np.inf` with `from_ago` set to the distance to the previous valid value.
     NextValidClose: Next valid (non-NA) close price.
-        
+
         Replaced by `np.inf` with `from_ago` set to the distance to the previous valid value.
 """
 
@@ -170,10 +174,10 @@ __pdoc__[
 
 Fields:
     Latest: Latest price.
-        
+
         Replaced by `-np.inf`.
     Price: Order price.
-        
+
         Replaced by `np.inf`.
 """
 
@@ -437,7 +441,7 @@ Fields:
 
         Does not require an index.
     Index: Index-based format where a value of 1 indicates that one position in the index has passed. 
-    
+
         If the index is datetime-like, 1 corresponds to one nanosecond; the index must be provided.
 """
 
@@ -532,7 +536,7 @@ Specifies the price to use when exiting a position upon a stop signal.
 
 Fields:
     Stop: Uses the stop price. 
-    
+
         If the target price is first reached by the open price, the open price is used.
         The same applies to the close price if OHLC is not available.
 
@@ -629,28 +633,30 @@ __pdoc__[
 Fields:
     Amount: Specifies the number of assets to trade.
     Value: Specifies the monetary value of assets to trade. 
-    
+
         It is converted to `SizeType.Amount` using `ExecState.val_price`.
     Percent: Specifies the percentage of available resources to use for trading, where 0.01 represents 1%.
 
-          * When long buying, applies to `ExecState.free_cash`
-          * When long selling, applies to `ExecState.position`
-          * When short selling, applies to `ExecState.free_cash`
-          * When short buying, applies to `ExecState.free_cash`, `ExecState.debt`, and `ExecState.locked_cash`
-          * When reversing, applies to the final position
+        * When long buying, applies to `ExecState.free_cash`
+        * When long selling, applies to `ExecState.position`
+        * When short selling, applies to `ExecState.free_cash`
+        * When short buying, applies to `ExecState.free_cash`, `ExecState.debt`, and `ExecState.locked_cash`
+        * When reversing, applies to the final position
+
+        Takes into account leverage.
     Percent100: Equivalent to `SizeType.Percent` with a scale where 1.0 represents 1%.
     ValuePercent: Represents a percentage of the total value using `ExecState.value`. 
-    
+
         Converted to `SizeType.Value`.
     ValuePercent100: Equivalent to `SizeType.ValuePercent` with 1.0 representing 1%.
     TargetAmount: Specifies the target number of assets (target position) using `ExecState.position`. 
-    
+
         Converted to `SizeType.Amount`.
     TargetValue: Specifies the target asset value using `ExecState.val_price`. 
-    
+
         Converted to `SizeType.TargetAmount`.
     TargetPercent: Specifies the target percentage of total value using `ExecState.value`. 
-    
+
         Converted to `SizeType.TargetValue`.
     TargetPercent100: Equivalent to `SizeType.TargetPercent` where 1.0 represents 1%.
 """
@@ -683,6 +689,8 @@ Fields:
 class LeverageModeT(tp.NamedTuple):
     Lazy: int = 0
     Eager: int = 1
+    LazyMult: int = 2
+    EagerMult: int = 3
 
 
 LeverageMode = LeverageModeT()
@@ -698,7 +706,17 @@ __pdoc__[
 
 Fields:
     Lazy: Leverage is applied only when free cash is exhausted.
+
+        Does not multiply size.
     Eager: Leverage is applied to each order.
+
+        Does not multiply size.
+    LazyMult: Leverage is applied only when free cash is exhausted.
+
+        Multiplies size.
+    EagerMult: Leverage is applied to each order.
+
+        Multiplies size.
 """
 
 
@@ -886,7 +904,7 @@ Determines which price to use when executing a limit order.
 
 Fields:
     Limit: Limit price. 
-    
+
         If the target price is first reached at the opening, the open price is used.
         The same applies to the close price if OHLC is not available.
 
@@ -1281,10 +1299,10 @@ If not provided, this field is set to None.
     To use `sort_call_seq_1d_nb`, the sequence must be generated using `CallSeqType.Default`.
 
     To modify the call sequence dynamically, change `SegmentContext.call_seq_now` in place.
-    
+
 Examples:
     Default call sequence for three data points and two groups with three columns each:
-    
+
     ```python
     np.array([
         [0, 1, 2, 0, 1, 2],
@@ -1379,12 +1397,12 @@ The mask must broadcast to shape `(target_shape[0], group_lens.shape[0])`.
 
 Examples:
     Consider two groups with two columns each and the following activity mask:
-    
+
     ```python
     np.array([[ True, False], 
               [False,  True]])
     ```
-    
+
     The first group is only executed in the first row and the second group is only executed in the second row.
 """
 __pdoc__["SimulationContext.call_pre_segment"] = (
@@ -1494,13 +1512,13 @@ To retrieve all order records filled thus far in a column, use `order_records[:o
 
 Examples:
     Before filling, an order record appears as:
-    
+
     ```python
     np.array([(-8070450532247928832, -8070450532247928832, 4, 0., 0., 0., 5764616306889786413)]
     ```
-    
+
     After filling, it becomes:
-    
+
     ```python
     np.array([(0, 0, 1, 50., 1., 0., 1)]
     ```
@@ -1764,7 +1782,7 @@ Used in `pre_group_func_nb` and `post_group_func_nb`.
 
 Examples:
     Consider a configuration with a group of three columns, one of two columns, and one standalone column:
-    
+
     | group | group_len | from_col | to_col |
     | ----- | --------- | -------- | ------ |
     | 0     | 3         | 0        | 3      |
@@ -1805,6 +1823,9 @@ When columns are not grouped, equals `from_col + 1`.
 !!! warning
     In the last group, `to_col` points to a column that does not exist.
 """
+for field in GroupContext._fields:
+    if "GroupContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for GroupContext.{field} is missing")
 
 
 class RowContext(tp.NamedTuple):
@@ -1874,6 +1895,9 @@ __pdoc__[
 
 Range: `[0, target_shape[0])`
 """
+for field in RowContext._fields:
+    if "RowContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for RowContext.{field} is missing")
 
 
 class SegmentContext(tp.NamedTuple):
@@ -1963,6 +1987,9 @@ You can override `call_seq_now` using `pre_segment_func_nb`.
 Examples:
     `[2, 0, 1]` calls column 2 first, then column 0, and finally column 1.
 """
+for field in SegmentContext._fields:
+    if "SegmentContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for SegmentContext.{field} is missing")
 
 
 class OrderContext(tp.NamedTuple):
@@ -2069,6 +2096,9 @@ __pdoc__["OrderContext.val_price_now"] = "`SimulationContext.last_val_price` for
 __pdoc__["OrderContext.value_now"] = "`SimulationContext.last_value` for the current column or group."
 __pdoc__["OrderContext.return_now"] = "`SimulationContext.last_return` for the current column or group."
 __pdoc__["OrderContext.pos_info_now"] = "`SimulationContext.last_pos_info` for the current column."
+for field in OrderContext._fields:
+    if "OrderContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for OrderContext.{field} is missing")
 
 
 class PostOrderContext(tp.NamedTuple):
@@ -2199,6 +2229,9 @@ otherwise, it remains unchanged.
 """
 __pdoc__["PostOrderContext.return_now"] = "`OrderContext.return_now` value after order execution."
 __pdoc__["PostOrderContext.pos_info_now"] = "`OrderContext.pos_info_now` value after order execution."
+for field in PostOrderContext._fields:
+    if "PostOrderContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for PostOrderContext.{field} is missing")
 
 
 class FlexOrderContext(tp.NamedTuple):
@@ -2273,6 +2306,9 @@ for field in FlexOrderContext._fields:
     elif field in SegmentContext._fields:
         __pdoc__["FlexOrderContext." + field] = f"See `SegmentContext.{field}`."
 __pdoc__["FlexOrderContext.call_idx"] = "Index of the current call."
+for field in FlexOrderContext._fields:
+    if "FlexOrderContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FlexOrderContext.{field} is missing")
 
 
 class Order(tp.NamedTuple):
@@ -2286,6 +2322,7 @@ class Order(tp.NamedTuple):
     min_size: float = np.nan
     max_size: float = np.nan
     size_granularity: float = np.nan
+    cash_limit: float = np.nan
     leverage: float = 1.0
     leverage_mode: int = LeverageMode.Lazy
     reject_prob: float = 0.0
@@ -2382,6 +2419,7 @@ placing an order for 12.5 shares will result in ordering exactly 12.0 shares.
 !!! note
     The filled size is still represented as a floating-point number.
 """
+__pdoc__["Order.cash_limit"] = "Max own cash the order is allowed to use."
 __pdoc__["Order.leverage"] = "Leverage factor."
 __pdoc__["Order.leverage_mode"] = "See `LeverageMode`."
 __pdoc__[
@@ -2423,6 +2461,7 @@ NoOrder = Order(
     min_size=np.nan,
     max_size=np.nan,
     size_granularity=np.nan,
+    cash_limit=np.nan,
     leverage=1.0,
     leverage_mode=LeverageMode.Lazy,
     reject_prob=np.nan,
@@ -2454,7 +2493,7 @@ __pdoc__["OrderResult.status"] = "See `OrderStatus`."
 __pdoc__["OrderResult.status_info"] = "See `OrderStatusInfo`."
 
 
-class SignalSegmentContext(tp.NamedTuple):
+class FSSimulationContext(tp.NamedTuple):
     target_shape: tp.Shape
     group_lens: tp.GroupLens
     cash_sharing: bool
@@ -2488,13 +2527,127 @@ class SignalSegmentContext(tp.NamedTuple):
     last_value: tp.Array1d
     last_return: tp.Array1d
 
-    last_pos_info: tp.Array1d
-    last_limit_info: tp.Array1d
-    last_sl_info: tp.Array1d
-    last_tsl_info: tp.Array1d
-    last_tp_info: tp.Array1d
-    last_td_info: tp.Array1d
-    last_dt_info: tp.Array1d
+    last_pos_info: tp.RecordArray
+    last_limit_info: tp.RecordArray
+    last_sl_info: tp.RecordArray
+    last_tsl_info: tp.RecordArray
+    last_tp_info: tp.RecordArray
+    last_td_info: tp.RecordArray
+    last_dt_info: tp.RecordArray
+
+    sim_start: tp.Array1d
+    sim_end: tp.Array1d
+
+
+__pdoc__[
+    "FSSimulationContext"
+] = """Named tuple representing the context for a from-signals simulation.
+
+This context includes OHLC data and additional internal simulation details computed at the start 
+of the simulation. For accessing other information, such as order size, consider using templates.
+
+Passed to `pre_sim_func_nb` and `post_sim_func_nb`.
+"""
+for field in FSSimulationContext._fields:
+    if field in SimulationContext._fields:
+        __pdoc__["FSSimulationContext." + field] = f"See `SimulationContext.{field}`."
+__pdoc__[
+    "FSSimulationContext.track_cash_deposits"
+] = """Indicates whether cash deposits are tracked.
+
+Becomes True if `cash_deposits_out` has been materialized.
+"""
+__pdoc__["FSSimulationContext.cash_deposits_out"] = "See `SimulationOutput.cash_deposits`."
+__pdoc__[
+    "FSSimulationContext.track_cash_earnings"
+] = """Indicates whether cash earnings are tracked.
+
+Becomes True if `cash_earnings_out` has been materialized.
+"""
+__pdoc__["FSSimulationContext.cash_earnings_out"] = "See `SimulationOutput.cash_earnings`."
+__pdoc__["FSSimulationContext.in_outputs"] = "See `FSInOutputs`."
+__pdoc__[
+    "FSSimulationContext.last_limit_info"
+] = """Record of type `limit_info_dt` for each column.
+
+Accessible via `c.limit_info_dt[field][col]`.
+"""
+__pdoc__[
+    "FSSimulationContext.last_sl_info"
+] = """Record of type `sl_info_dt` for each column.
+
+Accessible via `c.last_sl_info[field][col]`.
+"""
+__pdoc__[
+    "FSSimulationContext.last_tsl_info"
+] = """Record of type `tsl_info_dt` for each column.
+
+Accessible via `c.last_tsl_info[field][col]`.
+"""
+__pdoc__[
+    "FSSimulationContext.last_tp_info"
+] = """Record of type `tp_info_dt` for each column.
+
+Accessible via `c.last_tp_info[field][col]`.
+"""
+__pdoc__[
+    "FSSimulationContext.last_td_info"
+] = """Record of type `time_info_dt` for each column.
+
+Accessible via `c.last_td_info[field][col]`.
+"""
+__pdoc__[
+    "FSSimulationContext.last_dt_info"
+] = """Record of type `time_info_dt` for each column.
+
+Accessible via `c.last_dt_info[field][col]`.
+"""
+for field in FSSimulationContext._fields:
+    if "FSSimulationContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FSSimulationContext.{field} is missing")
+
+
+class FSGroupContext(tp.NamedTuple):
+    target_shape: tp.Shape
+    group_lens: tp.GroupLens
+    cash_sharing: bool
+    index: tp.Optional[tp.Array1d]
+    freq: tp.Optional[int]
+    open: tp.FlexArray2d
+    high: tp.FlexArray2d
+    low: tp.FlexArray2d
+    close: tp.FlexArray2d
+    init_cash: tp.FlexArray1d
+    init_position: tp.FlexArray1d
+    init_price: tp.FlexArray1d
+
+    order_records: tp.RecordArray2d
+    order_counts: tp.Array1d
+    log_records: tp.RecordArray2d
+    log_counts: tp.Array1d
+
+    track_cash_deposits: bool
+    cash_deposits_out: tp.Array2d
+    track_cash_earnings: bool
+    cash_earnings_out: tp.Array2d
+    in_outputs: tp.Optional[tp.NamedTuple]
+
+    last_cash: tp.Array1d
+    last_position: tp.Array1d
+    last_debt: tp.Array1d
+    last_locked_cash: tp.Array1d
+    last_free_cash: tp.Array1d
+    last_val_price: tp.Array1d
+    last_value: tp.Array1d
+    last_return: tp.Array1d
+
+    last_pos_info: tp.RecordArray
+    last_limit_info: tp.RecordArray
+    last_sl_info: tp.RecordArray
+    last_tsl_info: tp.RecordArray
+    last_tp_info: tp.RecordArray
+    last_td_info: tp.RecordArray
+    last_dt_info: tp.RecordArray
 
     sim_start: tp.Array1d
     sim_end: tp.Array1d
@@ -2503,81 +2656,27 @@ class SignalSegmentContext(tp.NamedTuple):
     group_len: int
     from_col: int
     to_col: int
-    i: int
-
 
 __pdoc__[
-    "SignalSegmentContext"
-] = """Named tuple representing the context for a simulation segment in a from-signals simulation.
+    "FSGroupContext"
+] = """Named tuple representing the context for a group in a from-signals simulation.
 
-This context includes OHLC data and additional internal simulation details computed at the start 
-of the simulation. For accessing other information, such as order size, consider using templates.
+Contains all fields from `FSSimulationContext` with additional fields
+`group`, `group_len`, `from_col`, and `to_col` representing the current group.
 
-Passed to `post_segment_func_nb`.
+Passed to `pre_group_func_nb` and `post_group_func_nb`.
 """
-for field in SignalSegmentContext._fields:
-    if field in SimulationContext._fields:
-        __pdoc__["SignalSegmentContext." + field] = f"See `SimulationContext.{field}`."
-for field in SignalSegmentContext._fields:
-    if field in GroupContext._fields:
-        __pdoc__["SignalSegmentContext." + field] = f"See `GroupContext.{field}`."
-for field in SignalSegmentContext._fields:
-    if field in RowContext._fields:
-        __pdoc__["SignalSegmentContext." + field] = f"See `RowContext.{field}`."
-__pdoc__[
-    "SignalSegmentContext.track_cash_deposits"
-] = """Indicates whether cash deposits are tracked.
-
-Becomes True if any value in `cash_deposits` is nonzero.
-"""
-__pdoc__["SignalSegmentContext.cash_deposits_out"] = "See `SimulationOutput.cash_deposits`."
-__pdoc__[
-    "SignalSegmentContext.track_cash_earnings"
-] = """Indicates whether cash earnings are tracked.
-
-Becomes True if any value in `cash_earnings` is nonzero.
-"""
-__pdoc__["SignalSegmentContext.cash_earnings_out"] = "See `SimulationOutput.cash_earnings`."
-__pdoc__["SignalSegmentContext.in_outputs"] = "See `FSInOutputs`."
-__pdoc__[
-    "SignalSegmentContext.last_limit_info"
-] = """Record of type `limit_info_dt` for each column.
-
-Accessible via `c.limit_info_dt[field][col]`.
-"""
-__pdoc__[
-    "SignalSegmentContext.last_sl_info"
-] = """Record of type `sl_info_dt` for each column.
-
-Accessible via `c.last_sl_info[field][col]`.
-"""
-__pdoc__[
-    "SignalSegmentContext.last_tsl_info"
-] = """Record of type `tsl_info_dt` for each column.
-
-Accessible via `c.last_tsl_info[field][col]`.
-"""
-__pdoc__[
-    "SignalSegmentContext.last_tp_info"
-] = """Record of type `tp_info_dt` for each column.
-
-Accessible via `c.last_tp_info[field][col]`.
-"""
-__pdoc__[
-    "SignalSegmentContext.last_td_info"
-] = """Record of type `time_info_dt` for each column.
-
-Accessible via `c.last_td_info[field][col]`.
-"""
-__pdoc__[
-    "SignalSegmentContext.last_dt_info"
-] = """Record of type `time_info_dt` for each column.
-
-Accessible via `c.last_dt_info[field][col]`.
-"""
+for field in FSGroupContext._fields:
+    if field in FSSimulationContext._fields:
+        __pdoc__["FSGroupContext." + field] = f"See `FSSimulationContext.{field}`."
+    elif field in GroupContext._fields:
+        __pdoc__["FSGroupContext." + field] = f"See `GroupContext.{field}`."
+for field in FSGroupContext._fields:
+    if "FSGroupContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FSGroupContext.{field} is missing")
 
 
-class SignalContext(tp.NamedTuple):
+class FSSegmentContext(tp.NamedTuple):
     target_shape: tp.Shape
     group_lens: tp.GroupLens
     cash_sharing: bool
@@ -2611,13 +2710,84 @@ class SignalContext(tp.NamedTuple):
     last_value: tp.Array1d
     last_return: tp.Array1d
 
-    last_pos_info: tp.Array1d
-    last_limit_info: tp.Array1d
-    last_sl_info: tp.Array1d
-    last_tsl_info: tp.Array1d
-    last_tp_info: tp.Array1d
-    last_td_info: tp.Array1d
-    last_dt_info: tp.Array1d
+    last_pos_info: tp.RecordArray
+    last_limit_info: tp.RecordArray
+    last_sl_info: tp.RecordArray
+    last_tsl_info: tp.RecordArray
+    last_tp_info: tp.RecordArray
+    last_td_info: tp.RecordArray
+    last_dt_info: tp.RecordArray
+
+    sim_start: tp.Array1d
+    sim_end: tp.Array1d
+
+    group: int
+    group_len: int
+    from_col: int
+    to_col: int
+
+    i: int
+
+
+__pdoc__[
+    "FSSegmentContext"
+] = """Named tuple representing the context for a segment in a from-signals simulation.
+
+Contains all fields from `FSGroupContext` with an additional field `i` representing the row index.
+
+Passed to `pre_segment_func_nb` and `post_segment_func_nb`.
+"""
+for field in FSSegmentContext._fields:
+    if field in FSGroupContext._fields:
+        __pdoc__["FSSegmentContext." + field] = f"See `FSGroupContext.{field}`."
+    elif field in SegmentContext._fields:
+        __pdoc__["FSSegmentContext." + field] = f"See `SegmentContext.{field}`."
+for field in FSSegmentContext._fields:
+    if "FSSegmentContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FSSegmentContext.{field} is missing")
+
+
+class FSSignalContext(tp.NamedTuple):
+    target_shape: tp.Shape
+    group_lens: tp.GroupLens
+    cash_sharing: bool
+    index: tp.Optional[tp.Array1d]
+    freq: tp.Optional[int]
+    open: tp.FlexArray2d
+    high: tp.FlexArray2d
+    low: tp.FlexArray2d
+    close: tp.FlexArray2d
+    init_cash: tp.FlexArray1d
+    init_position: tp.FlexArray1d
+    init_price: tp.FlexArray1d
+
+    order_records: tp.RecordArray2d
+    order_counts: tp.Array1d
+    log_records: tp.RecordArray2d
+    log_counts: tp.Array1d
+
+    track_cash_deposits: bool
+    cash_deposits_out: tp.Array2d
+    track_cash_earnings: bool
+    cash_earnings_out: tp.Array2d
+    in_outputs: tp.Optional[tp.NamedTuple]
+
+    last_cash: tp.Array1d
+    last_position: tp.Array1d
+    last_debt: tp.Array1d
+    last_locked_cash: tp.Array1d
+    last_free_cash: tp.Array1d
+    last_val_price: tp.Array1d
+    last_value: tp.Array1d
+    last_return: tp.Array1d
+
+    last_pos_info: tp.RecordArray
+    last_limit_info: tp.RecordArray
+    last_sl_info: tp.RecordArray
+    last_tsl_info: tp.RecordArray
+    last_tp_info: tp.RecordArray
+    last_td_info: tp.RecordArray
+    last_dt_info: tp.RecordArray
 
     sim_start: tp.Array1d
     sim_end: tp.Array1d
@@ -2631,20 +2801,23 @@ class SignalContext(tp.NamedTuple):
 
 
 __pdoc__[
-    "SignalContext"
+    "FSSignalContext"
 ] = """Named tuple representing the context of an element in a from-signals simulation.
 
-Contains all fields from `SignalSegmentContext` with an additional field `col` representing the column.
+Contains all fields from `FSSegmentContext` with an additional field `col` representing the column.
 
 Passed to `signal_func_nb` and `adjust_func_nb`.
 """
-for field in SignalContext._fields:
-    if field in SignalSegmentContext._fields:
-        __pdoc__["SignalContext." + field] = f"See `SignalSegmentContext.{field}`."
-__pdoc__["SignalContext.col"] = "See `OrderContext.col`."
+for field in FSSignalContext._fields:
+    if field in FSSegmentContext._fields:
+        __pdoc__["FSSignalContext." + field] = f"See `FSSegmentContext.{field}`."
+__pdoc__["FSSignalContext.col"] = "See `OrderContext.col`."
+for field in FSSignalContext._fields:
+    if "FSSignalContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FSSignalContext.{field} is missing")
 
 
-class PostSignalContext(tp.NamedTuple):
+class FSPreOrderSegmentContext(tp.NamedTuple):
     target_shape: tp.Shape
     group_lens: tp.GroupLens
     cash_sharing: bool
@@ -2678,13 +2851,89 @@ class PostSignalContext(tp.NamedTuple):
     last_value: tp.Array1d
     last_return: tp.Array1d
 
-    last_pos_info: tp.Array1d
-    last_limit_info: tp.Array1d
-    last_sl_info: tp.Array1d
-    last_tsl_info: tp.Array1d
-    last_tp_info: tp.Array1d
-    last_td_info: tp.Array1d
-    last_dt_info: tp.Array1d
+    last_pos_info: tp.RecordArray
+    last_limit_info: tp.RecordArray
+    last_sl_info: tp.RecordArray
+    last_tsl_info: tp.RecordArray
+    last_tp_info: tp.RecordArray
+    last_td_info: tp.RecordArray
+    last_dt_info: tp.RecordArray
+
+    sim_start: tp.Array1d
+    sim_end: tp.Array1d
+
+    group: int
+    group_len: int
+    from_col: int
+    to_col: int
+    i: int
+
+    order_info: tp.RecordArray
+
+
+__pdoc__[
+    "FSPreOrderSegmentContext"
+] = """Named tuple representing the context for a segment before processing orders in a from-signals simulation.
+
+Contains all fields from `FSSegmentContext` with an additional field `order_info` representing the order information.
+
+Passed to `pre_order_func_nb`.
+"""
+for field in FSPreOrderSegmentContext._fields:
+    if field in FSSegmentContext._fields:
+        __pdoc__["FSPreOrderSegmentContext." + field] = f"See `FSSegmentContext.{field}`."
+__pdoc__[
+    "FSPreOrderSegmentContext.order_info"
+] = """Record of type `order_info_dt` for each column.
+
+Accessible via `c.order_info[field][col]`.
+"""
+for field in FSPreOrderSegmentContext._fields:
+    if "FSPreOrderSegmentContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FSPreOrderSegmentContext.{field} is missing")
+
+
+class FSPostOrderContext(tp.NamedTuple):
+    target_shape: tp.Shape
+    group_lens: tp.GroupLens
+    cash_sharing: bool
+    index: tp.Optional[tp.Array1d]
+    freq: tp.Optional[int]
+    open: tp.FlexArray2d
+    high: tp.FlexArray2d
+    low: tp.FlexArray2d
+    close: tp.FlexArray2d
+    init_cash: tp.FlexArray1d
+    init_position: tp.FlexArray1d
+    init_price: tp.FlexArray1d
+
+    order_records: tp.RecordArray2d
+    order_counts: tp.Array1d
+    log_records: tp.RecordArray2d
+    log_counts: tp.Array1d
+
+    track_cash_deposits: bool
+    cash_deposits_out: tp.Array2d
+    track_cash_earnings: bool
+    cash_earnings_out: tp.Array2d
+    in_outputs: tp.Optional[tp.NamedTuple]
+
+    last_cash: tp.Array1d
+    last_position: tp.Array1d
+    last_debt: tp.Array1d
+    last_locked_cash: tp.Array1d
+    last_free_cash: tp.Array1d
+    last_val_price: tp.Array1d
+    last_value: tp.Array1d
+    last_return: tp.Array1d
+
+    last_pos_info: tp.RecordArray
+    last_limit_info: tp.RecordArray
+    last_sl_info: tp.RecordArray
+    last_tsl_info: tp.RecordArray
+    last_tp_info: tp.RecordArray
+    last_td_info: tp.RecordArray
+    last_dt_info: tp.RecordArray
 
     sim_start: tp.Array1d
     sim_end: tp.Array1d
@@ -2708,23 +2957,27 @@ class PostSignalContext(tp.NamedTuple):
 
 
 __pdoc__[
-    "PostSignalContext"
+    "FSPostOrderContext"
 ] = """Named tuple representing the context after an order has been processed in a from-signals simulation.
 
-Contains all fields from `SignalContext` along with previous balance fields and the order result.
+Contains all fields from `FSSignalContext` along with previous balance fields and the order result.
 
-Passed to `post_signal_func_nb`.
+Passed to `post_order_func_nb`.
 """
-for field in PostSignalContext._fields:
-    if field in SignalContext._fields:
-        __pdoc__["PostSignalContext." + field] = f"See `SignalContext.{field}`."
-__pdoc__["PostSignalContext.cash_before"] = "`ExecState.cash` balance before execution."
-__pdoc__["PostSignalContext.position_before"] = "`ExecState.position` value before execution."
-__pdoc__["PostSignalContext.debt_before"] = "`ExecState.debt` value before execution."
-__pdoc__["PostSignalContext.locked_cash_before"] = "`ExecState.free_cash` value before execution."
-__pdoc__["PostSignalContext.free_cash_before"] = "`ExecState.val_price` value before execution."
-__pdoc__["PostSignalContext.val_price_before"] = "`ExecState.value` value before execution."
-__pdoc__["PostSignalContext.order_result"] = "See `PostOrderContext.order_result`."
+for field in FSPostOrderContext._fields:
+    if field in FSSignalContext._fields:
+        __pdoc__["FSPostOrderContext." + field] = f"See `FSSignalContext.{field}`."
+__pdoc__["FSPostOrderContext.cash_before"] = "`ExecState.cash` balance before execution."
+__pdoc__["FSPostOrderContext.position_before"] = "`ExecState.position` value before execution."
+__pdoc__["FSPostOrderContext.debt_before"] = "`ExecState.debt` value before execution."
+__pdoc__["FSPostOrderContext.locked_cash_before"] = "`ExecState.locked_cash` value before execution."
+__pdoc__["FSPostOrderContext.free_cash_before"] = "`ExecState.free_cash` value before execution."
+__pdoc__["FSPostOrderContext.val_price_before"] = "`ExecState.val_price` value before execution."
+__pdoc__["FSPostOrderContext.value_before"] = "`ExecState.value` value before execution."
+__pdoc__["FSPostOrderContext.order_result"] = "See `PostOrderContext.order_result`."
+for field in FSPostOrderContext._fields:
+    if "FSPostOrderContext." + field not in __pdoc__:
+        raise KeyError(f"Documentation for FSPostOrderContext.{field} is missing")
 
 
 # ############# In-place outputs ############# #
@@ -2980,6 +3233,7 @@ log_fields = [
     ("req_min_size", float_),
     ("req_max_size", float_),
     ("req_size_granularity", float_),
+    ("req_cash_limit", float_),
     ("req_leverage", float_),
     ("req_leverage_mode", int_),
     ("req_reject_prob", float_),
@@ -3045,6 +3299,7 @@ Fields:
     req_min_size: Requested minimum size for the order.
     req_max_size: Requested maximum size for the order.
     req_size_granularity: Requested size granularity for the order.
+    req_cash_limit: Requested cash limit for the order.
     req_leverage: Requested leverage for the order.
     req_leverage_mode: Requested leverage mode for the order.
 
@@ -3142,42 +3397,70 @@ Fields:
 
 # ############# Info records ############# #
 
-main_info_fields = [
+order_info_fields = [
     ("bar_zone", int_),
     ("signal_idx", int_),
     ("creation_idx", int_),
     ("idx", int_),
     ("val_price", float_),
-    ("price", float_),
     ("size", float_),
+    ("price", float_),
     ("size_type", int_),
     ("direction", int_),
+    ("fees", float_),
+    ("fixed_fees", float_),
+    ("slippage", float_),
+    ("min_size", float_),
+    ("max_size", float_),
+    ("size_granularity", float_),
+    ("cash_limit", float_),
+    ("leverage", float_),
+    ("leverage_mode", int_),
+    ("reject_prob", float_),
+    ("price_area_vio_mode", int_),
+    ("allow_partial", np.bool_),
+    ("raise_reject", np.bool_),
+    ("log", np.bool_),
     ("type", int_),
     ("stop_type", int_),
 ]
-"""Field definitions for the NumPy dtype `main_info_dt`."""
+"""Field definitions for the NumPy dtype `order_info_dt`."""
 
-main_info_dt = np.dtype(main_info_fields, align=True)
+order_info_dt = np.dtype(order_info_fields, align=True)
 """_"""
 
 __pdoc__[
-    "main_info_dt"
-] = f"""NumPy dtype for main information records.
+    "order_info_dt"
+] = f"""NumPy dtype for order information records.
 
 ```python
-{prettify_doc(main_info_dt)}
+{prettify_doc(order_info_dt)}
 ```
 
 Fields:
     bar_zone: See `vectorbtpro.generic.enums.BarZone`.
     signal_idx: Row where signal was placed.
     creation_idx: Row where order was created.
-    i: Row from which order information was taken.
+    idx: Row from which order information was taken.
     val_price: Valuation price.
-    price: Requested price.
-    size: Order size.
-    size_type: See `SizeType`.
-    direction: See `Direction`.
+    size: See `Order.size`.
+    price: See `Order.price`.
+    size_type: See `Order..size_type`.
+    direction: See `Order.direction`.
+    fees: See `Order.fees`.
+    fixed_fees: See `Order.fixed_fees`.
+    slippage: See `Order.slippage`.
+    min_size: See `Order.min_size`.
+    max_size: See `Order.max_size`.
+    size_granularity: See `Order.size_granularity`.
+    cash_limit: See `Order.cash_limit`.
+    leverage: See `Order.leverage`.
+    leverage_mode: See `Order.leverage_mode`.
+    reject_prob: See `Order.reject_prob`.
+    price_area_vio_mode: See `Order.price_area_vio_mode`.
+    allow_partial: See `Order.allow_partial`.
+    raise_reject: See `Order.raise_reject`.
+    log: See `Order.log`.
     type: See `OrderType`.
     stop_type: See `vectorbtpro.signals.enums.StopType`.
 """
@@ -3186,8 +3469,8 @@ limit_info_fields = [
     ("signal_idx", int_),
     ("creation_idx", int_),
     ("init_idx", int_),
-    ("init_price", float_),
     ("init_size", float_),
+    ("init_price", float_),
     ("init_size_type", int_),
     ("init_direction", int_),
     ("init_stop_type", int_),
@@ -3216,8 +3499,8 @@ Fields:
     signal_idx: Row index for the signal.
     creation_idx: Row index for limit creation.
     init_idx: Initial order row index from which information is taken.
-    init_price: Initial price.
     init_size: Order size.
+    init_price: Initial price.
     init_size_type: See `SizeType`.
     init_direction: See `Direction`.
     init_stop_type: See `vectorbtpro.signals.enums.StopType`.
@@ -3235,8 +3518,8 @@ sl_info_fields = [
     ("init_price", float_),
     ("init_position", float_),
     ("stop", float_),
-    ("exit_price", float_),
     ("exit_size", float_),
+    ("exit_price", float_),
     ("exit_size_type", int_),
     ("exit_type", int_),
     ("order_type", int_),
@@ -3264,8 +3547,8 @@ Fields:
     init_price: Initial order price.
     init_position: Initial position.
     stop: Updated stop value.
-    exit_price: See `StopExitPrice`.
     exit_size: Order size.
+    exit_price: See `StopExitPrice`.
     exit_size_type: See `SizeType`.
     exit_type: See `StopExitType`.
     order_type: See `OrderType`.
@@ -3284,8 +3567,8 @@ tsl_info_fields = [
     ("peak_price", float_),
     ("stop", float_),
     ("th", float_),
-    ("exit_price", float_),
     ("exit_size", float_),
+    ("exit_price", float_),
     ("exit_size_type", int_),
     ("exit_type", int_),
     ("order_type", int_),
@@ -3316,8 +3599,8 @@ Fields:
     peak_price: Peak price value.
     stop: Updated stop value.
     th: Updated threshold value.
-    exit_price: See `StopExitPrice`.
     exit_size: Order size.
+    exit_price: See `StopExitPrice`.
     exit_size_type: See `SizeType`.
     exit_type: See `StopExitType`.
     order_type: See `OrderType`.
@@ -3333,8 +3616,8 @@ tp_info_fields = [
     ("init_price", float_),
     ("init_position", float_),
     ("stop", float_),
-    ("exit_price", float_),
     ("exit_size", float_),
+    ("exit_price", float_),
     ("exit_size_type", int_),
     ("exit_type", int_),
     ("order_type", int_),
@@ -3362,8 +3645,8 @@ Fields:
     init_price: Initial order price.
     init_position: Initial position.
     stop: Updated stop value.
-    exit_price: See `StopExitPrice`.
     exit_size: Order size.
+    exit_price: See `StopExitPrice`.
     exit_size_type: See `SizeType`.
     exit_type: See `StopExitType`.
     order_type: See `OrderType`.
@@ -3378,8 +3661,8 @@ time_info_fields = [
     ("init_idx", int_),
     ("init_position", float_),
     ("stop", np.int64),
-    ("exit_price", float_),
     ("exit_size", float_),
+    ("exit_price", float_),
     ("exit_size_type", int_),
     ("exit_type", int_),
     ("order_type", int_),
@@ -3407,8 +3690,8 @@ Fields:
     init_idx: Initial row index.
     init_position: Initial position.
     stop: Updated stop value.
-    exit_price: See `StopExitPrice`.
     exit_size: Order size.
+    exit_price: See `StopExitPrice`.
     exit_size_type: See `SizeType`.
     exit_type: See `StopExitType`.
     order_type: See `OrderType`.

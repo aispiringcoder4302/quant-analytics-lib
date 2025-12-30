@@ -757,28 +757,28 @@ class Trades(Ranges):
     def get_winning_streak(self, **kwargs) -> MappedArray:
         """Return the winning streak count for each trade in the current column.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.trade_winning_streak_nb`
+
         Args:
             **kwargs: Keyword arguments for `Trades.apply`.
 
         Returns:
             MappedArray: Array of winning streak counts for each trade.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.trade_winning_streak_nb`
         """
         return self.apply(nb.trade_winning_streak_nb, dtype=int_, **kwargs)
 
     def get_losing_streak(self, **kwargs) -> MappedArray:
         """Return the losing streak count for each trade in the current column.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.trade_losing_streak_nb`
+
         Args:
             **kwargs: Keyword arguments for `Trades.apply`.
 
         Returns:
             MappedArray: Array of losing streak counts for each trade.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.trade_losing_streak_nb`
         """
         return self.apply(nb.trade_losing_streak_nb, dtype=int_, **kwargs)
 
@@ -964,6 +964,9 @@ class Trades(Ranges):
     ) -> MappedArray:
         """Return the best price computed from trade data.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.best_price_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -972,9 +975,6 @@ class Trades(Ranges):
 
         Returns:
             MappedArray: Array of best prices.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.best_price_nb`
         """
         return self.apply(
             nb.best_price_nb,
@@ -997,6 +997,9 @@ class Trades(Ranges):
     ) -> MappedArray:
         """Return the worst price computed from trade data.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.worst_price_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1005,9 +1008,6 @@ class Trades(Ranges):
 
         Returns:
             MappedArray: Array of worst prices.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.worst_price_nb`
         """
         return self.apply(
             nb.worst_price_nb,
@@ -1031,6 +1031,9 @@ class Trades(Ranges):
     ) -> MappedArray:
         """Return the index of the best price for each trade.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.best_price_idx_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1040,9 +1043,6 @@ class Trades(Ranges):
 
         Returns:
             MappedArray: Array of indices for the best price locations.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.best_price_idx_nb`
         """
         return self.apply(
             nb.best_price_idx_nb,
@@ -1068,6 +1068,9 @@ class Trades(Ranges):
     ) -> MappedArray:
         """Return the index of the worst price for each trade.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.worst_price_idx_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1077,9 +1080,6 @@ class Trades(Ranges):
 
         Returns:
             MappedArray: Array of indices for the worst price locations.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.worst_price_idx_nb`
         """
         return self.apply(
             nb.worst_price_idx_nb,
@@ -1108,6 +1108,9 @@ class Trades(Ranges):
 
         Computes the expanding best price over the duration of trades using the corresponding nb function.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.expanding_best_price_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1124,9 +1127,6 @@ class Trades(Ranges):
 
         Returns:
             SeriesFrame: Wrapped Series or DataFrame of expanding best prices.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.expanding_best_price_nb`
         """
         func = jit_reg.resolve_option(nb.expanding_best_price_nb, jitted)
         out = func(
@@ -1167,6 +1167,9 @@ class Trades(Ranges):
 
         Computes the expanding worst price over the duration of trades using the corresponding nb function.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.expanding_worst_price_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1183,9 +1186,6 @@ class Trades(Ranges):
 
         Returns:
             SeriesFrame: Wrapped Series or DataFrame of expanding worst prices.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.expanding_worst_price_nb`
         """
         func = jit_reg.resolve_option(nb.expanding_worst_price_nb, jitted)
         out = func(
@@ -1227,6 +1227,9 @@ class Trades(Ranges):
 
         Computes the MFE for trades based on price movements and trade directions.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.mfe_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1242,9 +1245,6 @@ class Trades(Ranges):
 
         Returns:
             MappedArray: Mapped array containing the computed MFE values.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.mfe_nb`
         """
         best_price = self.resolve_shortcut_attr(
             "best_price",
@@ -1279,6 +1279,9 @@ class Trades(Ranges):
 
         Computes the MAE for trades based on price movements and trade directions.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.mae_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1294,9 +1297,6 @@ class Trades(Ranges):
 
         Returns:
             MappedArray: Mapped array containing the computed MAE values.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.mae_nb`
         """
         worst_price = self.resolve_shortcut_attr(
             "worst_price",
@@ -1331,6 +1331,9 @@ class Trades(Ranges):
 
         Computes the expanding maximum favorable excursion (MFE) using an expanding best price as a reference.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.expanding_mfe_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1346,9 +1349,6 @@ class Trades(Ranges):
 
         Returns:
             SeriesFrame: Wrapped Series or DataFrame containing the computed expanding MFE values.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.expanding_mfe_nb`
         """
         expanding_best_price = self.resolve_shortcut_attr(
             "expanding_best_price",
@@ -1381,6 +1381,9 @@ class Trades(Ranges):
 
         Computes the expanding maximum adverse excursion (MAE) using an expanding worst price as a reference.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.expanding_mae_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1396,9 +1399,6 @@ class Trades(Ranges):
 
         Returns:
             SeriesFrame: Wrapped Series or DataFrame containing the computed expanding MAE values.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.expanding_mae_nb`
         """
         expanding_worst_price = self.resolve_shortcut_attr(
             "expanding_worst_price",
@@ -1432,6 +1432,9 @@ class Trades(Ranges):
     ) -> tp.SeriesFrame:
         """Compute edge ratio.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.edge_ratio_nb`
+
         Args:
             volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
 
@@ -1459,9 +1462,6 @@ class Trades(Ranges):
 
         Returns:
             SeriesFrame: Computed edge ratio.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.edge_ratio_nb`
         """
         if self._close is None:
             raise ValueError("Must provide close")
@@ -1526,6 +1526,9 @@ class Trades(Ranges):
     ) -> tp.SeriesFrame:
         """Compute running edge ratio.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.running_edge_ratio_nb`
+
         Args:
             volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
 
@@ -1551,9 +1554,6 @@ class Trades(Ranges):
 
         Returns:
             SeriesFrame: Computed running edge ratio.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.running_edge_ratio_nb`
         """
         if self._close is None:
             raise ValueError("Must provide close")
@@ -1779,9 +1779,13 @@ class Trades(Ranges):
         xref: str = "x",
         yref: str = "y",
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot trades' profit and loss (PnL) or returns.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Args:
             column (Optional[Column]): Identifier of the column or group to plot.
@@ -1801,13 +1805,13 @@ class Trades(Ranges):
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Plotly figure object containing the plot of trade PnL or returns.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -1849,7 +1853,9 @@ class Trades(Ranges):
         yaxis = "yaxis" + yref[1:]
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         def_layout_kwargs = {xaxis: {}, yaxis: {}}
         if pct_scale:
             def_layout_kwargs[yaxis]["tickformat"] = ".2%"
@@ -1862,7 +1868,6 @@ class Trades(Ranges):
         y_domain = get_domain(yref, fig)
 
         if self_col.count() > 0:
-            # Extract information
             exit_idx = self_col.get_map_field_to_index("exit_idx")
             pnl = self_col.get_field_arr("pnl")
             returns = self_col.get_field_arr("return")
@@ -1912,10 +1917,8 @@ class Trades(Ranges):
                     scatter = go.Scatter(**_kwargs)
                     fig.add_trace(scatter, **add_trace_kwargs)
 
-            # Plot Closed - Neutral scatter
             _plot_scatter(neutral_mask, "Closed", plotting_cfg["contrast_color_schema"]["gray"], closed_trace_kwargs)
 
-            # Plot Closed - Profit scatter
             _plot_scatter(
                 closed_profit_mask,
                 "Closed - Profit",
@@ -1923,7 +1926,6 @@ class Trades(Ranges):
                 closed_profit_trace_kwargs,
             )
 
-            # Plot Closed - Loss scatter
             _plot_scatter(
                 closed_loss_mask,
                 "Closed - Loss",
@@ -1931,10 +1933,8 @@ class Trades(Ranges):
                 closed_loss_trace_kwargs,
             )
 
-            # Plot Open scatter
             _plot_scatter(open_mask, "Open", plotting_cfg["contrast_color_schema"]["orange"], open_trace_kwargs)
 
-        # Plot zeroline
         fig.add_shape(
             **merge_dicts(
                 dict(
@@ -1989,9 +1989,13 @@ class Trades(Ranges):
         xref: str = "x",
         yref: str = "y",
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot a field against PnL or returns.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Args:
             field (Union[str, Array1d, MappedArray]): Field to be plotted.
@@ -2015,13 +2019,13 @@ class Trades(Ranges):
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Updated figure with the plotted field against PnL or returns.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -2072,7 +2076,9 @@ class Trades(Ranges):
             field_label = "Field"
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         def_layout_kwargs = {xaxis: {}, yaxis: {}}
         if pct_scale:
             def_layout_kwargs[xaxis]["tickformat"] = ".2%"
@@ -2088,7 +2094,6 @@ class Trades(Ranges):
         y_domain = get_domain(yref, fig)
 
         if self_col.count() > 0:
-            # Extract information
             pnl = self_col.get_field_arr("pnl")
             returns = self_col.get_field_arr("return")
             status = self_col.get_field_arr("status")
@@ -2133,10 +2138,8 @@ class Trades(Ranges):
                     scatter = go.Scatter(**_kwargs)
                     fig.add_trace(scatter, **add_trace_kwargs)
 
-            # Plot Closed - Neutral scatter
             _plot_scatter(neutral_mask, "Closed", plotting_cfg["contrast_color_schema"]["gray"], closed_trace_kwargs)
 
-            # Plot Closed - Profit scatter
             _plot_scatter(
                 closed_profit_mask,
                 "Closed - Profit",
@@ -2144,7 +2147,6 @@ class Trades(Ranges):
                 closed_profit_trace_kwargs,
             )
 
-            # Plot Closed - Loss scatter
             _plot_scatter(
                 closed_loss_mask,
                 "Closed - Loss",
@@ -2152,10 +2154,8 @@ class Trades(Ranges):
                 closed_loss_trace_kwargs,
             )
 
-            # Plot Open scatter
             _plot_scatter(open_mask, "Open", plotting_cfg["contrast_color_schema"]["orange"], open_trace_kwargs)
 
-        # Plot zerolines
         fig.add_shape(
             **merge_dicts(
                 dict(
@@ -2536,9 +2536,13 @@ class Trades(Ranges):
         xref: str = "x",
         yref: str = "y",
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot trades on a Plotly figure.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
@@ -2566,13 +2570,13 @@ class Trades(Ranges):
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Updated Plotly figure with the plotted trades.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -2623,10 +2627,11 @@ class Trades(Ranges):
             add_trace_kwargs = {}
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
-        # Plot close
         if (
             plot_ohlc
             and self_col._open is not None
@@ -2659,7 +2664,6 @@ class Trades(Ranges):
             )
 
         if self_col.count() > 0:
-            # Extract information
             entry_idx = self_col.get_map_field_to_index("entry_idx", minus_one_to_zero=True)
             entry_price = self_col.get_field_arr("entry_price")
             exit_idx = self_col.get_map_field_to_index("exit_idx")
@@ -2675,7 +2679,6 @@ class Trades(Ranges):
             )
 
             if plot_markers:
-                # Plot Entry markers
                 if self_col.get_field_setting("parent_id", "ignore", False):
                     entry_customdata, entry_hovertemplate = self_col.prepare_customdata(
                         incl_fields=[
@@ -2721,7 +2724,6 @@ class Trades(Ranges):
                 entry_scatter = go.Scatter(**_entry_trace_kwargs)
                 fig.add_trace(entry_scatter, **add_trace_kwargs)
 
-                # Plot end markers
                 def _plot_end_markers(mask, name, color, kwargs, incl_status=False) -> None:
                     if np.any(mask):
                         if self_col.get_field_setting("parent_id", "ignore", False):
@@ -2780,7 +2782,6 @@ class Trades(Ranges):
                         fig.add_trace(scatter, **add_trace_kwargs)
 
                 if plot_by_type:
-                    # Plot Exit markers
                     _plot_end_markers(
                         (status == TradeStatus.Closed) & (pnl == 0.0),
                         "Exit",
@@ -2788,7 +2789,6 @@ class Trades(Ranges):
                         exit_trace_kwargs,
                     )
 
-                    # Plot Exit - Profit markers
                     _plot_end_markers(
                         (status == TradeStatus.Closed) & (pnl > 0.0),
                         "Exit - Profit",
@@ -2796,7 +2796,6 @@ class Trades(Ranges):
                         exit_profit_trace_kwargs,
                     )
 
-                    # Plot Exit - Loss markers
                     _plot_end_markers(
                         (status == TradeStatus.Closed) & (pnl < 0.0),
                         "Exit - Loss",
@@ -2804,7 +2803,6 @@ class Trades(Ranges):
                         exit_loss_trace_kwargs,
                     )
 
-                    # Plot Active markers
                     _plot_end_markers(
                         status == TradeStatus.Open,
                         "Active",
@@ -2812,7 +2810,6 @@ class Trades(Ranges):
                         active_trace_kwargs,
                     )
                 else:
-                    # Plot Exit markers
                     _plot_end_markers(
                         np.full(len(status), True),
                         "Exit",
@@ -2822,7 +2819,6 @@ class Trades(Ranges):
                     )
 
             if plot_zones:
-                # Plot profit zones
                 self_col.winning.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
@@ -2841,7 +2837,6 @@ class Trades(Ranges):
                     fig=fig,
                 )
 
-                # Plot loss zones
                 self_col.losing.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
@@ -2956,6 +2951,9 @@ class EntryTrades(Trades):
     ) -> EntryTradesT:
         """Build an `EntryTrades` instance from `vectorbtpro.portfolio.orders.Orders`.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.get_entry_trades_nb`
+
         Args:
             orders (vectorbtpro.portfolio.orders.Orders): Orders instance from which to derive entry trades.
             open (Optional[ArrayLike]): Open prices.
@@ -2984,9 +2982,6 @@ class EntryTrades(Trades):
 
         Returns:
             EntryTrades: Constructed `EntryTrades` instance.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.get_entry_trades_nb`
         """
         if open is None:
             open = orders._open
@@ -3029,9 +3024,13 @@ class EntryTrades(Trades):
         short_entry_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot entry trade signals.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
@@ -3047,13 +3046,13 @@ class EntryTrades(Trades):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Updated or newly created figure.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -3094,10 +3093,11 @@ class EntryTrades(Trades):
             add_trace_kwargs = {}
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
-        # Plot close
         if (
             plot_ohlc
             and self_col._open is not None
@@ -3130,7 +3130,6 @@ class EntryTrades(Trades):
             )
 
         if self_col.count() > 0:
-            # Extract information
             entry_idx = self_col.get_map_field_to_index("entry_idx", minus_one_to_zero=True)
             entry_price = self_col.get_field_arr("entry_price")
             direction = self_col.get_field_arr("direction")
@@ -3175,7 +3174,6 @@ class EntryTrades(Trades):
                     scatter = go.Scatter(**_kwargs)
                     fig.add_trace(scatter, **add_trace_kwargs)
 
-            # Plot Long Entry markers
             _plot_entry_markers(
                 direction == TradeDirection.Long,
                 "Long Entry",
@@ -3183,7 +3181,6 @@ class EntryTrades(Trades):
                 long_entry_trace_kwargs,
             )
 
-            # Plot Short Entry markers
             _plot_entry_markers(
                 direction == TradeDirection.Short,
                 "Short Entry",
@@ -3245,6 +3242,9 @@ class ExitTrades(Trades):
     ) -> ExitTradesT:
         """Build an `ExitTrades` instance from `Orders`.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.get_exit_trades_nb`
+
         Args:
             orders (vectorbtpro.portfolio.orders.Orders): Orders instance from which to derive exit trades.
             open (Optional[ArrayLike]): Open prices.
@@ -3273,9 +3273,6 @@ class ExitTrades(Trades):
 
         Returns:
             ExitTrades: An `ExitTrades` instance generated from the provided orders.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.get_exit_trades_nb`
         """
         if open is None:
             open = orders._open
@@ -3318,9 +3315,13 @@ class ExitTrades(Trades):
         short_exit_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot exit trade signals.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
@@ -3336,13 +3337,13 @@ class ExitTrades(Trades):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Plotly figure with exit trade signals plotted.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -3383,10 +3384,11 @@ class ExitTrades(Trades):
             add_trace_kwargs = {}
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
-        # Plot close
         if (
             plot_ohlc
             and self_col._open is not None
@@ -3419,7 +3421,6 @@ class ExitTrades(Trades):
             )
 
         if self_col.count() > 0:
-            # Extract information
             exit_idx = self_col.get_map_field_to_index("exit_idx", minus_one_to_zero=True)
             exit_price = self_col.get_field_arr("exit_price")
             direction = self_col.get_field_arr("direction")
@@ -3460,7 +3461,6 @@ class ExitTrades(Trades):
                     scatter = go.Scatter(**_kwargs)
                     fig.add_trace(scatter, **add_trace_kwargs)
 
-            # Plot Long Exit markers
             _plot_exit_markers(
                 direction == TradeDirection.Long,
                 "Long Exit",
@@ -3468,7 +3468,6 @@ class ExitTrades(Trades):
                 long_exit_trace_kwargs,
             )
 
-            # Plot Short Exit markers
             _plot_exit_markers(
                 direction == TradeDirection.Short,
                 "Short Exit",
@@ -3531,6 +3530,9 @@ class Positions(Trades):
         Converts the provided trades into position records by applying default price arrays
         when necessary and processing the data with optionally JIT-compiled and chunked functions.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.get_positions_nb`
+
         Args:
             trades (Trades): Source trades instance from which positions are derived.
             open (Optional[ArrayLike]): Open prices.
@@ -3559,9 +3561,6 @@ class Positions(Trades):
 
         Returns:
             Positions: New instance of `Positions` created from the source trades.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.get_positions_nb`
         """
         if open is None:
             open = trades._open

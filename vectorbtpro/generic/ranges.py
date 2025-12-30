@@ -259,6 +259,9 @@ class Ranges(PriceRecords):
         * Positive integers in integer arrays (with -1 as a gap), and
         * Non-NaN values in other data types (with NaN acting as a gap).
 
+        See:
+            `vectorbtpro.generic.nb.records.get_ranges_nb`
+
         Args:
             arr (ArrayLike): Input array to analyze.
             gap_value (Optional[Scalar]): Value indicating a gap in the data.
@@ -276,9 +279,6 @@ class Ranges(PriceRecords):
 
         Returns:
             Ranges: New instance constructed from the array.
-
-        See:
-            `vectorbtpro.generic.nb.records.get_ranges_nb`
         """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
@@ -317,6 +317,9 @@ class Ranges(PriceRecords):
         requiring the index to be datetime-like or have a defined frequency. Conversion is performed
         using `vectorbtpro.utils.datetime_.to_timedelta64`.
 
+        See:
+            `vectorbtpro.generic.nb.records.get_ranges_from_delta_nb`
+
         Args:
             records_or_mapped (Union[Records, MappedArray]): Record or mapped array to convert into ranges.
             delta (Union[str, int, FrequencyLike]): Time difference to apply, as a row count or timedelta.
@@ -332,9 +335,6 @@ class Ranges(PriceRecords):
 
         Returns:
             Ranges: New instance constructed based on the applied delta.
-
-        See:
-            `vectorbtpro.generic.nb.records.get_ranges_from_delta_nb`
         """
         if idx_field_or_arr is None:
             if isinstance(records_or_mapped, Records):
@@ -504,6 +504,9 @@ class Ranges(PriceRecords):
         This method converts range start and end indices, along with their statuses,
         into a boolean mask.
 
+        See:
+            `vectorbtpro.generic.nb.records.ranges_to_mask_nb`
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -520,9 +523,6 @@ class Ranges(PriceRecords):
 
         Returns:
             SeriesFrame: Boolean mask representing the ranges.
-
-        See:
-            `vectorbtpro.generic.nb.records.ranges_to_mask_nb`
         """
         col_map = self.col_mapper.get_col_map(group_by=group_by)
         func = jit_reg.resolve_option(nb.ranges_to_mask_nb, jitted)
@@ -603,6 +603,9 @@ class Ranges(PriceRecords):
 
         The duration is computed based on the start and end indices and is adjusted by the range status.
 
+        See:
+            `vectorbtpro.generic.nb.records.range_duration_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -614,9 +617,6 @@ class Ranges(PriceRecords):
 
         Returns:
             MappedArray: Array of effective durations for each range.
-
-        See:
-            `vectorbtpro.generic.nb.records.range_duration_nb`
         """
         func = jit_reg.resolve_option(nb.range_duration_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -639,6 +639,9 @@ class Ranges(PriceRecords):
         The duration is calculated by converting start and end indices to nanoseconds and then
         computing the difference based on the given frequency.
 
+        See:
+            `vectorbtpro.generic.nb.records.range_duration_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -650,9 +653,6 @@ class Ranges(PriceRecords):
 
         Returns:
             MappedArray: Array of durations for each range expressed as timedelta.
-
-        See:
-            `vectorbtpro.generic.nb.records.range_duration_nb`
         """
         func = jit_reg.resolve_option(nb.range_duration_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -757,6 +757,9 @@ class Ranges(PriceRecords):
     ) -> tp.MaybeSeries:
         """Return the coverage of ranges, defined as the total number of steps covered by all ranges.
 
+        See:
+            `vectorbtpro.generic.nb.records.range_coverage_nb`
+
         Args:
             overlapping (bool): Whether to consider overlapping ranges.
             normalize (bool): Whether to normalize the coverage.
@@ -775,9 +778,6 @@ class Ranges(PriceRecords):
 
         Returns:
             MaybeSeries: Computed coverage of the ranges.
-
-        See:
-            `vectorbtpro.generic.nb.records.range_coverage_nb`
         """
         col_map = self.col_mapper.get_col_map(group_by=group_by)
         index_lens = self.wrapper.grouper.get_group_lens(group_by=group_by) * self.wrapper.shape[0]
@@ -816,6 +816,13 @@ class Ranges(PriceRecords):
         """Generate projections for each range record.
 
         This method generates projections based on range records and provided close price data.
+
+        !!! note
+            As opposed to the Numba-compiled function, the returned DataFrame has projections
+            stacked along columns rather than rows. Set `return_raw` to True to obtain the original format.
+
+        See:
+            `vectorbtpro.generic.nb.records.map_ranges_to_projections_nb`
 
         Args:
             close (Optional[ArrayLike]): Array of close price values.
@@ -863,13 +870,6 @@ class Ranges(PriceRecords):
             Union[Tuple[Array1d, Array2d], Frame]: If `return_raw` is True, returns a tuple with
                 a 1D array of record indices and a 2D array of projections, with each row corresponding
                 to a range; otherwise, returns a DataFrame with projections.
-
-        See:
-            `vectorbtpro.generic.nb.records.map_ranges_to_projections_nb`
-
-        !!! note
-            As opposed to the Numba-compiled function, the returned DataFrame has projections
-            stacked along columns rather than rows. Set `return_raw` to True to obtain the original format.
         """
         if close is None:
             close = self.close
@@ -1062,6 +1062,7 @@ class Ranges(PriceRecords):
         aux_middle_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot projections.
@@ -1071,6 +1072,9 @@ class Ranges(PriceRecords):
         computes projections using `Ranges.get_projections`, and visualizes the results with
         `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
         It also overlays OHLC or close price data if available.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
@@ -1143,13 +1147,13 @@ class Ranges(PriceRecords):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Figure object containing the plotted projections and price data.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -1247,7 +1251,6 @@ class Ranges(PriceRecords):
         if close is None:
             raise ValueError("Close cannot be None")
 
-        # Resolve windows
         def _resolve_period(period):
             if self_col.count() == 0:
                 period = None
@@ -1297,10 +1300,11 @@ class Ranges(PriceRecords):
         plot_past_period = _resolve_period(plot_past_period)
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
-        # Plot OHLC/close
         if plot_ohlc and ohlc is not None:
             if plot_past_period is not None:
                 if isinstance(plot_past_period, int):
@@ -1337,7 +1341,6 @@ class Ranges(PriceRecords):
                 )
 
         if self_col.count() > 0:
-            # Get projections
             projections = self_col.get_projections(
                 close=close,
                 proj_start=proj_start,
@@ -1352,7 +1355,6 @@ class Ranges(PriceRecords):
             )
 
             if len(projections.columns) > 0:
-                # Plot projections
                 rename_levels = dict(range_id=self_col.get_field_title("id"))
                 fig = projections.vbt.plot_projections(
                     plot_projections=plot_projections,
@@ -1388,9 +1390,13 @@ class Ranges(PriceRecords):
         xref: str = "x",
         yref: str = "y",
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot range shapes on a figure.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
@@ -1407,13 +1413,13 @@ class Ranges(PriceRecords):
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Figure object containing the plotted shapes.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             Plot zones colored by duration:
@@ -1488,12 +1494,13 @@ class Ranges(PriceRecords):
             plot_close = True
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
         x_domain = get_domain(yref, fig)
         y_domain = get_domain(yref, fig)
 
-        # Plot OHLC/close
         if plot_ohlc and ohlc is not None:
             if "opacity" not in ohlc_trace_kwargs:
                 ohlc_trace_kwargs["opacity"] = 0.5
@@ -1574,10 +1581,14 @@ class Ranges(PriceRecords):
         yref: str = "y",
         fig: tp.Optional[tp.BaseFigure] = None,
         return_close: bool = False,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.Tuple[tp.BaseFigure, tp.Series]]:
         """Plot range data including OHLC, close prices, start/end markers,
         and shaded zones for open and closed ranges.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
@@ -1600,14 +1611,14 @@ class Ranges(PriceRecords):
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             return_close (bool): Whether to return the close Series along with the figure.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Figure object containing the plotted ranges.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -1682,11 +1693,11 @@ class Ranges(PriceRecords):
             plot_close = True
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
-        y_domain = get_domain(yref, fig)
 
-        # Plot OHLC/close
         plotting_ohlc = False
         if plot_ohlc and ohlc is not None:
             if "opacity" not in ohlc_trace_kwargs:
@@ -1707,7 +1718,6 @@ class Ranges(PriceRecords):
             )
 
         if self_col.count() > 0:
-            # Extract information
             start_idx = self_col.get_map_field_to_index("start_idx", minus_one_to_zero=True)
             if plotting_ohlc and self_col.open is not None:
                 start_val = self_col.open.loc[start_idx]
@@ -1723,7 +1733,6 @@ class Ranges(PriceRecords):
             status = self_col.get_field_arr("status")
 
             if plot_markers:
-                # Plot start markers
                 start_customdata, start_hovertemplate = self_col.prepare_customdata(incl_fields=["id", "start_idx"])
                 _start_trace_kwargs = merge_dicts(
                     dict(
@@ -1748,7 +1757,6 @@ class Ranges(PriceRecords):
             closed_mask = status == enums.RangeStatus.Closed
             if closed_mask.any():
                 if plot_markers:
-                    # Plot end markers
                     closed_end_customdata, closed_end_hovertemplate = self_col.prepare_customdata(mask=closed_mask)
                     _end_trace_kwargs = merge_dicts(
                         dict(
@@ -1775,7 +1783,6 @@ class Ranges(PriceRecords):
             open_mask = status == enums.RangeStatus.Open
             if open_mask.any():
                 if plot_markers:
-                    # Plot end markers
                     open_end_customdata, open_end_hovertemplate = self_col.prepare_customdata(
                         excl_fields=["end_idx"], mask=open_mask
                     )
@@ -1802,7 +1809,6 @@ class Ranges(PriceRecords):
                     fig.add_trace(open_end_scatter, **add_trace_kwargs)
 
             if plot_zones:
-                # Plot closed range zones
                 self_col.status_closed.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
@@ -1816,7 +1822,6 @@ class Ranges(PriceRecords):
                     fig=fig,
                 )
 
-                # Plot open range zones
                 self_col.status_open.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
@@ -1884,20 +1889,20 @@ class PSC(DefineMixin):
 
     pattern: tp.Union[tp.ArrayLike] = define.required_field()
     """Flexible array representing the pattern to locate.
-    
+
     Can be smaller or larger than the source array. In such cases, 
     the smaller array is stretched using the interpolation mode specified by `PSC.interp_mode`.
     """
 
     window: tp.Optional[int] = define.optional_field()
     """Base length of the rolling window for matching.
-    
+
     If None, defaults to the length of `PSC.pattern`.
     """
 
     max_window: tp.Optional[int] = define.optional_field()
     """Maximum length of the rolling window for matching.
-    
+
     If None, defaults to `PSC.window`.
     """
 
@@ -1912,13 +1917,13 @@ class PSC(DefineMixin):
 
     interp_mode: tp.Union[int, str] = define.optional_field()
     """Interpolation mode for mapping array values.
-    
+
     See `vectorbtpro.generic.enums.InterpMode`.
     """
 
     rescale_mode: tp.Union[int, str] = define.optional_field()
     """Rescaling mode for adjusting the ranges of the input array and `PSC.pattern`.
-    
+
     See `vectorbtpro.generic.enums.RescaleMode`.
     """
 
@@ -1927,34 +1932,34 @@ class PSC(DefineMixin):
 
     Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
     and for verifying `PSC.min_pct_change` and `PSC.max_pct_change`. 
-    
+
     If set to NaN, it is calculated dynamically.
     """
 
     vmax: tp.Union[float] = define.optional_field()
     """Maximum value used for rescaling the input array.
-    
+
     Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax` 
     and for verifying `PSC.min_pct_change` and `PSC.max_pct_change`. 
-    
+
     If set to NaN, it is calculated dynamically.
     """
 
     pmin: tp.Union[float] = define.optional_field()
     """Minimum value used for rescaling `PSC.pattern`.
-    
+
     Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance 
     at each point when `PSC.max_error_as_maxdist` is disabled.
-    
+
     If set to NaN, it is calculated dynamically.
     """
 
     pmax: tp.Union[float] = define.optional_field()
     """Maximum value used for rescaling `PSC.pattern`.
-    
+
     Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance 
     at each point when `PSC.max_error_as_maxdist` is disabled.
-    
+
     If set to NaN, it is calculated dynamically.
     """
 
@@ -1981,15 +1986,15 @@ class PSC(DefineMixin):
 
     max_error_interp_mode: tp.Union[None, int, str] = define.optional_field()
     """Interpolation mode for `PSC.max_error`. 
-    
+
     If None, defaults to `PSC.interp_mode`.
-    
+
     See `vectorbtpro.generic.enums.InterpMode`.
     """
 
     max_error_as_maxdist: tp.Union[bool] = define.optional_field()
     """Indicates whether `PSC.max_error` represents the maximum distance at each point.
-    
+
     If False, exceeding `PSC.max_error` sets the distance to the maximum derived from 
     `PSC.pmin`, `PSC.pmax`, and the pattern value at that point. If True and any point 
     in a window is NaN, that point is skipped.
@@ -2006,13 +2011,13 @@ class PSC(DefineMixin):
 
     max_pct_change: tp.Union[float] = define.optional_field()
     """Maximum percentage change allowed for a window to remain a search candidate.
-    
+
     Window similarity is set to NaN if this threshold is exceeded.
     """
 
     min_similarity: tp.Union[float] = define.optional_field()
     """Minimum similarity threshold. 
-        
+
     If the computed similarity falls below this, returns NaN.
     """
 
@@ -2021,7 +2026,7 @@ class PSC(DefineMixin):
 
     overlap_mode: tp.Union[int, str] = define.optional_field()
     """Mode for handling overlapping matches. 
-    
+
     See `vectorbtpro.generic.enums.OverlapMode`.
     """
 
@@ -2034,10 +2039,10 @@ class PSC(DefineMixin):
     name: tp.Optional[str] = define.field(default=None)
     """Optional name assigned to the configuration."""
 
-    def __eq__(self, other):
+    def __eq__(self, other: tp.Any) -> bool:
         return checks.is_deep_equal(self, other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         dct = self.asdict()
         if isinstance(dct["pattern"], np.ndarray):
             dct["pattern"] = tuple(dct["pattern"])
@@ -2222,6 +2227,9 @@ class PatternRanges(Ranges):
         The configurations are executed with `vectorbtpro.utils.execution.execute`, the resulting
         records arrays are concatenated, and the outcome is wrapped in a `PatternRanges` instance.
 
+        See:
+            `vectorbtpro.generic.nb.records.find_pattern_1d_nb`
+
         Args:
             arr (ArrayLike): Input array for pattern search.
             pattern (Union[Param, ArrayLike]): See `PSC.pattern`.
@@ -2274,9 +2282,6 @@ class PatternRanges(Ranges):
 
         Returns:
             PatternRanges: New `PatternRanges` instance with found pattern ranges.
-
-        See:
-            `vectorbtpro.generic.nb.records.find_pattern_1d_nb`
         """
         if seed is not None:
             set_seed(seed)
@@ -2289,7 +2294,6 @@ class PatternRanges(Ranges):
         method_locals = locals()
         method_locals = {k: v for k, v in method_locals.items() if k in psc_keys}
 
-        # Flatten search configs
         flat_search_configs = []
         psc_names = []
         psc_names_none = True
@@ -2321,7 +2325,6 @@ class PatternRanges(Ranges):
                             psc_names.append(n_configs)
                         n_configs += 1
 
-        # Combine parameters
         param_dct = {}
         for k, v in method_locals.items():
             if k in psc_keys and isinstance(v, Param):
@@ -2356,7 +2359,6 @@ class PatternRanges(Ranges):
                         new_flat_search_configs.append(PSC(**new_search_config))
                 flat_search_configs = new_flat_search_configs
 
-        # Create config from arguments if empty
         if len(flat_search_configs) == 0:
             single_group = True
             for col in range(arr_2d.shape[1]):
@@ -2364,7 +2366,6 @@ class PatternRanges(Ranges):
         else:
             single_group = False
 
-        # Prepare function and arguments
         tasks = []
         func = jit_reg.resolve_option(nb.find_pattern_1d_nb, jitted)
         def_func_kwargs = get_func_kwargs(func)
@@ -2388,7 +2389,6 @@ class PatternRanges(Ranges):
             tasks.append(Task(func, **func_kwargs))
             new_search_configs.append(new_search_config)
 
-        # Build column hierarchy
         n_config_params = len(psc_names) // arr_2d.shape[1]
         if param_columns is not None:
             if n_config_params == 0 or (n_config_params == 1 and psc_names_none):
@@ -2410,12 +2410,10 @@ class PatternRanges(Ranges):
                     **clean_index_kwargs,
                 )
 
-        # Execute each configuration
         execute_kwargs = merge_dicts(dict(show_progress=False if single_group else None), execute_kwargs)
         result_list = execute(tasks, keys=new_columns, **execute_kwargs)
         records_arr = np.concatenate(result_list)
 
-        # Wrap with class
         wrapper = ArrayWrapper(
             **merge_dicts(
                 dict(
@@ -2587,6 +2585,9 @@ class PatternRanges(Ranges):
 
         Based on `Ranges.plot` and `vectorbtpro.generic.accessors.GenericSRAccessor.plot_pattern`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             top_n (Optional[int]): Display only the top N records sorted by maximum duration.
@@ -2611,9 +2612,6 @@ class PatternRanges(Ranges):
 
         Returns:
             BaseFigure: Figure with plotted pattern ranges.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 
@@ -2662,13 +2660,11 @@ class PatternRanges(Ranges):
         )
 
         if self_col.count() > 0:
-            # Extract information
             start_idx = self_col.get_map_field_to_index("start_idx", minus_one_to_zero=True)
             end_idx = self_col.get_map_field_to_index("end_idx")
             status = self_col.get_field_arr("status")
 
             if plot_patterns:
-                # Plot pattern
                 for r in range(len(start_idx)):
                     _start_idx = start_idx[r]
                     _end_idx = end_idx[r]

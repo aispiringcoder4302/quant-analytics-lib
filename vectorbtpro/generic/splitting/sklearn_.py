@@ -138,11 +138,11 @@ class SplitterCV(BaseCrossValidator, Base):
 
         Not passed to the factory method.
 
-        Returns:
-            AnyGroupByLike: Group labels for splitting.
-
         See:
             `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`
+
+        Returns:
+            AnyGroupByLike: Group labels for splitting.
         """
         return self._split_group_by
 
@@ -152,11 +152,11 @@ class SplitterCV(BaseCrossValidator, Base):
 
         Not passed to the factory method.
 
-        Returns:
-            AnyGroupByLike: Group labels for setting.
-
         See:
             `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`
+
+        Returns:
+            AnyGroupByLike: Group labels for setting.
         """
         return self._set_group_by
 
@@ -177,6 +177,10 @@ class SplitterCV(BaseCrossValidator, Base):
     ) -> Splitter:
         """Return a splitter instance of type `vectorbtpro.generic.splitting.base.Splitter`.
 
+        !!! note
+            If the splitter is provided as a string, it is resolved as
+                an attribute of the splitter class.
+
         Args:
             X (Any): Input data for splitting.
             y (Any): Target values corresponding to `X`.
@@ -184,10 +188,6 @@ class SplitterCV(BaseCrossValidator, Base):
 
         Returns:
             Splitter: Splitter object configured with the provided data and splitter parameters.
-
-        !!! note
-            If the splitter is provided as a string, it is resolved as
-                an attribute of the splitter class.
         """
         X, y, groups = indexable(X, y, groups)
         try:

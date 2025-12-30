@@ -18,9 +18,9 @@ import concurrent.futures
 import enum
 import inspect
 import time
+from contextlib import nullcontext
 from functools import partial, wraps
 from pathlib import Path
-from contextlib import nullcontext
 
 import pandas as pd
 from numba.core.registry import CPUDispatcher
@@ -213,6 +213,9 @@ class ExecutionEngine(Configured):
     ) -> tp.ExecResults:
         """Execute a collection of tasks.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
             size (Optional[int]): Hint for the number of tasks, useful if `tasks` is a generator.
@@ -220,15 +223,15 @@ class ExecutionEngine(Configured):
 
         Returns:
             ExecResults: Results of executing the tasks.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
 
 class SerialEngine(ExecutionEngine):
     """Class for executing functions sequentially.
+
+    !!! info
+        For default settings, see `engines.serial` in `vectorbtpro._settings.execution`.
 
     Args:
         show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
@@ -244,9 +247,6 @@ class SerialEngine(ExecutionEngine):
             If provided as an integer, collects garbage every specified number of tasks.
         delay (Optional[float]): Delay in seconds after each function call.
         **kwargs: Keyword arguments for `ExecutionEngine`.
-
-    !!! info
-        For default settings, see `engines.serial` in `vectorbtpro._settings.execution`.
     """
 
     _settings_path: tp.SettingsPath = "execution.engines.serial"
@@ -389,15 +389,15 @@ class SerialEngine(ExecutionEngine):
 class ThreadPoolEngine(ExecutionEngine):
     """Class for executing functions using `ThreadPoolExecutor` from `concurrent.futures`.
 
+    !!! info
+        For default settings, see `engines.threadpool` in `vectorbtpro._settings.execution`.
+
     Args:
         init_kwargs (KwargsLike): Keyword arguments for `ThreadPoolExecutor`.
         timeout (Optional[int]): Maximum number of seconds to wait.
         hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
             within individual threads.
         **kwargs: Keyword arguments for `ExecutionEngine`.
-
-    !!! info
-        For default settings, see `engines.threadpool` in `vectorbtpro._settings.execution`.
     """
 
     _settings_path: tp.SettingsPath = "execution.engines.threadpool"
@@ -473,15 +473,15 @@ class ThreadPoolEngine(ExecutionEngine):
 class ProcessPoolEngine(ExecutionEngine):
     """Class for executing functions using `ProcessPoolExecutor` from `concurrent.futures`.
 
+    !!! info
+        For default settings, see `engines.processpool` in `vectorbtpro._settings.execution`.
+
     Args:
         init_kwargs (KwargsLike): Keyword arguments for `ProcessPoolExecutor`.
         timeout (Optional[int]): Maximum number of seconds to wait.
         hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
             within individual threads.
         **kwargs: Keyword arguments for `ExecutionEngine`.
-
-    !!! info
-        For default settings, see `engines.processpool` in `vectorbtpro._settings.execution`.
     """
 
     _settings_path: tp.SettingsPath = "execution.engines.processpool"
@@ -573,6 +573,9 @@ def pass_kwargs_as_args(func: tp.Callable, args: tp.Args, kwargs: tp.Kwargs) -> 
 class PathosEngine(ExecutionEngine):
     """Class for executing functions using `pathos`.
 
+    !!! info
+        For default settings, see `engines.pathos` in `vectorbtpro._settings.execution`.
+
     Args:
         pool_type (Optional[str]): Pool type used for parallel execution.
         init_kwargs (KwargsLike): Keyword arguments used for initializing the pool.
@@ -586,9 +589,6 @@ class PathosEngine(ExecutionEngine):
             within individual threads.
         join_pool (Optional[bool]): Flag indicating whether the pool should be joined after execution.
         **kwargs: Keyword arguments for `ExecutionEngine`.
-
-    !!! info
-        For default settings, see `engines.pathos` in `vectorbtpro._settings.execution`.
     """
 
     _settings_path: tp.SettingsPath = "execution.engines.pathos"
@@ -770,15 +770,15 @@ class PathosEngine(ExecutionEngine):
 class MpireEngine(ExecutionEngine):
     """Class for executing functions using `WorkerPool` from `mpire`.
 
+    !!! info
+        For default settings, see `engines.mpire` in `vectorbtpro._settings.execution`.
+
     Args:
         init_kwargs (KwargsLike): Keyword arguments used for initializing `mpire.WorkerPool`.
         apply_kwargs (KwargsLike): Keyword arguments for `mpire.WorkerPool.async_apply`.
         hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
             within individual threads.
         **kwargs: Keyword arguments for `ExecutionEngine`.
-
-    !!! info
-        For default settings, see `engines.mpire` in `vectorbtpro._settings.execution`.
     """
 
     _settings_path: tp.SettingsPath = "execution.engines.mpire"
@@ -857,18 +857,18 @@ class MpireEngine(ExecutionEngine):
 class DaskEngine(ExecutionEngine):
     """Class for executing functions in parallel using Dask.
 
-    Args:
-        compute_kwargs (KwargsLike): Keyword arguments for `dask.compute`.
-        hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
-            within individual threads.
-        **kwargs: Keyword arguments for `ExecutionEngine`.
-
     !!! info
         For default settings, see `engines.dask` in `vectorbtpro._settings.execution`.
 
     !!! note
         Use multi-threading primarily for numeric code that releases the GIL
         (e.g., NumPy, Pandas, Scikit-Learn, Numba).
+
+    Args:
+        compute_kwargs (KwargsLike): Keyword arguments for `dask.compute`.
+        hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
+            within individual threads.
+        **kwargs: Keyword arguments for `ExecutionEngine`.
     """
 
     _settings_path: tp.SettingsPath = "execution.engines.dask"
@@ -932,6 +932,14 @@ class DaskEngine(ExecutionEngine):
 class RayEngine(ExecutionEngine):
     """Class for executing functions in parallel using Ray.
 
+    !!! info
+        For default settings, see `engines.ray` in `vectorbtpro._settings.execution`.
+
+    !!! note
+        Ray spawns multiple processes rather than threads, so each argument and keyword argument must
+        first be stored in an object store to be shared. Ensure that the computation with `func` takes
+        sufficient time compared to the overhead of copying; otherwise, little to no speedup will be achieved.
+
     Args:
         restart (Optional[bool]): Flag to determine if the Ray runtime should be terminated and reinitialized.
         reuse_refs (Optional[bool]): Flag indicating if function and object references should be reused
@@ -943,14 +951,6 @@ class RayEngine(ExecutionEngine):
         hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
             within individual threads.
         **kwargs: Keyword arguments for `ExecutionEngine`.
-
-    !!! info
-        For default settings, see `engines.ray` in `vectorbtpro._settings.execution`.
-
-    !!! note
-        Ray spawns multiple processes rather than threads, so each argument and keyword argument must
-        first be stored in an object store to be shared. Ensure that the computation with `func` takes
-        sufficient time compared to the overhead of copying; otherwise, little to no speedup will be achieved.
     """
 
     _settings_path: tp.SettingsPath = "execution.engines.ray"
@@ -1084,13 +1084,11 @@ class RayEngine(ExecutionEngine):
         obj_id_refs = {}
         task_refs = []
         for func, args, kwargs in tasks:
-            # Get remote function
             if isinstance(func, RemoteFunction):
                 func_remote = func
             else:
                 if not reuse_refs or id(func) not in func_id_remotes:
                     if isinstance(func, CPUDispatcher):
-                        # Numba-wrapped function is not recognized by ray as a function
                         _func = lambda *_args, **_kwargs: func(*_args, **_kwargs)
                     else:
                         _func = func
@@ -1103,7 +1101,6 @@ class RayEngine(ExecutionEngine):
                 else:
                     func_remote = func_id_remotes[id(func)]
 
-            # Get id of each (unique) arg
             arg_refs = ()
             for arg in args:
                 if isinstance(arg, ObjectRef):
@@ -1116,7 +1113,6 @@ class RayEngine(ExecutionEngine):
                         arg_ref = obj_id_refs[id(arg)]
                 arg_refs += (arg_ref,)
 
-            # Get id of each (unique) kwarg
             kwarg_refs = {}
             for kwarg_name, kwarg in kwargs.items():
                 if isinstance(kwarg, ObjectRef):
@@ -1161,7 +1157,6 @@ class RayEngine(ExecutionEngine):
                 results = ray.get(result_refs)
             finally:
                 if self.del_refs:
-                    # clear object store
                     del result_refs
                 if self.shutdown:
                     ray.shutdown()
@@ -1240,6 +1235,9 @@ class Executor(Configured):
         results or new results. Its context includes the number of chunks (`n_chunks`) and the flattened
         list of results (`results`). If `post_execute_on_sorted` is True, this callback is executed after
         sorting the call indices.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.execution`.
 
     Args:
         engine (Optional[ExecutionEngineLike]): Execution engine.
@@ -1325,9 +1323,6 @@ class Executor(Configured):
 
             See `vectorbtpro.utils.pbar.ProgressBar`.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.execution`.
     """
 
     _settings_path: tp.SettingsPath = "execution"
@@ -2081,6 +2076,9 @@ class Executor(Configured):
         the given `engine_config`. If the engine is an instance, it is replaced with updated configuration.
         For callables, the engine name is inferred from available settings.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.execution`.
+
         Args:
             engine (ExecutionEngineLike): Engine specification which can be a string,
                 subclass, instance, or callable.
@@ -2093,9 +2091,6 @@ class Executor(Configured):
         Returns:
             Tuple[Union[ExecutionEngine, Callable], Optional[str]]: Tuple containing
                 the resolved engine and its name.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.execution`.
         """
         from vectorbtpro._settings import settings
 
@@ -2578,9 +2573,9 @@ class Executor(Configured):
         if filter_results:
             try:
                 results, keys = filter_out_no_results(results, keys=keys)
-            except NoResultsException as e:
+            except NoResultsException:
                 if raise_no_results:
-                    raise e
+                    raise
                 return NoResult
             no_results_filtered = True
         else:
@@ -3198,6 +3193,9 @@ def execute(
     If an executor instance is supplied and `replace_executor` is True, creates a new
     `Executor` instance by updating non-None parameters.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.execution`.
+
     Args:
         tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
         size (Optional[int]): Number of tasks to run concurrently.
@@ -3213,9 +3211,6 @@ def execute(
 
     Returns:
         MergeableResults: Merged results from executing the tasks.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.execution`.
     """
     from vectorbtpro._settings import settings
 
@@ -3343,6 +3338,9 @@ def iterated(
     If the decorated function returns `NoResult`, the current iteration is skipped and its index
     is removed from the final result.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.execution`.
+
     Args:
         func (Callable): Function to be decorated.
         over_arg (Optional[AnnArgQuery]): Query specifying which argument to iterate over.
@@ -3359,9 +3357,6 @@ def iterated(
 
     Returns:
         Callable: Wrapper function that executes the original function iteratively.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.execution`.
     """
 
     def decorator(func: tp.Callable) -> tp.Callable:

@@ -14,11 +14,12 @@ This module provides foundational type aliases, protocols, and utilities for com
 such as sequences, scalars, arrays, and datetime representations within vectorbtpro.
 """
 
+import ast
+import sys
 from datetime import datetime, timedelta, tzinfo, date, time
 from enum import EnumMeta
 from pathlib import Path
-import sys
-import ast
+from types import ModuleType
 
 if sys.version_info < (3, 9):
     import typing
@@ -101,9 +102,6 @@ if TYPE_CHECKING:
     from vectorbtpro.generic.splitting.base import FixRange, RelRange
     from vectorbtpro.indicators.factory import IndicatorBase
     from vectorbtpro.portfolio.enums import (
-        SignalContext,
-        PostSignalContext,
-        SignalSegmentContext,
         SimulationContext,
         GroupContext,
         RowContext,
@@ -111,6 +109,12 @@ if TYPE_CHECKING:
         OrderContext,
         FlexOrderContext,
         PostOrderContext,
+        FSSimulationContext,
+        FSGroupContext,
+        FSSegmentContext,
+        FSSignalContext,
+        FSPreOrderSegmentContext,
+        FSPostOrderContext,
         Order,
     )
 else:
@@ -154,9 +158,6 @@ else:
     FixRange = "FixRange"
     RelRange = "RelRange"
     IndicatorBase = "IndicatorBase"
-    SignalContext = "SignalContext"
-    PostSignalContext = "PostSignalContext"
-    SignalSegmentContext = "SignalSegmentContext"
     SimulationContext = "SimulationContext"
     GroupContext = "GroupContext"
     RowContext = "RowContext"
@@ -164,6 +165,12 @@ else:
     OrderContext = "OrderContext"
     FlexOrderContext = "FlexOrderContext"
     PostOrderContext = "PostOrderContext"
+    FSSimulationContext = "FSSimulationContext"
+    FSGroupContext = "FSGroupContext"
+    FSSegmentContext = "FSSegmentContext"
+    FSSignalContext = "FSSignalContext"
+    FSPreOrderSegmentContext = "FSPreOrderSegmentContext"
+    FSPostOrderContext = "FSPostOrderContext"
     Order = "Order"
 
 __all__ = []
@@ -542,15 +549,12 @@ PipeTasks = Iterable[PipeTask]
 CompressionLike = Union[None, bool, str]
 
 # Source
+ModuleLike = Union[str, ModuleType]
 RefactorSourceOutput = Union[None, str, Path, Tuple[str, Path], Tuple[Path, Path]]
 RefactorSourceOutputs = List[Tuple[Any, RefactorSourceOutput]]
 MaybeRefactorSourceOutput = Union[RefactorSourceOutput, RefactorSourceOutputs]
 
 # Simulation
-SignalFunc = Callable[[SignalContext, VarArg()], Tuple[bool, bool, bool, bool]]
-PostSignalFunc = Callable[[PostSignalContext, VarArg()], None]
-PostSignalSegmentFunc = Callable[[SignalSegmentContext, VarArg()], None]
-AdjustFunc = Callable[[SignalContext, VarArg()], None]
 PreSimFunc = Callable[[SimulationContext, VarArg()], Args]
 PostSimFunc = Callable[[SimulationContext, VarArg()], None]
 PreGroupFunc = Callable[[GroupContext, VarArg()], Args]
@@ -562,6 +566,25 @@ PostSegmentFunc = Callable[[SegmentContext, VarArg()], None]
 OrderFunc = Callable[[OrderContext, VarArg()], Order]
 FlexOrderFunc = Callable[[FlexOrderContext, VarArg()], Tuple[int, Order]]
 PostOrderFunc = Callable[[PostOrderContext, VarArg()], None]
+
+FSPreSimFunc = Callable[[FSSimulationContext, VarArg()], Args]
+FSPostSimFunc = Callable[[FSSimulationContext, VarArg()], None]
+FSPreGroupFunc = Callable[[FSGroupContext, VarArg()], Args]
+FSPostGroupFunc = Callable[[FSGroupContext, VarArg()], None]
+FSPreSegmentFunc = Callable[[FSSegmentContext, VarArg()], Args]
+FSPostSegmentFunc = Callable[[FSSegmentContext, VarArg()], None]
+FSSignalFunc = Callable[[FSSignalContext, VarArg()], Tuple[bool, bool, bool, bool]]
+FSAdjustFunc = Callable[[FSSignalContext, VarArg()], None]
+FSPreOrderSegmentFunc = Callable[[FSPreOrderSegmentContext, VarArg()], Args]
+FSPostOrderFunc = Callable[[FSPostOrderContext, VarArg()], None]
+
+# Contexts
+AnyPostOrderContext = Union[PostOrderContext, FSPostOrderContext]
+AnyColumnContext = Union[AnyPostOrderContext, OrderContext, FSSignalContext]
+AnySegmentContext = Union[AnyColumnContext, SegmentContext, FlexOrderContext, FSSegmentContext]
+AnyGroupContext = Union[AnySegmentContext, GroupContext, FSGroupContext]
+AnyRowContext = Union[RowContext]
+AnySimContext = Union[AnyGroupContext, AnyRowContext, SimulationContext, FSSimulationContext]
 
 # Portfolio optimization
 AllocateFunc = Callable[[int, int, VarArg()], MaybeArray]

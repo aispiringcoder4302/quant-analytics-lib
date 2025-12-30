@@ -56,6 +56,9 @@ def apply_and_concat_none_nb(
 ) -> None:
     """Execute the JIT-compiled function multiple times for in-place operations.
 
+    See:
+        `custom_apply_and_concat_none_nb`
+
     Args:
         ntimes (int): Number of times to execute `apply_func_nb`.
         apply_func_nb (R0ApplyFunc): Callback function that accepts an index and additional arguments,
@@ -64,9 +67,6 @@ def apply_and_concat_none_nb(
 
     Returns:
         None
-
-    See:
-        `custom_apply_and_concat_none_nb`
     """
     custom_apply_and_concat_none_nb(np.arange(ntimes), apply_func_nb, *args)
 
@@ -125,6 +125,9 @@ def apply_and_concat_one_nb(
     """Execute the JIT-compiled function multiple times, each returning a single array,
     and horizontally concatenate the results.
 
+    See:
+        `custom_apply_and_concat_one_nb`
+
     Args:
         ntimes (int): Number of times to execute `apply_func_nb`.
         apply_func_nb (R1ApplyFunc): Callback function that accepts an index and additional arguments,
@@ -133,9 +136,6 @@ def apply_and_concat_one_nb(
 
     Returns:
         Array2d: Concatenated 2D array of the outputs from each function call.
-
-    See:
-        `custom_apply_and_concat_one_nb`
     """
     return custom_apply_and_concat_one_nb(np.arange(ntimes), apply_func_nb, *args)
 
@@ -200,6 +200,9 @@ def apply_and_concat_multiple_nb(
     """Execute the JIT-compiled function multiple times, each returning multiple arrays,
     and horizontally concatenate the corresponding outputs.
 
+    See:
+        `custom_apply_and_concat_multiple_nb`
+
     Args:
         ntimes (int): Number of times to execute `apply_func_nb`.
         apply_func_nb (RMApplyFunc): Callback function that accepts an index and additional arguments,
@@ -209,9 +212,6 @@ def apply_and_concat_multiple_nb(
     Returns:
         List[Array2d]: List of 2D arrays, each representing the concatenated outputs for
             one of the multiple return arrays.
-
-    See:
-        `custom_apply_and_concat_multiple_nb`
     """
     return custom_apply_and_concat_multiple_nb(np.arange(ntimes), apply_func_nb, *args)
 
@@ -282,6 +282,15 @@ def apply_and_concat(
     positional and keyword arguments. Depending on the `jitted_loop` flag, a JIT-compiled
     version of the iteration may be used.
 
+    !!! note
+        When `jitted_loop` is True, `n_outputs` must be provided as Numba does not support
+        variable keyword arguments.
+
+    See:
+        * `custom_apply_and_concat_none_nb` if `jitted_loop` is True and `n_outputs` is 0
+        * `custom_apply_and_concat_one_nb` if `jitted_loop` is True and `n_outputs` is 1
+        * `custom_apply_and_concat_multiple_nb` if `jitted_loop` is True and `n_outputs` > 1
+
     Args:
         ntimes (int): Number of times to execute `apply_func`.
         apply_func (CApplyFunc): Callback function for applying to each index.
@@ -299,15 +308,6 @@ def apply_and_concat(
             * None if no outputs are produced.
             * 2D array if a single output is produced.
             * List of 2D arrays if multiple outputs are produced.
-
-    See:
-        * `custom_apply_and_concat_none_nb` if `jitted_loop` is True and `n_outputs` is 0
-        * `custom_apply_and_concat_one_nb` if `jitted_loop` is True and `n_outputs` is 1
-        * `custom_apply_and_concat_multiple_nb` if `jitted_loop` is True and `n_outputs` > 1
-
-    !!! note
-        When `jitted_loop` is True, `n_outputs` must be provided as Numba does not support
-        variable keyword arguments.
     """
     if jitted_loop:
         if n_outputs is None:
@@ -383,6 +383,9 @@ def combine_and_concat_nb(
     """Combine and concatenate the given object with a sequence of objects using a
     Numba-compiled combination function.
 
+    See:
+        `apply_and_concat_one_nb`
+
     Args:
         obj (Any): Primary object to combine.
         others (Sequence): Sequence of objects to combine with.
@@ -392,9 +395,6 @@ def combine_and_concat_nb(
 
     Returns:
         Array2d: Concatenated result obtained by combining the objects.
-
-    See:
-        `apply_and_concat_one_nb`
     """
     return apply_and_concat_one_nb(len(others), select_and_combine_nb, obj, others, combine_func_nb, *args)
 
@@ -436,6 +436,9 @@ def combine_and_concat(
     """Combine the primary object with each element in a sequence using a specified
     combination function and concatenate the results.
 
+    See:
+        * `select_and_combine_nb` if `jitted_loop` is True
+
     Args:
         obj (Any): Primary object to combine.
         others (Sequence): Sequence of objects to combine with.
@@ -447,9 +450,6 @@ def combine_and_concat(
 
     Returns:
         Array2d: Concatenated result obtained after combining the objects.
-
-    See:
-        * `select_and_combine_nb` if `jitted_loop` is True
     """
     if jitted_loop:
         apply_func = jit_reg.resolve(select_and_combine_nb)
@@ -500,6 +500,12 @@ def combine_multiple(
 ) -> tp.Any:
     """Combine a sequence of objects pairwise into a single object using a provided combination function.
 
+    !!! note
+        Numba doesn't support variable keyword arguments.
+
+    See:
+        * `combine_multiple_nb` if `jitted_loop` is True
+
     Args:
         objs (Sequence): Sequence of objects to combine.
         combine_func (PyCombineFunc): Callback function that accepts two objects and additional arguments,
@@ -510,12 +516,6 @@ def combine_multiple(
 
     Returns:
         Any: Combined result after pairwise merging of the objects.
-
-    See:
-        * `combine_multiple_nb` if `jitted_loop` is True
-
-    !!! note
-        Numba doesn't support variable keyword arguments.
     """
     if jitted_loop:
         func = jit_reg.resolve(combine_multiple_nb)

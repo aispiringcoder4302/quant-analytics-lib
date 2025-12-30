@@ -97,18 +97,18 @@ import pandas as pd
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.accessors import register_df_vbt_accessor
-from vectorbtpro.base.wrapping import ArrayWrapper
 from vectorbtpro.base.reshaping import to_1d_array, to_2d_array
+from vectorbtpro.base.wrapping import ArrayWrapper
 from vectorbtpro.data.base import OHLCDataMixin
 from vectorbtpro.generic import nb as generic_nb
 from vectorbtpro.generic.accessors import GenericAccessor, GenericDFAccessor
 from vectorbtpro.ohlcv import nb, enums
+from vectorbtpro.registries.ch_registry import ch_reg
+from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig
 from vectorbtpro.utils.decorators import hybrid_property
 from vectorbtpro.utils.enum_ import map_enum_fields
-from vectorbtpro.registries.ch_registry import ch_reg
-from vectorbtpro.registries.jit_registry import jit_reg
 
 if tp.TYPE_CHECKING:
     from vectorbtpro.data.base import Data as DataT
@@ -130,14 +130,14 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
     Accessible via `pd.DataFrame.vbt.ohlcv`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.ohlcv`.
+
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Underlying data object.
         feature_map (KwargsLike): Dictionary mapping feature names to OHLCV components.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.ohlcv`.
     """
 
     def __init__(
@@ -234,6 +234,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         Applies a mirror transformation to the OHLC columns ("Open", "High", "Low", "Close")
         using the specified starting value and reference feature.
 
+        See:
+            `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -248,9 +251,6 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
         Returns:
             Frame: DataFrame with mirrored OHLC features.
-
-        See:
-            `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
         """
         if isinstance(ref_feature, str):
             ref_feature = map_enum_fields(ref_feature, enums.PriceFeature)
@@ -475,9 +475,13 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot OHLC data.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.ohlcv` and `vectorbtpro._settings.plotting`.
 
         Args:
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
@@ -487,13 +491,13 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Updated figure containing the OHLC plot.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.ohlcv` and `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -510,9 +514,10 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         if add_trace_kwargs is None:
             add_trace_kwargs = {}
 
-        # Set up figure
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         if ohlc_type is None:
@@ -562,22 +567,26 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot volume data.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Args:
             trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Bar`.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Updated figure with the volume bar plot.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -593,9 +602,10 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         if add_trace_kwargs is None:
             add_trace_kwargs = {}
 
-        # Set up figure
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         marker_colors = np.empty(self.volume.shape, dtype=object)
@@ -627,6 +637,8 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         add_trace_kwargs: tp.KwargsLike = None,
         volume_add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
+        make_subplots_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot OHLC(V) data using Plotly.
@@ -642,6 +654,12 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
                 for example, `dict(row=1, col=1)`.
             volume_add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for the volume trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
+            make_subplots_kwargs (KwargsLike): Keyword arguments for making subplots.
+
+                See `vectorbtpro.utils.figure.make_subplots`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -668,18 +686,26 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             add_trace_kwargs = merge_dicts(dict(row=1, col=1), add_trace_kwargs)
             volume_add_trace_kwargs = merge_dicts(dict(row=2, col=1), volume_add_trace_kwargs)
 
-        # Set up figure
         if fig is None:
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
             if plot_volume:
-                fig = make_subplots(
-                    rows=2,
-                    cols=1,
-                    shared_xaxes=True,
-                    vertical_spacing=0,
-                    row_heights=[0.7, 0.3],
+                if make_subplots_kwargs is None:
+                    make_subplots_kwargs = {}
+                make_subplots_kwargs = merge_dicts(
+                    dict(
+                        rows=2,
+                        cols=1,
+                        shared_xaxes=True,
+                        vertical_spacing=0,
+                        row_heights=[0.7, 0.3],
+                        make_figure_kwargs=make_figure_kwargs,
+                    ),
+                    make_subplots_kwargs,
                 )
+                fig = make_subplots(**make_subplots_kwargs)
             else:
-                fig = make_figure()
+                fig = make_figure(**make_figure_kwargs)
             fig.update_layout(
                 showlegend=True,
                 xaxis=dict(showgrid=True),

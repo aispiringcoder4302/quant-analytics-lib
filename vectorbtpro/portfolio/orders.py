@@ -222,6 +222,9 @@ class Orders(PriceRecords):
     ) -> OrdersT:
         """Return a long view of order records.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.get_long_view_orders_nb`
+
         Args:
             init_position (ArrayLike): Initial position.
             init_price (ArrayLike): Initial position price.
@@ -234,9 +237,6 @@ class Orders(PriceRecords):
 
         Returns:
             Orders: New instance with long view orders.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.get_long_view_orders_nb`
         """
         func = jit_reg.resolve_option(nb.get_long_view_orders_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -258,6 +258,9 @@ class Orders(PriceRecords):
     ) -> OrdersT:
         """Return a short view of order records.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.get_short_view_orders_nb`
+
         Args:
             init_position (ArrayLike): Initial position.
             init_price (ArrayLike): Initial position price.
@@ -270,9 +273,6 @@ class Orders(PriceRecords):
 
         Returns:
             Orders: New instance with short view orders.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.get_short_view_orders_nb`
         """
         func = jit_reg.resolve_option(nb.get_short_view_orders_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -474,11 +474,15 @@ class Orders(PriceRecords):
         sell_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot orders.
 
         Plot the order data on a Plotly figure by overlaying OHLC and close price data with buy and sell markers.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
@@ -494,13 +498,13 @@ class Orders(PriceRecords):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Updated Plotly figure with the plotted orders.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -542,10 +546,11 @@ class Orders(PriceRecords):
             add_trace_kwargs = {}
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
-        # Plot price
         if (
             plot_ohlc
             and self_col._open is not None
@@ -578,14 +583,12 @@ class Orders(PriceRecords):
             )
 
         if self_col.count() > 0:
-            # Extract information
             idx = self_col.get_map_field_to_index("idx")
             price = self_col.get_field_arr("price")
             side = self_col.get_field_arr("side")
 
             buy_mask = side == OrderSide.Buy
             if buy_mask.any():
-                # Plot buy markers
                 buy_customdata, buy_hovertemplate = self_col.prepare_customdata(mask=buy_mask)
                 _buy_trace_kwargs = merge_dicts(
                     dict(
@@ -609,7 +612,6 @@ class Orders(PriceRecords):
 
             sell_mask = side == OrderSide.Sell
             if sell_mask.any():
-                # Plot sell markers
                 sell_customdata, sell_hovertemplate = self_col.prepare_customdata(mask=sell_mask)
                 _sell_trace_kwargs = merge_dicts(
                     dict(

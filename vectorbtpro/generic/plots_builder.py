@@ -56,7 +56,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
     def __init__(self) -> None:
         checks.assert_instance_of(self, Wrapping)
 
-        # Copy writeable attrs
         self._subplots = type(self)._subplots.copy()
 
     @property
@@ -143,6 +142,19 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
     ) -> tp.Optional[tp.BaseFigure]:
         """Plot various parts of this object.
 
+        !!! note
+            `PlotsBuilderMixin` and `vectorbtpro.generic.stats_builder.StatsBuilderMixin`
+            share similar designs, differing mainly in nomenclature:
+
+            * `plots_defaults` vs `stats_defaults`
+            * `subplots` vs `metrics`
+            * `subplot_settings` vs `metric_settings`
+
+            See further details in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             subplots (Optional[MaybeIterable[Union[str, Tuple[str, Kwargs]]]]): Subplots to plot.
 
@@ -223,7 +235,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
             hide_id_labels (bool): Whether to hide duplicate legend labels (duplicates have the same name,
                 marker style, and line style).
             group_id_labels (bool): Whether to group identical legend labels.
-            make_subplots_kwargs (KwargsLike): Keyword arguments for creating subplots.
+            make_subplots_kwargs (KwargsLike): Keyword arguments for making subplots.
 
                 See `vectorbtpro.utils.figure.make_subplots`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
@@ -231,21 +243,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
 
         Returns:
             Optional[BaseFigure]: Plotly figure containing subplots.
-
-        !!! note
-            `PlotsBuilderMixin` and `vectorbtpro.generic.stats_builder.StatsBuilderMixin`
-            share similar designs, differing mainly in nomenclature:
-
-            * `plots_defaults` vs `stats_defaults`
-            * `subplots` vs `metrics`
-            * `subplot_settings` vs `metric_settings`
-
-            See further details in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
         """
-        # Plot per column
         if column is None:
             if per_column is None:
                 per_column = self.resolve_plots_setting(per_column, "per_column")
@@ -278,7 +276,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
 
         plotting_cfg = _settings["plotting"]
 
-        # Resolve defaults
         silence_warnings = self.resolve_plots_setting(silence_warnings, "silence_warnings")
         show_titles = self.resolve_plots_setting(show_titles, "show_titles")
         show_legend = self.resolve_plots_setting(show_legend, "show_legend")
@@ -296,7 +293,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         make_subplots_kwargs = self.resolve_plots_setting(make_subplots_kwargs, "make_subplots_kwargs", merge=True)
         layout_kwargs = self.resolve_plots_setting(layout_kwargs, "layout_kwargs", merge=True)
 
-        # Replace templates globally (not used at subplot level)
         if len(template_context) > 0:
             sub_settings = substitute_templates(
                 settings,
@@ -319,14 +315,12 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
             sub_make_subplots_kwargs = make_subplots_kwargs
             sub_layout_kwargs = layout_kwargs
 
-        # Resolve self
         reself = self.resolve_self(
             cond_kwargs=sub_settings,
             impacts_caching=False,
             silence_warnings=silence_warnings,
         )
 
-        # Prepare subplots
         if subplots is None:
             subplots = reself.resolve_plots_setting(subplots, "subplots")
         if subplots == "all":
@@ -336,7 +330,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         if isinstance(subplots, (str, tuple)):
             subplots = [subplots]
 
-        # Prepare tags
         if tags is None:
             tags = reself.resolve_plots_setting(tags, "tags")
         if isinstance(tags, str) and tags == "all":
@@ -344,7 +337,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         if isinstance(tags, (str, tuple)):
             tags = [tags]
 
-        # Bring to the same shape
         new_subplots = []
         for i, subplot in enumerate(subplots):
             if isinstance(subplot, str):
@@ -354,7 +346,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
             new_subplots.append(subplot)
         subplots = new_subplots
 
-        # Expand subplots
         new_subplots = []
         for i, (subplot_name, _subplot_settings) in enumerate(subplots):
             if isinstance(_subplot_settings, CustomTemplate):
@@ -386,7 +377,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 new_subplots.append((subplot_name, _subplot_settings))
         subplots = new_subplots
 
-        # Handle duplicate names
         subplot_counts = Counter(list(map(lambda x: x[0], subplots)))
         subplot_i = {k: -1 for k in subplot_counts.keys()}
         subplots_dct = {}
@@ -396,12 +386,10 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 subplot_name = subplot_name + "_" + str(subplot_i[subplot_name])
             subplots_dct[subplot_name] = _subplot_settings
 
-        # Check subplot_settings
         missed_keys = set(subplot_settings.keys()).difference(set(subplots_dct.keys()))
         if len(missed_keys) > 0:
             raise ValueError(f"Keys {missed_keys} in subplot_settings could not be matched with any subplot")
 
-        # Merge settings
         opt_arg_names_dct = {}
         custom_arg_names_dct = {}
         resolved_self_dct = {}
@@ -429,14 +417,12 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 eval_id="template_context_merged",
             )
             context = merge_dicts(template_context_merged, merged_settings)
-            # safe because we will use substitute_templates again once layout params are known
             merged_settings = substitute_templates(
                 merged_settings,
                 context=context,
                 eval_id="merged_settings",
             )
 
-            # Filter by tag
             if tags is not None:
                 in_tags = merged_settings.get("tags", None)
                 if in_tags is None or not match_tags(tags, in_tags):
@@ -458,7 +444,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
             resolved_self_dct[subplot_name] = custom_reself
             context_dct[subplot_name] = context
 
-        # Filter subplots
         for subplot_name, _subplot_settings in list(subplots_dct.items()):
             custom_reself = resolved_self_dct[subplot_name]
             context = context_dct[subplot_name]
@@ -505,13 +490,11 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                         context_dct.pop(subplot_name, None)
                         break
 
-        # Any subplots left?
         if len(subplots_dct) == 0:
             if not silence_warnings:
                 warn("No subplots to plot")
             return None
 
-        # Set up figure
         rows = sub_make_subplots_kwargs.pop("rows", len(subplots_dct))
         cols = sub_make_subplots_kwargs.pop("cols", 1)
         specs = sub_make_subplots_kwargs.pop(
@@ -628,7 +611,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
             trace_start_idx = len(fig.data)
         fig.update_layout(**sub_layout_kwargs)
 
-        # Plot subplots
         arg_cache_dct = {}
         for i, (subplot_name, _subplot_settings) in enumerate(subplots_dct.items()):
             try:
@@ -638,7 +620,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 custom_reself = resolved_self_dct[subplot_name]
                 context = context_dct[subplot_name]
 
-                # Compute figure artifacts
                 row, col = row_col_tuples[i]
                 xref = "x" if i == 0 else "x" + str(i + 1)
                 yref = "y" if i == 0 else "y" + str(i + 1)
@@ -665,12 +646,10 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 context = merge_dicts(subplot_layout_kwargs, context)
                 final_kwargs = substitute_templates(final_kwargs, context=context, eval_id="final_kwargs")
 
-                # Clean up keys
                 for k, v in list(final_kwargs.items()):
                     if k.startswith("check_") or k.startswith("inv_check_") or k in ("tags",):
                         final_kwargs.pop(k, None)
 
-                # Get subplot-specific values
                 _column = final_kwargs.get("column")
                 _group_by = final_kwargs.get("group_by")
                 _silence_warnings = final_kwargs.get("silence_warnings")
@@ -683,7 +662,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 use_caching = final_kwargs.pop("use_caching", True)
 
                 if plot_func is not None:
-                    # Resolve plot_func
                     if resolve_plot_func:
                         if not callable(plot_func):
                             passed_kwargs_out = {}
@@ -773,7 +751,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                         if not callable(plot_func):
                             raise TypeError("plot_func must be callable")
 
-                        # Resolve arguments
                         func_arg_names = get_func_arg_names(plot_func)
                         for k in func_arg_names:
                             if k not in final_kwargs:
@@ -811,13 +788,10 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                             if k.startswith("pass_") or k.startswith("resolve_"):
                                 final_kwargs.pop(k, None)  # cleanup
 
-                        # Call plot_func
                         plot_func(**final_kwargs)
                     else:
-                        # Do not resolve plot_func
                         plot_func(custom_reself, _subplot_settings)
 
-                # Update global layout
                 for annotation in fig.layout.annotations:
                     if "text" in annotation and annotation["text"] == "$title_" + str(i):
                         annotation.update(text=title)
@@ -825,16 +799,14 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 subplot_layout[xaxis] = merge_dicts(dict(title="Index"), xaxis_kwargs)
                 subplot_layout[yaxis] = merge_dicts(dict(), yaxis_kwargs)
                 fig.update_layout(**subplot_layout)
-            except Exception as e:
+            except Exception:
                 warn(f"Subplot {subplot_name!r} raised an exception")
-                raise e
+                raise
 
-        # Hide legend labels
         if not show_legend:
             for i in range(trace_start_idx, len(fig.data)):
                 fig.data[i].update(showlegend=False)
 
-        # Show column label
         if show_column_label:
             if column is not None:
                 _column = column
@@ -845,7 +817,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 if trace["name"] is not None:
                     trace.update(name=trace["name"] + f" [{ParamLoc.encode_key(_column)}]")
 
-        # Remove duplicate legend labels
         found_ids = dict()
         unique_idx = trace_start_idx
         for i in range(trace_start_idx, len(fig.data)):
@@ -892,7 +863,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                     found_ids[id] = unique_idx
                     unique_idx += 1
 
-        # Hide identical legend labels
         if hide_id_labels:
             legendgroups = set()
             for i in range(trace_start_idx, len(fig.data)):
@@ -904,7 +874,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                         else:
                             legendgroups.add(trace["legendgroup"])
 
-        # Remove all except the last title if sharing the same axis
         if shared_xaxes:
             i = 0
             for row in range(rows):
@@ -924,7 +893,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                             fig.layout[yaxis].update(title=None)
                         i += 1
 
-        # Return the figure
         return fig
 
     @classmethod

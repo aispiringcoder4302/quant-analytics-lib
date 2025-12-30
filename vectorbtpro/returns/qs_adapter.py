@@ -125,6 +125,9 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
     (`utils`, `stats`, `plots`, and `reports`) and attaches them as methods
     to the decorated class if they accept a `returns` argument.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.qs_adapter`.
+
     Args:
         cls (Type[T]): Class to which QuantStats methods will be attached.
         replace_signature (bool): Whether to replace the method signature with that of the
@@ -132,9 +135,6 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
 
     Returns:
         Type[T]: Decorated class with QuantStats methods attached.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.qs_adapter`.
     """
     try:
         import quantstats as qs
@@ -188,48 +188,60 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
                         elif not has_var_kwargs:
                             pass_kwargs[arg_name] = kwargs[arg_name]
 
-                    returns = self.returns_acc.select_col_from_obj(
-                        self.returns_acc.obj,
-                        column=column,
-                        wrapper=self.returns_acc.wrapper.regroup(False),
-                    )
-                    if returns.name is None:
-                        returns = returns.rename("Strategy")
-                    else:
-                        returns = returns.rename(str(returns.name))
-                    null_mask = returns.isnull()
-                    if "benchmark" in pass_kwargs and pass_kwargs["benchmark"] is not None:
-                        benchmark = pass_kwargs["benchmark"]
-                        benchmark = self.returns_acc.select_col_from_obj(
-                            benchmark,
+                    def _col_apply_func(column, **pass_kwargs):
+                        returns = self.returns_acc.select_col_from_obj(
+                            self.returns_acc.obj,
                             column=column,
                             wrapper=self.returns_acc.wrapper.regroup(False),
                         )
-                        if benchmark.name is None:
-                            benchmark = benchmark.rename("Benchmark")
+                        if returns.name is None:
+                            returns = returns.rename("Strategy")
                         else:
-                            benchmark = benchmark.rename(str(benchmark.name))
-                        bm_null_mask = benchmark.isnull()
-                        null_mask = null_mask | bm_null_mask
-                        benchmark = benchmark.loc[~null_mask]
-                        if isinstance(benchmark.index, pd.DatetimeIndex):
-                            if benchmark.index.tz is not None:
-                                benchmark = benchmark.tz_convert("utc")
-                            if benchmark.index.tz is not None:
-                                benchmark = benchmark.tz_localize(None)
-                        pass_kwargs["benchmark"] = benchmark
-                    returns = returns.loc[~null_mask]
-                    if isinstance(returns.index, pd.DatetimeIndex):
-                        if returns.index.tz is not None:
-                            returns = returns.tz_convert("utc")
-                        if returns.index.tz is not None:
-                            returns = returns.tz_localize(None)
+                            returns = returns.rename(str(returns.name))
+                        null_mask = returns.isnull()
+                        if "benchmark" in pass_kwargs and pass_kwargs["benchmark"] is not None:
+                            benchmark = pass_kwargs["benchmark"]
+                            benchmark = self.returns_acc.select_col_from_obj(
+                                benchmark,
+                                column=column,
+                                wrapper=self.returns_acc.wrapper.regroup(False),
+                            )
+                            if benchmark.name is None:
+                                benchmark = benchmark.rename("Benchmark")
+                            else:
+                                benchmark = benchmark.rename(str(benchmark.name))
+                            bm_null_mask = benchmark.isnull()
+                            null_mask = null_mask | bm_null_mask
+                            benchmark = benchmark.loc[~null_mask]
+                            if isinstance(benchmark.index, pd.DatetimeIndex):
+                                if benchmark.index.tz is not None:
+                                    benchmark = benchmark.tz_convert("utc")
+                                if benchmark.index.tz is not None:
+                                    benchmark = benchmark.tz_localize(None)
+                            pass_kwargs["benchmark"] = benchmark
+                        returns = returns.loc[~null_mask]
+                        if isinstance(returns.index, pd.DatetimeIndex):
+                            if returns.index.tz is not None:
+                                returns = returns.tz_convert("utc")
+                            if returns.index.tz is not None:
+                                returns = returns.tz_localize(None)
 
-                    signature(_func).bind(returns=returns, **pass_kwargs)
-                    return _func(returns=returns, **pass_kwargs)
+                        signature(_func).bind(returns=returns, **pass_kwargs)
+                        return _func(returns=returns, **pass_kwargs)
+
+                    if column is not None:
+                        return _col_apply_func(column, **pass_kwargs)
+                    obj = self.returns_acc.obj
+                    if isinstance(obj, pd.Series):
+                        return _col_apply_func(None, **pass_kwargs)
+                    outputs = [_col_apply_func(c, **pass_kwargs) for c in obj.columns]
+                    if all(o is None for o in outputs):
+                        return None
+                    if any(isinstance(o, pd.Series) for o in outputs):
+                        return pd.concat(outputs, axis=1, keys=obj.columns)
+                    return pd.Series(outputs, index=obj.columns)
 
                 if replace_signature:
-                    # Replace the function's signature with the original one
                     source_sig = signature(qs_func)
                     new_method_params = tuple(signature(new_method).parameters.values())
                     self_arg = new_method_params[0]
@@ -316,11 +328,11 @@ class QSAdapter(Configured):
         Merges defaults from `vectorbtpro._settings.qs_adapter`, mapped values from
         `vectorbtpro.returns.accessors.ReturnsAccessor.defaults`, and user-provided defaults.
 
-        Returns:
-            Kwargs: Merged default settings for plots.
-
         !!! info
             For default settings, see `defaults` in `vectorbtpro._settings.qs_adapter`.
+
+        Returns:
+            Kwargs: Merged default settings for plots.
         """
         from vectorbtpro._settings import settings
 

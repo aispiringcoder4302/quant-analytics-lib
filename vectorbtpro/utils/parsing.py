@@ -491,6 +491,9 @@ def match_flat_ann_arg(
 ) -> tp.Any:
     """Match an argument from flattened annotated arguments.
 
+    !!! note
+        Only the first matching argument is returned.
+
     Args:
         flat_ann_args (FlatAnnArgs): Flattened annotated arguments.
         query (AnnArgQuery): Query to identify the argument by position, name, or regular expression.
@@ -499,9 +502,6 @@ def match_flat_ann_arg(
 
     Returns:
         Any: Matched argument value, or its name/index if specified.
-
-    !!! note
-        Only the first matching argument is returned.
     """
     if return_name and return_index:
         raise ValueError("Either return_name or return_index can be provided, not both")
@@ -527,6 +527,9 @@ def match_ann_arg(
 ) -> tp.Any:
     """Match an argument from annotated arguments by flattening them.
 
+    !!! note
+        Matching logic is equivalent to that of `match_flat_ann_arg`.
+
     Args:
         ann_args (AnnArgs): Annotated arguments.
 
@@ -537,9 +540,6 @@ def match_ann_arg(
 
     Returns:
         Any: Matched argument value, or its name/index if specified.
-
-    !!! note
-        Matching logic is equivalent to that of `match_flat_ann_arg`.
     """
     return match_flat_ann_arg(
         flatten_ann_args(ann_args),
@@ -556,6 +556,9 @@ def match_and_set_flat_ann_arg(
 ) -> None:
     """Match an argument in flattened annotated arguments and update its value.
 
+    !!! note
+        All matching arguments are updated.
+
     Args:
         flat_ann_args (FlatAnnArgs): Flattened annotated arguments.
         query (AnnArgQuery): Query to identify the argument by position, name, or regular expression.
@@ -563,9 +566,6 @@ def match_and_set_flat_ann_arg(
 
     Returns:
         None: Function modifies `flat_ann_args` in place.
-
-    !!! note
-        All matching arguments are updated.
     """
     matched = False
     for i, (arg_name, ann_arg) in enumerate(flat_ann_args.items()):
@@ -657,7 +657,6 @@ def get_context_vars(
                 a = global_dict[var_name]
             args.append(a)
     finally:
-        # See https://github.com/pydata/numexpr/issues/310
         if clear_local_dict:
             local_dict.clear()
     return args

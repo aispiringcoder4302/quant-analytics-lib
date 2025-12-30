@@ -31,11 +31,11 @@ __pdoc__ = {}
 class RandomData(SyntheticData):
     """Data class for synthetic data generation.
 
-    See:
-        * `RandomData.generate_key` for argument details.
-
     !!! info
         For default settings, see `custom.random` in `vectorbtpro._settings.data`.
+
+    See:
+        * `RandomData.generate_key` for argument details.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.random")
@@ -55,6 +55,9 @@ class RandomData(SyntheticData):
         **kwargs,
     ) -> tp.KeyData:
         """Generate a feature or symbol.
+
+        See:
+            `vectorbtpro.data.nb.generate_random_data_nb`
 
         Args:
             key (Hashable): Feature or symbol identifier.
@@ -81,9 +84,6 @@ class RandomData(SyntheticData):
 
         Returns:
             KeyData: Generated data and a metadata dictionary.
-
-        See:
-            `vectorbtpro.data.nb.generate_random_data_nb`
         """
         if checks.is_hashable(columns):
             columns = [columns]

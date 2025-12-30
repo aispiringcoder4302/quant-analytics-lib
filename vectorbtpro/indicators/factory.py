@@ -269,8 +269,11 @@ def build_columns(
                 dtype = to_value_mapping(dtype, reverse=True)
             param_values = apply_mapping(param_values, dtype)
         _per_column = _param_settings.get("per_column", False)
+        _pre_index_func = _param_settings.get("pre_index_func", None)
         _post_index_func = _param_settings.get("post_index_func", None)
 
+        if _pre_index_func is not None:
+            param_values = _pre_index_func(param_values)
         if per_column:
             param_index = indexes.index_from_values(param_values, single_value=_single_value, name=level_name)
             repeat_index = False
@@ -678,6 +681,7 @@ class IndicatorBase(Analyzable):
                 * `bc_to_input`: Broadcast the parameter to the input shape or along a specific axis.
                 * `broadcast_kwargs`: Keyword arguments for input broadcasting.
                 * `per_column`: Allow splitting parameter values per column for multi-indexing.
+                * `pre_index_func`: Function to transform the initial parameter values before building the index.
                 * `post_index_func`: Function to transform the final parameter index level.
                 * `doc`: Documentation string for the parameter.
             run_unique (bool): Flag to run only on unique parameter combinations.
@@ -808,6 +812,7 @@ class IndicatorBase(Analyzable):
                         "bc_to_input",
                         "broadcast_kwargs",
                         "per_column",
+                        "pre_index_func",
                         "post_index_func",
                         "doc",
                     ],
@@ -1769,6 +1774,7 @@ class IndicatorBase(Analyzable):
             method.__closure__,
         )
         update_wrapper(new_method, method)
+        new_method.__qualname__ = f"{cls.__name__}.{target_name}"
         setattr(cls, target_name, new_method)
 
 
@@ -1777,6 +1783,10 @@ class IndicatorFactory(Configured):
 
     Initialize `IndicatorFactory` to create a skeleton. Then, use a class method such as
     `IndicatorFactory.with_custom_func` to bind a calculation function to the skeleton.
+
+    !!! note
+        The `__init__` method is not used for running the indicator; use `run` instead.
+        Indexing requires a clean `__init__` method to create a new indicator object with re-indexed attributes.
 
     Args:
         class_name (Optional[str]): Name for the created indicator class.
@@ -1828,10 +1838,6 @@ class IndicatorFactory(Configured):
 
             If a dictionary is provided, it will be converted into a property.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! note
-        The `__init__` method is not used for running the indicator; use `run` instead.
-        Indexing requires a clean `__init__` method to create a new indicator object with re-indexed attributes.
     """
 
     def __init__(
@@ -2085,7 +2091,7 @@ class IndicatorFactory(Configured):
                 attr_readable.__doc__ = inspect.cleandoc(
                     f"""
                     `{attr_name}` in a human-readable format based on the mapping below:
-                    
+
                     ```python
                     {prettify(to_value_mapping(dtype, enum_unkval=enum_unkval), indent=5, indent_head=False)}
                     ```
@@ -2113,11 +2119,11 @@ class IndicatorFactory(Configured):
                     ```python
                     {prettify(to_value_mapping(dtype), indent=5, indent_head=False)}
                     ```
-                
+
                     Args:
                         *args: Positional arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
                         **kwargs: Keyword arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
-                
+
                     Returns:
                         SeriesFrame: Computed statistics for `{attr_name}`.
                     """
@@ -2159,7 +2165,7 @@ class IndicatorFactory(Configured):
                             other (MaybeTupleList[Union[IndicatorBase, ArrayLike, BaseAccessor]]): 
                                 Indicator, array, or accessor to compare.
                             level_name (Optional[str]): Output level name.
-                            
+
                                 If not provided, a name is auto-generated.
                             allow_multiple (bool): Flag indicating whether multiple comparisons are permitted.
                             **kwargs: Keyword arguments for `vectorbtpro.indicators.factory.combine_objs`.
@@ -2179,11 +2185,11 @@ class IndicatorFactory(Configured):
                 attr_stats.__doc__ = inspect.cleandoc(
                     f"""
                     Compute generic statistics for `{attr_name}`.
-                
+
                     Args:
                         *args: Positional arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
                         **kwargs: Keyword arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
-                
+
                     Returns:
                         SeriesFrame: Computed generic statistics for `{attr_name}`.
                     """
@@ -2201,16 +2207,16 @@ class IndicatorFactory(Configured):
                         f"""
                         Return a boolean array representing the element-wise `{func_name.upper()}` 
                         operation between `{attr_name}` and `other`.
-                    
+
                         Args:
                             other (MaybeTupleList[Union[IndicatorBase, ArrayLike, BaseAccessor]]): 
                                 Indicator, array, or accessor to compare.
                             level_name (Optional[str]): Output level name.
-                            
+
                                 If not provided, a name is auto-generated.
                             allow_multiple (bool): Flag indicating whether multiple comparisons are permitted.
                             **kwargs: Keyword arguments for `vectorbtpro.indicators.factory.combine_objs`.
-                    
+
                         Returns:
                             SeriesFrame: Resulting boolean array.
                         """
@@ -2230,7 +2236,7 @@ class IndicatorFactory(Configured):
                     Args:
                         *args: Positional arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
                         **kwargs: Keyword arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
-                
+
                     Returns:
                         SeriesFrame: Computed signal statistics for `{attr_name}`.
                     """
@@ -2902,10 +2908,14 @@ class IndicatorFactory(Configured):
                 `comb_func` must accept an iterable of parameter tuples along with `r`. 
                 It also supports combinatoric iterators from `itertools`, like `itertools.combinations`.
 
+                !!! note
+                    Use this method only when multiple indicator instances are required.
+                    To test multiple parameters, pass them as lists to `{0}.run`.
+
                 Args:
                     *args: Positional arguments corresponding to inputs, parameters, and in-place outputs.
                     **kwargs: Keyword arguments for pipeline configuration and combination settings, including:
-                    
+
                         * `r`: Number of indicators to run.
                         * `param_product`: Flag controlling parameter combination behavior.
                         * `comb_func`: Function to combine parameter tuples (e.g., `itertools.combinations`).
@@ -2913,15 +2923,11 @@ class IndicatorFactory(Configured):
                         * `short_names`: Custom short names for each indicator.
                         * `hide_params`: Parameter names to hide column levels.
                         * `hide_default`: Whether to hide parameters with default values.
-                        
+
                         Other keyword arguments are passed to `{0}.run`.
 
                 Returns:
                     Tuple[Indicator, ...]: Tuple of indicator instances generated.
-
-                !!! note
-                    Use this method only when multiple indicator instances are required.
-                    To test multiple parameters, pass them as lists to `{0}.run`.
                 """
             ).format(_0, _1)
             run_combs = compile_run_function("run_combs", run_combs_docstring, def_run_combs_kwargs)
@@ -2955,6 +2961,18 @@ class IndicatorFactory(Configured):
         it works with one parameter selection at a time, limiting the ability to view all combinations.
 
         The computation and concatenation are executed using `vectorbtpro.base.combining.apply_and_concat_each`.
+
+        !!! note
+            If `apply_func` is a Numba-compiled function:
+
+            * All inputs are automatically converted to NumPy arrays.
+            * Each positional argument must be of a Numba-compatible type.
+            * Keyword arguments cannot be passed.
+            * Output arrays must have identical shapes, data types, and data orders.
+
+        !!! note
+            Reserved arguments such as `per_column` are passed as positional arguments when
+            `jitted_loop` is True, and as keyword arguments otherwise.
 
         Args:
             apply_func (Callable): Function that receives inputs, a selection of parameters,
@@ -3012,18 +3030,6 @@ class IndicatorFactory(Configured):
 
         Returns:
             Indicator: Indicator class constructed around the provided apply function.
-
-        !!! note
-            If `apply_func` is a Numba-compiled function:
-
-            * All inputs are automatically converted to NumPy arrays.
-            * Each positional argument must be of a Numba-compatible type.
-            * Keyword arguments cannot be passed.
-            * Output arrays must have identical shapes, data types, and data orders.
-
-        !!! note
-            Reserved arguments such as `per_column` are passed as positional arguments when
-            `jitted_loop` is True, and as keyword arguments otherwise.
 
         Examples:
             Following example produces the same indicator as the `IndicatorFactory.with_custom_func` example.
@@ -3579,6 +3585,7 @@ class IndicatorFactory(Configured):
             "techcon",
             "smc",
             "wqa101",
+            "expr",
         ]
 
     @classmethod
@@ -3625,8 +3632,9 @@ class IndicatorFactory(Configured):
         if matched_location is not None:
             return matched_location, None
         if ":" in name:
-            location = name.split(":")[0].strip()
-            name = name.split(":")[1].strip()
+            parts = name.split(":", 1)
+            location = parts[0].strip()
+            name = parts[1].strip()
         else:
             location = None
             found_location = False
@@ -3648,6 +3656,7 @@ class IndicatorFactory(Configured):
         name: tp.Optional[str] = None,
         location: tp.Optional[str] = None,
         if_exists: str = "raise",
+        **kwargs,
     ) -> None:
         """Register a custom indicator under a custom location.
 
@@ -3658,12 +3667,13 @@ class IndicatorFactory(Configured):
             location (Optional[str]): Custom location where the indicator should be registered.
             if_exists (str): Behavior if an indicator with the same name already exists;
                 must be "raise", "skip", or "override".
+            **kwargs: Keyword arguments for `IndicatorFactory.get_indicator`.
 
         Returns:
             None
         """
         if isinstance(indicator, str):
-            indicator = cls.get_indicator(indicator)
+            indicator = cls.get_indicator(indicator, **kwargs)
         if name is None:
             name = indicator.__name__
         elif location is None:
@@ -3961,7 +3971,7 @@ class IndicatorFactory(Configured):
         return found_indicators
 
     @classmethod
-    def get_indicator(cls, name: str, location: tp.Optional[str] = None) -> tp.Type[IndicatorBase]:
+    def get_indicator(cls, name: str, location: tp.Optional[str] = None, **kwargs) -> tp.Type[IndicatorBase]:
         """Return the indicator class corresponding to the given name and location.
 
         The indicator name can include a location prefix separated by a colon. For example,
@@ -3971,6 +3981,7 @@ class IndicatorFactory(Configured):
         Args:
             name (str): Name of the indicator, optionally including a location prefix.
             location (Optional[str]): Location to filter the search for the indicator.
+            **kwargs: Keyword arguments for the respective indicator constructor.
 
         Returns:
             Type[IndicatorBase]: Indicator class matching the provided name.
@@ -3982,8 +3993,11 @@ class IndicatorFactory(Configured):
             if matched_location is not None:
                 location = matched_location
         if name is not None:
-            name = name.upper()
             if location is not None:
+                if location == "expr":
+                    return cls.from_expr(name, **kwargs)
+
+                name = name.upper()
                 if location in cls.list_custom_locations():
                     return cls.get_custom_indicator(name, location=location)
                 if location == "vbt":
@@ -3991,42 +4005,43 @@ class IndicatorFactory(Configured):
 
                     return getattr(vbt, name.upper())
                 if location == "talib":
-                    return cls.from_talib(name)
+                    return cls.from_talib(name, **kwargs)
                 if location == "pandas_ta":
-                    return cls.from_pandas_ta(name)
+                    return cls.from_pandas_ta(name, **kwargs)
                 if location == "ta":
-                    return cls.from_ta(name)
+                    return cls.from_ta(name, **kwargs)
                 if location == "technical":
-                    return cls.from_technical(name)
+                    return cls.from_technical(name, **kwargs)
                 if location == "techcon":
-                    return cls.from_techcon(name)
+                    return cls.from_techcon(name, **kwargs)
                 if location == "smc":
-                    return cls.from_smc(name)
+                    return cls.from_smc(name, **kwargs)
                 if location == "wqa101":
-                    return cls.from_wqa101(int(name))
+                    return cls.from_wqa101(int(name), **kwargs)
                 raise ValueError(f"Location {location!r} not found")
             else:
                 import vectorbtpro as vbt
                 from vectorbtpro.utils.module_ import check_installed
 
+                name = name.upper()
                 if name in cls.list_custom_indicators(uppercase=True, prepend_location=False):
                     return cls.get_custom_indicator(name, return_first=True)
                 if hasattr(vbt, name):
                     return getattr(vbt, name)
                 if str(name).isnumeric():
-                    return cls.from_wqa101(int(name))
+                    return cls.from_wqa101(int(name), **kwargs)
                 if check_installed("smc") and name in cls.list_smc_indicators():
-                    return cls.from_smc(name)
+                    return cls.from_smc(name, **kwargs)
                 if check_installed("technical") and name in cls.list_techcon_indicators():
-                    return cls.from_techcon(name)
+                    return cls.from_techcon(name, **kwargs)
                 if check_installed("talib") and name in cls.list_talib_indicators():
-                    return cls.from_talib(name)
+                    return cls.from_talib(name, **kwargs)
                 if check_installed("ta") and name in cls.list_ta_indicators(uppercase=True):
-                    return cls.from_ta(name)
+                    return cls.from_ta(name, **kwargs)
                 if check_installed("pandas_ta") and name in cls.list_pandas_ta_indicators():
-                    return cls.from_pandas_ta(name)
+                    return cls.from_pandas_ta(name, **kwargs)
                 if check_installed("technical") and name in cls.list_technical_indicators():
-                    return cls.from_technical(name)
+                    return cls.from_technical(name, **kwargs)
         raise ValueError(f"Indicator class {name!r} not found")
 
     # ############# Third party ############# #
@@ -4134,24 +4149,24 @@ class IndicatorFactory(Configured):
         apply_func.__doc__ = inspect.cleandoc(
             f"""
             Apply the TA-Lib function with the provided inputs and parameters.
-            
+
             Based on `vbt.talib_func("{func_name}")`.
-    
+
             Args:
                 input_tuple (Tuple[Array2d, ...]): Input arrays for the TA-Lib function.
-                
+
                     These arrays provide the indicator data.
                 in_output_tuple (Tuple[Array2d, ...]): Intermediate output arrays.
-                
+
                     Not used by this function.
                 param_tuple (Tuple[ParamValue, ...]): Tuple of parameter values.
-                
+
                     May include the timeframe as the last element.
                 timeframe (Optional[FrequencyLike]): Timeframe specification (e.g., "daily", "15 minutes").
 
                     See `vectorbtpro.utils.datetime_.to_freq`.
                 **kwargs_: Additional keyword arguments.
-    
+
             Returns:
                 MaybeTuple[Array2d]: Output computed by the TA-Lib function.
             """
@@ -4199,19 +4214,19 @@ class IndicatorFactory(Configured):
         plot.__doc__ = inspect.cleandoc(
             f"""
             Plot the indicator output using the TA-Lib plotting function.
-            
+
             Based on `vbt.talib_plot_func("{func_name}")`.
-    
+
             Args:
                 column (Optional[Column]): Identifier of the column to plot.
-                
+
                     If provided, selects the corresponding column from the indicator output.
                 add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
                 add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                     for example, `dict(row=1, col=1)`.
                 fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
                 **kwargs: Keyword arguments for the plotting function.
-    
+
             Returns:
                 BaseFigure: Figure containing the plotted indicator.
             """
@@ -4338,15 +4353,15 @@ class IndicatorFactory(Configured):
         attempts to parse each one's configuration using `IndicatorFactory.parse_pandas_ta_config`.
         Only indicator functions that are successfully parsed are included in the final list.
 
+        !!! note
+            Returns only the indicators that have been successfully parsed.
+
         Args:
             silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `IndicatorFactory.parse_pandas_ta_config`.
 
         Returns:
             List[str]: Sorted list of indicator names in uppercase that were successfully parsed.
-
-        !!! note
-            Returns only the indicators that have been successfully parsed.
         """
         try:
             import pandas_ta
@@ -5042,9 +5057,13 @@ class IndicatorFactory(Configured):
             sell_trace_kwargs: tp.KwargsLike = None,
             add_trace_kwargs: tp.KwargsLike = None,
             fig: tp.Optional[tp.BaseFigure] = None,
+            make_figure_kwargs: tp.KwargsLike = None,
             **layout_kwargs,
         ) -> tp.BaseFigure:
             """Plot the buy and sell traces of the indicator.
+
+            !!! info
+                For default settings, see `vectorbtpro._settings.plotting`.
 
             Args:
                 column (Optional[Column]): Identifier of the column to plot.
@@ -5053,13 +5072,13 @@ class IndicatorFactory(Configured):
                 add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                     for example, `dict(row=1, col=1)`.
                 fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+                make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                    See `vectorbtpro.utils.figure.make_figure`.
                 **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
             Returns:
                 BaseFigure: Updated figure with plotted buy and sell traces.
-
-            !!! info
-                For default settings, see `vectorbtpro._settings.plotting`.
             """
             from vectorbtpro.utils.figure import make_figure
             from vectorbtpro._settings import settings
@@ -5069,7 +5088,9 @@ class IndicatorFactory(Configured):
             self_col = self.select_col(column=column, group_by=False)
 
             if fig is None:
-                fig = make_figure()
+                if make_figure_kwargs is None:
+                    make_figure_kwargs = {}
+                fig = make_figure(**make_figure_kwargs)
             fig.update_layout(**layout_kwargs)
 
             if buy_trace_kwargs is None:
@@ -5375,6 +5396,26 @@ class IndicatorFactory(Configured):
         ).with_apply_func(apply_func, pass_packed=True, keep_pd=True, takes_1d=True, **kwargs)
         return Indicator
 
+    @classmethod
+    def parse_expr_name(cls, expr: str) -> tp.Tuple[str, tp.Optional[str], tp.Optional[str]]:
+        """Parse the class name and short name from the expression.
+
+        Args:
+            expr (str): Expression string.
+
+        Returns:
+            Tuple[str, Optional[str], Optional[str]]: Modified expression, class name, and short name.
+        """
+        class_name = None
+        short_name = None
+        match = re.match(r"^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:\[([a-zA-Z_][a-zA-Z0-9_]*)\])?\s*:\s*", expr)
+        if match:
+            class_name = match.group(1)
+            if match.group(2):
+                short_name = match.group(2)
+            expr = expr[len(match.group(0)) :]
+        return expr, class_name, short_name
+
     @hybrid_method
     def from_expr(
         cls_or_self,
@@ -5394,46 +5435,6 @@ class IndicatorFactory(Configured):
         """Build an indicator class from an indicator expression.
 
         Builds a new indicator class based on a Python expression string.
-
-        Args:
-            expr (str): Expression string.
-
-                Must contain valid Python code and can be single-line or multi-line.
-            parse_annotations (bool): Flag to parse annotations starting with `@`.
-            factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
-
-                Applied only when invoking the class method.
-            magnet_inputs (Iterable[str]): Names to be recognized as input variables.
-
-                Defaults to `open`, `high`, `low`, `close`, and `volume`.
-            magnet_in_outputs (Iterable[str]): Names to be recognized as in-place output variables.
-
-                Defaults to an empty list.
-            magnet_params (Iterable[str]): Names to be recognized as parameter variables.
-
-                Defaults to an empty list.
-            func_mapping (KwargsLike): Mapping to merge with `vectorbtpro.indicators.expr.expr_func_config`.
-
-                Each key is a function name with a dictionary value containing a `func` entry and optionally
-                `magnet_inputs`, `magnet_in_outputs`, and `magnet_params`.
-            res_func_mapping (KwargsLike): Mapping to merge with `vectorbtpro.indicators.expr.expr_res_func_config`.
-
-                Each key is a function name with a dictionary value containing a `func` entry and optionally
-                `magnet_inputs`, `magnet_in_outputs`, and `magnet_params`.
-            use_pd_eval (Optional[bool]): Whether to use `pd.eval` for evaluation.
-
-                Defaults to False. Otherwise, uses `vectorbtpro.utils.eval_.evaluate`.
-
-                !!! tip
-                    By default, operates on NumPy objects using NumExpr.
-                    If you want to operate on Pandas objects, set `keep_pd` to True.
-            pd_eval_kwargs (KwargsLike): Keyword arguments for `pd.eval`.
-            return_clean_expr (bool): Flag indicating whether to return the cleaned expression.
-            **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
-
-        Returns:
-            Union[str, Type[IndicatorBase]]: If `return_clean_expr` is True, returns the cleaned
-                expression string; otherwise, returns the generated indicator class.
 
         Searches each variable name parsed from `expr` in:
 
@@ -5486,6 +5487,46 @@ class IndicatorFactory(Configured):
         Any of these settings can be overridden using `factory_kwargs`.
 
         The code context includes all variables from `vectorbtpro.imported_star`.
+
+        Args:
+            expr (str): Expression string.
+
+                Must contain valid Python code and can be single-line or multi-line.
+            parse_annotations (bool): Flag to parse annotations starting with `@`.
+            factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
+
+                Applied only when invoking the class method.
+            magnet_inputs (Iterable[str]): Names to be recognized as input variables.
+
+                Defaults to `open`, `high`, `low`, `close`, and `volume`.
+            magnet_in_outputs (Iterable[str]): Names to be recognized as in-place output variables.
+
+                Defaults to an empty list.
+            magnet_params (Iterable[str]): Names to be recognized as parameter variables.
+
+                Defaults to an empty list.
+            func_mapping (KwargsLike): Mapping to merge with `vectorbtpro.indicators.expr.expr_func_config`.
+
+                Each key is a function name with a dictionary value containing a `func` entry and optionally
+                `magnet_inputs`, `magnet_in_outputs`, and `magnet_params`.
+            res_func_mapping (KwargsLike): Mapping to merge with `vectorbtpro.indicators.expr.expr_res_func_config`.
+
+                Each key is a function name with a dictionary value containing a `func` entry and optionally
+                `magnet_inputs`, `magnet_in_outputs`, and `magnet_params`.
+            use_pd_eval (Optional[bool]): Whether to use `pd.eval` for evaluation.
+
+                Defaults to False. Otherwise, uses `vectorbtpro.utils.eval_.evaluate`.
+
+                !!! tip
+                    By default, operates on NumPy objects using NumExpr.
+                    If you want to operate on Pandas objects, set `keep_pd` to True.
+            pd_eval_kwargs (KwargsLike): Keyword arguments for `pd.eval`.
+            return_clean_expr (bool): Flag indicating whether to return the cleaned expression.
+            **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
+
+        Returns:
+            Union[str, Type[IndicatorBase]]: If `return_clean_expr` is True, returns the cleaned
+                expression string; otherwise, returns the generated indicator class.
 
         Examples:
             ```pycon
@@ -5572,12 +5613,11 @@ class IndicatorFactory(Configured):
                 )
             )
 
-            match = re.match(r"^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:\[([a-zA-Z_][a-zA-Z0-9_]*)\])?\s*:\s*", expr)
-            if match:
-                settings["factory_kwargs"]["class_name"] = match.group(1)
-                if match.group(2):
-                    settings["factory_kwargs"]["short_name"] = match.group(2)
-                expr = expr[len(match.group(0)) :]
+            expr, expr_class_name, expr_short_name = cls_or_self.parse_expr_name(expr)
+            if expr_class_name is not None:
+                settings["factory_kwargs"]["class_name"] = expr_class_name
+            if expr_short_name is not None:
+                settings["factory_kwargs"]["short_name"] = expr_short_name
 
             if "@settings" in expr:
                 remove_chars = set()
@@ -5922,6 +5962,10 @@ class IndicatorFactory(Configured):
         Uses a specified WorldQuant alpha expression index to build an indicator class
         based on the expression configuration in `vectorbtpro.indicators.expr.wqa101_expr_config`.
 
+        !!! note
+            Some expressions that utilize cross-sectional operations require columns to be
+            a multi-index with a level `sector`, `subindustry`, or `industry`.
+
         Args:
             alpha_idx (Union[str, int]): WorldQuant 101 alpha expression index.
 
@@ -5931,10 +5975,6 @@ class IndicatorFactory(Configured):
 
         Returns:
             Type[IndicatorBase]: Constructed indicator class.
-
-        !!! note
-            Some expressions that utilize cross-sectional operations require columns to be
-            a multi-index with a level `sector`, `subindustry`, or `industry`.
 
         Examples:
             ```pycon

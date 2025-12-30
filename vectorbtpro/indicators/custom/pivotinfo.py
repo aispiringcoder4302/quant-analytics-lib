@@ -143,9 +143,13 @@ class _PIVOTINFO(PIVOTINFO):
         last_value_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot the confirmed and last pivot value lines on a figure.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
@@ -154,13 +158,13 @@ class _PIVOTINFO(PIVOTINFO):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Updated figure with the plotted confirmed and last pivot values.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -179,7 +183,9 @@ class _PIVOTINFO(PIVOTINFO):
         self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         if conf_value_trace_kwargs is None:
@@ -214,9 +220,13 @@ class _PIVOTINFO(PIVOTINFO):
         zigzag_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot the zigzag line based on pivot data.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
@@ -225,13 +235,13 @@ class _PIVOTINFO(PIVOTINFO):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Updated figure with the plotted zigzag line.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -250,7 +260,9 @@ class _PIVOTINFO(PIVOTINFO):
         self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         if zigzag_trace_kwargs is None:

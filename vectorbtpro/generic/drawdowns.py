@@ -310,6 +310,9 @@ class Drawdowns(Ranges):
     ) -> DrawdownsT:
         """Create a new `Drawdowns` instance from price data.
 
+        See:
+            `vectorbtpro.generic.nb.records.get_drawdowns_nb`
+
         Args:
             close (ArrayLike): Array of close prices.
             open (Optional[ArrayLike]): Array of open prices.
@@ -332,9 +335,6 @@ class Drawdowns(Ranges):
 
         Returns:
             Drawdowns: New instance of `Drawdowns` created from the provided price data.
-
-        See:
-            `vectorbtpro.generic.nb.records.get_drawdowns_nb`
         """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
@@ -454,6 +454,12 @@ class Drawdowns(Ranges):
     def get_drawdown(self, jitted: tp.JittedOption = None, chunked: tp.ChunkedOption = None, **kwargs) -> MappedArray:
         """Return the drawdown values.
 
+        !!! note
+            Both recovered and active drawdowns are considered.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_drawdown_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -465,12 +471,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: Array of computed drawdown values.
-
-        See:
-            `vectorbtpro.generic.nb.records.dd_drawdown_nb`
-
-        !!! note
-            Both recovered and active drawdowns are considered.
         """
         func = jit_reg.resolve_option(nb.dd_drawdown_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -552,6 +552,9 @@ class Drawdowns(Ranges):
         !!! note
             Both recovered and active drawdowns are considered.
 
+        See:
+            `vectorbtpro.generic.nb.records.dd_recovery_return_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -563,9 +566,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: Array containing the computed recovery return values.
-
-        See:
-            `vectorbtpro.generic.nb.records.dd_recovery_return_nb`
         """
         func = jit_reg.resolve_option(nb.dd_recovery_return_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -656,6 +656,12 @@ class Drawdowns(Ranges):
     ) -> MappedArray:
         """Compute the decline duration.
 
+        !!! note
+            Calculation accounts for both recovered and active drawdowns.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_decline_duration_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -667,12 +673,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: Computed decline duration.
-
-        See:
-            `vectorbtpro.generic.nb.records.dd_decline_duration_nb`
-
-        !!! note
-            Calculation accounts for both recovered and active drawdowns.
         """
         func = jit_reg.resolve_option(nb.dd_decline_duration_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -687,6 +687,13 @@ class Drawdowns(Ranges):
     ) -> MappedArray:
         """Compute the recovery duration.
 
+        !!! note
+            A value higher than 1 indicates that recovery was slower than the decline.
+            Calculation accounts for both recovered and active drawdowns.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_recovery_duration_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -698,13 +705,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: Computed recovery duration.
-
-        See:
-            `vectorbtpro.generic.nb.records.dd_recovery_duration_nb`
-
-        !!! note
-            A value higher than 1 indicates that recovery was slower than the decline.
-            Calculation accounts for both recovered and active drawdowns.
         """
         func = jit_reg.resolve_option(nb.dd_recovery_duration_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -719,6 +719,12 @@ class Drawdowns(Ranges):
     ) -> MappedArray:
         """Compute the recovery duration ratio.
 
+        !!! note
+            Calculation accounts for both recovered and active drawdowns.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_recovery_duration_ratio_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -730,12 +736,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: Computed recovery duration ratio.
-
-        See:
-            `vectorbtpro.generic.nb.records.dd_recovery_duration_ratio_nb`
-
-        !!! note
-            Calculation accounts for both recovered and active drawdowns.
         """
         func = jit_reg.resolve_option(nb.dd_recovery_duration_ratio_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -757,6 +757,9 @@ class Drawdowns(Ranges):
     ) -> tp.MaybeSeries:
         """Return the drawdown of the last active drawdown.
 
+        !!! note
+            Grouping is not supported by this method.
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -773,9 +776,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MaybeSeries: Active drawdown.
-
-        !!! note
-            Grouping is not supported by this method.
         """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
@@ -796,6 +796,9 @@ class Drawdowns(Ranges):
     ) -> tp.MaybeSeries:
         """Return the duration of the last active drawdown.
 
+        !!! note
+            Grouping is not supported by this method.
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -813,9 +816,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MaybeSeries: Duration of the active drawdown.
-
-        !!! note
-            Grouping is not supported by this method.
         """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
@@ -838,6 +838,9 @@ class Drawdowns(Ranges):
     ) -> tp.MaybeSeries:
         """Return the recovery of the last active drawdown.
 
+        !!! note
+            Grouping is not supported by this method.
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -854,9 +857,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MaybeSeries: Active recovery.
-
-        !!! note
-            Grouping is not supported by this method.
         """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
@@ -878,6 +878,9 @@ class Drawdowns(Ranges):
     ) -> tp.MaybeSeries:
         """Return the recovery return of the last active drawdown.
 
+        !!! note
+            Grouping is not supported by this method.
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -895,9 +898,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MaybeSeries: Recovery return of the active drawdown.
-
-        !!! note
-            Grouping is not supported by this method.
         """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
@@ -921,6 +921,9 @@ class Drawdowns(Ranges):
     ) -> tp.MaybeSeries:
         """Return the recovery duration of the last active drawdown.
 
+        !!! note
+            Grouping is not supported by this method.
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -938,9 +941,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MaybeSeries: Recovery duration of the active drawdown.
-
-        !!! note
-            Grouping is not supported by this method.
         """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
@@ -1125,9 +1125,13 @@ class Drawdowns(Ranges):
         xref: str = "x",
         yref: str = "y",
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot drawdowns.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
@@ -1153,13 +1157,13 @@ class Drawdowns(Ranges):
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
             BaseFigure: Figure object containing the plotted drawdowns and price data.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -1182,7 +1186,6 @@ class Drawdowns(Ranges):
 
         self_col = self.select_col(column=column, group_by=False)
         if top_n is not None:
-            # Drawdowns is negative, thus top_n becomes bottom_n
             self_col = self_col.apply_mask(self_col.drawdown.bottom_n_mask(top_n))
 
         if ohlc_trace_kwargs is None:
@@ -1211,9 +1214,10 @@ class Drawdowns(Ranges):
             add_trace_kwargs = {}
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
-        y_domain = get_domain(yref, fig)
 
         plotting_ohlc = False
         if (
@@ -1249,7 +1253,6 @@ class Drawdowns(Ranges):
             )
 
         if self_col.count() > 0:
-            # Extract information
             id_ = self_col.get_field_arr("id")
             start_idx = self_col.get_map_field_to_index("start_idx")
             if not plotting_ohlc and self_col._close is not None:
@@ -1286,11 +1289,9 @@ class Drawdowns(Ranges):
                 )
             )
 
-            # Peak and recovery at same time -> recovery wins
             peak_mask = (start_val != np.roll(end_val, 1)) | (start_idx != np.roll(end_idx, 1))
             if peak_mask.any():
                 if plot_markers:
-                    # Plot peak markers
                     peak_customdata, peak_hovertemplate = self_col.prepare_customdata(
                         incl_fields=["id", "start_idx", "start_val"], mask=peak_mask
                     )
@@ -1319,7 +1320,6 @@ class Drawdowns(Ranges):
             recovered_mask = status == DrawdownStatus.Recovered
             if recovered_mask.any():
                 if plot_markers:
-                    # Plot valley markers
                     valley_customdata, valley_hovertemplate = self_col.prepare_customdata(
                         incl_fields=["id", "valley_idx", "valley_val"],
                         append_info=[
@@ -1351,7 +1351,6 @@ class Drawdowns(Ranges):
                     fig.add_trace(valley_scatter, **add_trace_kwargs)
 
                 if plot_markers:
-                    # Plot recovery markers
                     recovery_customdata, recovery_hovertemplate = self_col.prepare_customdata(
                         incl_fields=["id", "end_idx", "end_val"],
                         append_info=[
@@ -1387,7 +1386,6 @@ class Drawdowns(Ranges):
             active_mask = status == DrawdownStatus.Active
             if active_mask.any():
                 if plot_markers:
-                    # Plot active markers
                     active_customdata, active_hovertemplate = self_col.prepare_customdata(
                         incl_fields=["id"],
                         append_info=[
@@ -1419,7 +1417,6 @@ class Drawdowns(Ranges):
                     fig.add_trace(active_scatter, **add_trace_kwargs)
 
             if plot_zones:
-                # Plot drawdown zones
                 self_col.status_recovered.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
@@ -1437,7 +1434,6 @@ class Drawdowns(Ranges):
                     fig=fig,
                 )
 
-                # Plot recovery zones
                 self_col.status_recovered.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
@@ -1455,7 +1451,6 @@ class Drawdowns(Ranges):
                     fig=fig,
                 )
 
-                # Plot active drawdown zones
                 self_col.status_active.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,

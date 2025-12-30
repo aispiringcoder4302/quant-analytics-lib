@@ -47,6 +47,7 @@ from vectorbtpro.utils.array_ import insert_argsort_nb
         min_size=base_ch.flex_array_gl_slicer,
         max_size=base_ch.flex_array_gl_slicer,
         size_granularity=base_ch.flex_array_gl_slicer,
+        cash_limit=base_ch.flex_array_gl_slicer,
         leverage=base_ch.flex_array_gl_slicer,
         leverage_mode=base_ch.flex_array_gl_slicer,
         reject_prob=base_ch.flex_array_gl_slicer,
@@ -95,6 +96,7 @@ def from_orders_nb(
     min_size: tp.FlexArray2dLike = np.nan,
     max_size: tp.FlexArray2dLike = np.nan,
     size_granularity: tp.FlexArray2dLike = np.nan,
+    cash_limit: tp.FlexArray2dLike = np.nan,
     leverage: tp.FlexArray2dLike = 1.0,
     leverage_mode: tp.FlexArray2dLike = LeverageMode.Lazy,
     reject_prob: tp.FlexArray2dLike = 0.0,
@@ -121,6 +123,9 @@ def from_orders_nb(
 
     This function processes market data and portfolio inputs to create simulation orders and
     update simulation state arrays.
+
+    !!! tip
+        This function is parallelizable.
 
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
@@ -203,6 +208,11 @@ def from_orders_nb(
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size_granularity`.
+        cash_limit (FlexArray2dLike): Max own cash the order is allowed to use.
+
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.cash_limit`.
         leverage (FlexArray2dLike): Leverage factor.
 
             Provided as a scalar, or per row, column, or element.
@@ -284,9 +294,6 @@ def from_orders_nb(
         SimulationOutput: Simulation output containing order and log records, cash deposits,
             earnings, and other aggregated metrics.
 
-    !!! tip
-        This function is parallelizable.
-
     Examples:
         Buy and hold using all cash and close price (default):
 
@@ -335,6 +342,7 @@ def from_orders_nb(
     min_size_ = to_2d_array_nb(np.asarray(min_size))
     max_size_ = to_2d_array_nb(np.asarray(max_size))
     size_granularity_ = to_2d_array_nb(np.asarray(size_granularity))
+    cash_limit_ = to_2d_array_nb(np.asarray(cash_limit))
     leverage_ = to_2d_array_nb(np.asarray(leverage))
     leverage_mode_ = to_2d_array_nb(np.asarray(leverage_mode))
     reject_prob_ = to_2d_array_nb(np.asarray(reject_prob))
@@ -440,7 +448,6 @@ def from_orders_nb(
         _sim_start = sim_start_[group]
         _sim_end = sim_end_[group]
         for i in range(_sim_start, _sim_end):
-            # Add cash
             _cash_deposits = flex_select_nb(cash_deposits_, i, group)
             if _cash_deposits < 0:
                 _cash_deposits = max(_cash_deposits, -last_cash[group])
@@ -469,12 +476,10 @@ def from_orders_nb(
                 for ci in range(group_len):
                     col = from_col + ci
 
-                    # Update valuation price using current open
                     _open = flex_select_nb(open_, i, col)
                     if not np.isnan(_open) or not ffill_val_price:
                         last_val_price[col] = _open
 
-                    # Resolve valuation price
                     _val_price = flex_select_nb(val_price_, i, col)
                     if np.isinf(_val_price):
                         if _val_price > 0:
@@ -495,7 +500,6 @@ def from_orders_nb(
                         last_val_price[col] = _val_price
 
             if not skip:
-                # Update value and return
                 group_value = last_cash[group]
                 for col in range(from_col, to_col):
                     if last_position[col] != 0:
@@ -507,7 +511,6 @@ def from_orders_nb(
                 )
 
                 if cash_sharing:
-                    # Dynamically sort by order value -> selling comes first to release funds early
                     if call_seq is None:
                         for ci in range(group_len):
                             temp_call_seq[ci] = ci
@@ -515,7 +518,6 @@ def from_orders_nb(
                     else:
                         call_seq_now = call_seq[i, from_col:to_col]
                     if auto_call_seq:
-                        # Same as sort_by_order_value_ctx_nb but with flexible indexing
                         for ci in range(group_len):
                             col = from_col + ci
                             exec_state = ExecState(
@@ -540,7 +542,6 @@ def from_orders_nb(
                             if call_seq_now[ci] != ci:
                                 raise ValueError("Call sequence must follow CallSeqType.Default")
 
-                        # Sort by order value
                         insert_argsort_nb(temp_order_value[:group_len], call_seq_now)
 
                 for k in range(group_len):
@@ -552,7 +553,6 @@ def from_orders_nb(
                         ci = k
                     col = from_col + ci
 
-                    # Get current values per column
                     position_now = last_position[col]
                     debt_now = last_debt[col]
                     locked_cash_now = last_locked_cash[col]
@@ -562,7 +562,6 @@ def from_orders_nb(
                     value_now = last_value[group]
                     return_now = last_return[group]
 
-                    # Generate the next order
                     _i = i - abs(flex_select_nb(from_ago_, i, col))
                     if _i < 0:
                         continue
@@ -577,6 +576,7 @@ def from_orders_nb(
                         min_size=flex_select_nb(min_size_, _i, col),
                         max_size=flex_select_nb(max_size_, _i, col),
                         size_granularity=flex_select_nb(size_granularity_, _i, col),
+                        cash_limit=flex_select_nb(cash_limit_, _i, col),
                         leverage=flex_select_nb(leverage_, _i, col),
                         leverage_mode=flex_select_nb(leverage_mode_, _i, col),
                         reject_prob=flex_select_nb(reject_prob_, _i, col),
@@ -586,7 +586,6 @@ def from_orders_nb(
                         log=flex_select_nb(log_, _i, col),
                     )
 
-                    # Process the order
                     price_area = PriceArea(
                         open=flex_select_nb(open_, i, col),
                         high=flex_select_nb(high_, i, col),
@@ -616,7 +615,6 @@ def from_orders_nb(
                         log_counts=log_counts,
                     )
 
-                    # Update execution state
                     cash_now = new_exec_state.cash
                     position_now = new_exec_state.position
                     debt_now = new_exec_state.debt
@@ -625,7 +623,6 @@ def from_orders_nb(
                     val_price_now = new_exec_state.val_price
                     value_now = new_exec_state.value
 
-                    # Now becomes last
                     last_position[col] = position_now
                     last_debt[col] = debt_now
                     last_locked_cash[col] = locked_cash_now
@@ -637,7 +634,6 @@ def from_orders_nb(
                     last_return[group] = return_now
 
             for col in range(from_col, to_col):
-                # Update valuation price using current close
                 _close = flex_select_nb(close_, i, col)
                 if not np.isnan(_close) or not ffill_val_price:
                     last_val_price[col] = _close
@@ -656,7 +652,6 @@ def from_orders_nb(
                     cash[i, group] = last_cash[group]
                     free_cash[i, group] = last_free_cash[group]
 
-            # Update value and return
             group_value = last_cash[group]
             for col in range(from_col, to_col):
                 if last_position[col] != 0:

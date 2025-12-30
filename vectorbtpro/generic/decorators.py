@@ -25,6 +25,8 @@ __all__ = []
 def attach_nb_methods(config: Config) -> tp.ClassWrapper:
     """Class decorator to attach Numba methods to a class.
 
+    The decorated class must be a subclass of `vectorbtpro.base.wrapping.Wrapping`.
+
     Args:
         config (Config): Dictionary mapping target method names (str) to
             configuration dictionaries with the following keys:
@@ -40,8 +42,6 @@ def attach_nb_methods(config: Config) -> tp.ClassWrapper:
 
     Returns:
         ClassWrapper: Decorated class with the new methods attached.
-
-    The decorated class must be a subclass of `vectorbtpro.base.wrapping.Wrapping`.
     """
 
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
@@ -89,7 +89,6 @@ def attach_nb_methods(config: Config) -> tp.ClassWrapper:
                 return self.wrapper.wrap(a, **wrap_kwargs)
 
             if replace_signature:
-                # Replace the function's signature with the original one
                 source_sig = inspect.signature(func)
                 new_method_params = tuple(inspect.signature(new_method).parameters.values())
                 self_arg = new_method_params[0]
@@ -117,6 +116,8 @@ def attach_nb_methods(config: Config) -> tp.ClassWrapper:
 def attach_transform_methods(config: Config) -> tp.ClassWrapper:
     """Class decorator to add transformation methods to a class.
 
+    The decorated class must be a subclass of `vectorbtpro.generic.accessors.GenericAccessor`.
+
     Args:
         config (Config): Dictionary mapping target method names (str) to
             configuration dictionaries with the following keys:
@@ -127,8 +128,6 @@ def attach_transform_methods(config: Config) -> tp.ClassWrapper:
 
     Returns:
         ClassWrapper: Decorated class with the new methods attached.
-
-    The decorated class must be a subclass of `vectorbtpro.generic.accessors.GenericAccessor`.
     """
 
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:

@@ -14,30 +14,31 @@ import ast
 import importlib
 import inspect
 import os
-import textwrap
+import pathlib
 import re
 import tempfile
+import textwrap
 import webbrowser
+import zipimport
 from collections import defaultdict
 from difflib import HtmlDiff, SequenceMatcher
 from pathlib import Path
 from types import ModuleType, FunctionType
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.knowledge.text_splitting import split_text
 from vectorbtpro.knowledge.completions import completed
 from vectorbtpro.knowledge.custom_assets import search
+from vectorbtpro.knowledge.text_splitting import split_text
 from vectorbtpro.utils.checks import is_numba_func, is_complex_iterable
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.formatting import dump, get_dump_language
-from vectorbtpro.utils.module_ import assert_can_import
+from vectorbtpro.utils.module_ import import_module, assert_can_import, resolve_module
 from vectorbtpro.utils.path_ import check_mkdir, get_common_prefix
 from vectorbtpro.utils.pbar import ProgressBar
+from vectorbtpro.utils.refs import ensure_refname, get_refname_obj
 from vectorbtpro.utils.template import CustomTemplate, RepEval
 
 __all__ = [
-    "cut_and_save_module",
-    "cut_and_save_func",
     "refactor_source",
     "refactor_docstrings",
     "refactor_markdown",
@@ -45,14 +46,79 @@ __all__ = [
 ]
 
 
-def get_source(qualname: str, *, clean_indent: bool = True, return_meta: bool = False) -> tp.Union[str, dict]:
-    """Return the exact source that defines *qualname* by parsing the module AST.
+def get_module_source_path(module: tp.ModuleLike) -> tp.Optional[str]:
+    """Return the file path to the pure-Python source of a module.
+
+    Args:
+        module (ModuleLike): Module reference name or object.
+
+    Returns:
+        Optional[str]: File path to the module's source, or None if not available.
+    """
+    module = resolve_module(module)
+    spec = getattr(module, "__spec__", None)
+    candidate = getattr(module, "__file__", None)
+
+    if spec is not None:
+        if spec.origin in ("built-in", "frozen"):
+            return None
+        if getattr(spec, "has_location", True) is False:
+            return None
+        if getattr(spec, "submodule_search_locations", None) and spec.origin is None:
+            return None
+        if not candidate:
+            candidate = getattr(spec, "origin", None)
+
+    if not candidate:
+        try:
+            candidate = inspect.getsourcefile(module)
+        except Exception:
+            candidate = None
+    if not candidate:
+        try:
+            candidate = inspect.getfile(module)
+        except Exception:
+            candidate = None
+    if not candidate:
+        return None
+    if any(candidate.endswith(sfx) for sfx in importlib.machinery.EXTENSION_SUFFIXES):
+        return None
+
+    p = pathlib.Path(candidate)
+    if p.suffix == ".pyc":
+        try:
+            src = importlib.util.source_from_cache(str(p))
+            if src:
+                p = pathlib.Path(src)
+        except Exception:
+            return None
+    if spec is not None and isinstance(getattr(spec, "loader", None), zipimport.zipimporter):
+        return str(p)
+    try:
+        p = p.resolve()
+    except Exception:
+        pass
+    return str(p) if p.exists() else None
+
+
+def get_source(
+    obj: tp.Any,
+    module: tp.Optional[tp.ModuleLike] = None,
+    resolve: bool = True,
+    clean_indent: bool = True, 
+    return_meta: bool = False,
+) -> tp.Union[str, dict]:
+    """Return the exact source that defines the provided reference name by parsing the module AST.
 
     Handles modules, classes, (async) functions, methods, top-level assignments
     and annotated class variables (together with their inline docstrings).
 
     Args:
-        qualname: Fully-qualified dotted name (e.g. "pkg.mod.Class.attr").
+        obj (Any): Object from which to extract the reference name.
+
+            If a string or tuple is provided, it is treated as a reference name.
+        module (Optional[ModuleLike]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the reference to an actual object.
         clean_indent: If True, the leading indent of the snippet is removed and
             the block is dedented to column 0.
         return_meta: If True, a dictionary with the code and its file/line metadata
@@ -64,7 +130,7 @@ def get_source(qualname: str, *, clean_indent: bool = True, return_meta: bool = 
             start line, and end line (both 1-based).
 
     Raises:
-        ImportError: No component of *qualname* can be imported.
+        ReferenceResolutionError: No component of reference name can be imported.
         FileNotFoundError: The discovered module has no readable *.py* file.
         ValueError: The object cannot be located in the module AST.
     """
@@ -87,27 +153,22 @@ def get_source(qualname: str, *, clean_indent: bool = True, return_meta: bool = 
         if spaces == 0:
             return lines
         pad = " " * spaces
-        return [l[len(pad) :] if l.startswith(pad) else l for l in lines]
+        return [line[len(pad) :] if line.startswith(pad) else line for line in lines]
 
-    parts = qualname.split(".")
-    module = None
-    for i in range(len(parts), 0, -1):
-        try:
-            module = importlib.import_module(".".join(parts[:i]))
-            chain = parts[i:]
-            break
-        except ModuleNotFoundError:
-            continue
-    if module is None:
-        raise ImportError(f"Could not import any part of {qualname!r}")
-
-    filepath = inspect.getsourcefile(module) or inspect.getfile(module)
+    refname, module, qualname = ensure_refname(obj, module=module, resolve=resolve, return_parts=True)
+    if module is not None:
+        filepath = get_module_source_path(module)
+    else:
+        filepath = None
     if not filepath or not os.path.exists(filepath):
+        if module is None:
+            raise FileNotFoundError(f"No pure-Python source for {refname!r}")
         raise FileNotFoundError(f"No pure-Python source for {module.__name__!r}")
 
     with open(filepath, encoding="utf-8") as fh:
         source = fh.read()
 
+    chain = qualname.split(".") if qualname else []
     if not chain:
         code = source if not clean_indent else textwrap.dedent(source)
         if return_meta:
@@ -117,7 +178,17 @@ def get_source(qualname: str, *, clean_indent: bool = True, return_meta: bool = 
     tree = ast.parse(source, filename=filepath)
     target = _find(tree, chain)
     if target is None:
-        raise ValueError(f"Could not locate {'.'.join(chain)!r} in {module.__name__!r}")
+        obj = get_refname_obj(refname, raise_error=False)
+        if obj is None or not hasattr(obj, "__code__"):
+            raise ValueError(f"Could not locate {'.'.join(chain)!r} in {module.__name__!r}")
+        lines, start = inspect.getsourcelines(obj)
+        end = start + len(lines) - 1
+        snippet = "".join(lines)
+        if clean_indent:
+            snippet = textwrap.dedent(snippet)
+        if return_meta:
+            return {"code": snippet, "file": filepath, "start_line": start, "end_line": end}
+        return snippet
 
     if isinstance(target, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and target.decorator_list:
         start = min(d.lineno for d in target.decorator_list) - 1
@@ -159,6 +230,374 @@ def get_source(qualname: str, *, clean_indent: bool = True, return_meta: bool = 
     if return_meta:
         return {"code": snippet, "file": filepath, "start_line": start + 1, "end_line": end}
     return snippet
+
+
+def get_defined_names(module: tp.ModuleLike, raise_error: bool = True) -> tp.Set[str]:
+    """Return a set of names defined in the given module.
+
+    !!! tip
+        The function is cached. The cache can be cleared by deleting the `_cache` attribute.
+
+    Args:
+        module (ModuleLike): Module reference name or object.
+        raise_error (bool): Whether to raise an error if the source code cannot be retrieved or parsed.
+
+    Returns:
+        Set[str]: Set of names defined in the module.
+    """
+    module = resolve_module(module)
+
+    if not hasattr(get_defined_names, "_cache"):
+        get_defined_names._cache = {}
+    cache = get_defined_names._cache
+    cache_key = module.__name__
+    if cache_key in cache:
+        return cache[cache_key]
+
+    try:
+        source = get_source(module)
+        tree = ast.parse(source)
+    except Exception:
+        if raise_error:
+            raise
+        cache[cache_key] = set()
+        return cache[cache_key]
+
+    defined = set()
+
+    def _collect_target(target):
+        if isinstance(target, ast.Name):
+            defined.add(target.id)
+        elif isinstance(target, (ast.Tuple, ast.List)):
+            for elt in target.elts:
+                _collect_target(elt)
+
+    Match = getattr(ast, "Match", None)
+    MatchAs = getattr(ast, "MatchAs", None)
+    MatchStar = getattr(ast, "MatchStar", None)
+    MatchSequence = getattr(ast, "MatchSequence", None)
+    MatchMapping = getattr(ast, "MatchMapping", None)
+    MatchClass = getattr(ast, "MatchClass", None)
+    MatchOr = getattr(ast, "MatchOr", None)
+
+    def _collect_pattern_bindings(pattern):
+        if MatchAs is not None and isinstance(pattern, MatchAs):
+            if pattern.name:
+                defined.add(pattern.name)
+            if pattern.pattern:
+                _collect_pattern_bindings(pattern.pattern)
+        elif MatchStar is not None and isinstance(pattern, MatchStar):
+            if pattern.name:
+                defined.add(pattern.name)
+        elif MatchSequence is not None and isinstance(pattern, MatchSequence):
+            for p in pattern.patterns:
+                _collect_pattern_bindings(p)
+        elif MatchMapping is not None and isinstance(pattern, MatchMapping):
+            for p in pattern.patterns:
+                _collect_pattern_bindings(p)
+            if isinstance(pattern.rest, str):
+                defined.add(pattern.rest)
+        elif MatchClass is not None and isinstance(pattern, MatchClass):
+            for p in pattern.patterns:
+                _collect_pattern_bindings(p)
+            for p in pattern.kwd_patterns:
+                _collect_pattern_bindings(p)
+        elif MatchOr is not None and isinstance(pattern, MatchOr):
+            for p in pattern.patterns:
+                _collect_pattern_bindings(p)
+
+    def _visit_stmt_list(stmts):
+        for node in stmts:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                defined.add(node.name)
+                continue
+            if isinstance(node, ast.Assign):
+                for t in node.targets:
+                    _collect_target(t)
+                continue
+            if isinstance(node, ast.AnnAssign):
+                if node.target is not None:
+                    _collect_target(node.target)
+                continue
+            if isinstance(node, ast.AugAssign):
+                _collect_target(node.target)
+                continue
+            if isinstance(node, (ast.For, ast.AsyncFor)):
+                _collect_target(node.target)
+                _visit_stmt_list(node.body)
+                _visit_stmt_list(node.orelse)
+                continue
+            if isinstance(node, (ast.With, ast.AsyncWith)):
+                for item in node.items:
+                    if item.optional_vars is not None:
+                        _collect_target(item.optional_vars)
+                _visit_stmt_list(node.body)
+                continue
+            if isinstance(node, ast.If):
+                _visit_stmt_list(node.body)
+                _visit_stmt_list(node.orelse)
+                continue
+            if isinstance(node, ast.While):
+                _visit_stmt_list(node.body)
+                _visit_stmt_list(node.orelse)
+                continue
+            if isinstance(node, ast.Try):
+                _visit_stmt_list(node.body)
+                _visit_stmt_list(node.orelse)
+                _visit_stmt_list(node.finalbody)
+                for handler in node.handlers:
+                    if handler.name:
+                        defined.add(handler.name)
+                    _visit_stmt_list(handler.body)
+                continue
+            if Match is not None and isinstance(node, Match):
+                for case in node.cases:
+                    _collect_pattern_bindings(case.pattern)
+                    _visit_stmt_list(case.body)
+                continue
+
+    _visit_stmt_list(tree.body)
+    if module.__name__ == "vectorbtpro":
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef) and node.name == "_import_more_stuff":
+                _visit_stmt_list(node.body)
+                break
+
+    cache[cache_key] = defined
+    return cache[cache_key]
+
+
+def absolutize_import(module: tp.ModuleType, level: int, name: str) -> tp.Optional[str]:
+    """Return the absolute import path given a module, relative level, and module name.
+
+    Args:
+        module (ModuleType): Module object.
+        level (int): Relative import level (0 for absolute imports).
+        name (str): Module name.
+
+    Returns:
+        Optional[str]: Absolute import path, or None if it cannot be resolved.
+    """
+    if level == 0:
+        return name
+    pkg = getattr(module, "__package__", None) or module.__name__ or ""
+    if not pkg:
+        return None
+    parts = pkg.split(".")
+    keep = len(parts) - (level - 1)
+    if keep <= 0:
+        return None
+    base = ".".join(parts[:keep])
+    if name:
+        return f"{base}.{name}"
+    return base
+
+
+def get_import_alias_map(
+    module: tp.ModuleLike,
+    top_only: bool = True,
+    raise_error: bool = True,
+) -> tp.Dict[str, str]:
+    """Return a mapping of local import aliases to their fully qualified names in the given module.
+
+    !!! tip
+        The function is cached. The cache can be cleared by deleting the `_cache` attribute.
+
+    Args:
+        module (ModuleLike): Module reference name or object.
+        top_only (bool): If True, only consider global (module-scope) import statements.
+        raise_error (bool): Whether to raise an error if the source code cannot be retrieved or parsed.
+
+    Returns:
+        Dict[str, str]: Mapping of local import aliases to fully qualified names.
+    """
+    module = resolve_module(module)
+
+    if not hasattr(get_import_alias_map, "_cache"):
+        get_import_alias_map._cache = {}
+    cache = get_import_alias_map._cache
+    cache_key = (module.__name__, top_only)
+    if cache_key in cache:
+        return cache[cache_key]
+
+    try:
+        source = get_source(module)
+        tree = ast.parse(source)
+    except Exception:
+        if raise_error:
+            raise
+        cache[cache_key] = {}
+        return cache[cache_key]
+
+    alias_map = {}
+    mod_name = module.__name__
+
+    def _process_import_node(node):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                local = alias.asname or alias.name.split(".", 1)[0]
+                target = alias.name if alias.asname else alias.name.split(".", 1)[0]
+                alias_map[local] = target
+        elif isinstance(node, ast.ImportFrom):
+            abs_mod = absolutize_import(module, node.level or 0, node.module)
+            for alias in node.names:
+                if alias.name == "*":
+                    continue
+                local = alias.asname or alias.name
+                if abs_mod:
+                    alias_map[local] = f"{abs_mod}.{alias.name}"
+                else:
+                    alias_map[local] = alias.name
+
+    if top_only:
+
+        class _ModuleImportCollector(ast.NodeVisitor):
+            def visit_Import(self, node):
+                _process_import_node(node)
+
+            def visit_ImportFrom(self, node):
+                _process_import_node(node)
+
+            def visit_FunctionDef(self, node):
+                if mod_name == "vectorbtpro" and node.name == "_import_more_stuff":
+                    self.generic_visit(node)
+
+            def visit_AsyncFunctionDef(self, node):
+                if mod_name == "vectorbtpro" and node.name == "_import_more_stuff":
+                    self.generic_visit(node)
+
+            def visit_ClassDef(self, node):
+                return
+
+        _ModuleImportCollector().visit(tree)
+    else:
+        for node in ast.walk(tree):
+            _process_import_node(node)
+
+    cache[cache_key] = alias_map
+    return alias_map
+
+
+def get_star_import_modules(module: tp.ModuleLike, raise_error: bool = True) -> tp.Set[str]:
+    """Return a set of module names that are star-imported in the given module.
+
+    !!! tip
+        The function is cached. The cache can be cleared by deleting the `_cache` attribute.
+
+    Args:
+        module (ModuleLike): Module reference name or object.
+        raise_error (bool): Whether to raise an error if the source code cannot be retrieved or parsed.
+
+    Returns:
+        Set[str]: Set of module names that are star-imported.
+    """
+    module = resolve_module(module)
+
+    if not hasattr(get_star_import_modules, "_cache"):
+        get_star_import_modules._cache = {}
+    cache = get_star_import_modules._cache
+    cache_key = module.__name__
+    if cache_key in cache:
+        return cache[cache_key]
+
+    try:
+        source = get_source(module)
+        tree = ast.parse(source)
+    except Exception:
+        if raise_error:
+            raise
+        cache[cache_key] = set()
+        return cache[cache_key]
+
+    star_mods = set()
+    mod_name = module.__name__
+
+    class _ModuleStarImportCollector(ast.NodeVisitor):
+        def visit_ImportFrom(self, node):
+            if any(alias.name == "*" for alias in node.names):
+                abs_mod = absolutize_import(module, node.level or 0, node.module)
+                if abs_mod:
+                    star_mods.add(abs_mod)
+
+        def visit_FunctionDef(self, node):
+            if mod_name == "vectorbtpro" and node.name == "_import_more_stuff":
+                self.generic_visit(node)
+
+        def visit_AsyncFunctionDef(self, node):
+            if mod_name == "vectorbtpro" and node.name == "_import_more_stuff":
+                self.generic_visit(node)
+
+        def visit_ClassDef(self, node):
+            return
+
+    _ModuleStarImportCollector().visit(tree)
+
+    cache[cache_key] = star_mods
+    return star_mods
+
+
+def resolve_name_origin(
+    module: tp.ModuleLike,
+    name: str,
+    raise_error: bool = False,
+    _visited: tp.Optional[tp.Set[tp.Tuple[str, str]]] = None,
+) -> tp.Optional[str]:
+    """Return the reference name of the module where the given name is originally defined.
+
+    Args:
+        module (ModuleLike): Module reference name or object.
+        name (str): Name to resolve.
+        raise_error (bool): Whether to raise an error if the name cannot be resolved.
+
+    Returns:
+        Optional[str]: Module reference name where the name is defined, or None if not found.
+    """
+    module = resolve_module(module)
+    mod_name = module.__name__
+
+    if _visited is None:
+        _visited = set()
+    key = (mod_name, name)
+    if key in _visited:
+        if raise_error:
+            raise RuntimeError(f"Cyclic resolution trying to resolve {name!r} starting from {mod_name!r}")
+        return None
+    _visited.add(key)
+
+    defined = get_defined_names(module, raise_error=False)
+    if name in defined:
+        return mod_name
+
+    alias_map = get_import_alias_map(module, top_only=True, raise_error=False)
+    if name in alias_map:
+        target = alias_map[name]
+        parts = target.split(".")
+        if len(parts) > 1 and parts[-1] == name:
+            origin_mod_path = ".".join(parts[:-1])
+            try:
+                target_mod = import_module(origin_mod_path)
+            except ImportError:
+                return origin_mod_path
+            return resolve_name_origin(target_mod, name, raise_error=raise_error, _visited=_visited)
+        else:
+            try:
+                target_mod = import_module(target)
+            except ImportError:
+                return target
+            return target_mod.__name__
+
+    for star_mod_name in get_star_import_modules(module, raise_error=False):
+        try:
+            star_mod = import_module(star_mod_name)
+        except ImportError:
+            continue
+        origin = resolve_name_origin(star_mod, name, raise_error=raise_error, _visited=_visited)
+        if origin is not None:
+            return origin
+
+    if raise_error:
+        raise LookupError(f"Could not resolve origin of {name!r} in module {mod_name!r}")
+    return None
 
 
 def collect_blocks(lines: tp.Iterable[str]) -> tp.Dict[str, tp.List[str]]:
@@ -407,7 +846,7 @@ def cut_and_save(
     return path
 
 
-def cut_and_save_module(module: tp.Union[str, ModuleType], *args, **kwargs) -> Path:
+def cut_and_save_module(module: tp.ModuleLike, *args, **kwargs) -> Path:
     """Extract an annotated section from a module's source code and save it to a file.
 
     If a module is provided as an import path string, it is imported prior to processing.
@@ -415,15 +854,14 @@ def cut_and_save_module(module: tp.Union[str, ModuleType], *args, **kwargs) -> P
     is extracted and saved using `cut_and_save`.
 
     Args:
-        module (Union[str, ModuleType]): Target module or its import path.
+        module (ModuleLike): Module reference name or object.
         *args: Positional arguments for `cut_and_save`.
         **kwargs: Keyword arguments for `cut_and_save`.
 
     Returns:
         Path: File path where the extracted module section is saved.
     """
-    if isinstance(module, str):
-        module = importlib.import_module(module)
+    module = importlib.resolve_module(module)
     source = inspect.getsource(module)
     return cut_and_save(source, *args, **kwargs)
 
@@ -446,7 +884,7 @@ def cut_and_save_func(func: tp.Union[str, FunctionType], *args, **kwargs) -> Pat
         Path: File path where the extracted function section is saved.
     """
     if isinstance(func, str):
-        module = importlib.import_module(".".join(func.split(".")[:-1]))
+        module = import_module(".".join(func.split(".")[:-1]))
         func = getattr(module, func.split(".")[-1])
     else:
         module = inspect.getmodule(func)
@@ -807,6 +1245,9 @@ def apply_patches(source: str, patch_output: str, start_line: int = 1, fuzzy_kwa
     If the output contains no patch blocks (`NO_PATCHES_SENTINEL`), the function returns
     the original text unchanged.
 
+    !!! note
+        Source should not contain line numbers.
+
     Args:
         source (str): Original source to which patches will be applied.
         patch_output (str): Output containing patch blocks.
@@ -815,9 +1256,6 @@ def apply_patches(source: str, patch_output: str, start_line: int = 1, fuzzy_kwa
 
     Returns:
         str: Source with applied patches.
-
-    !!! note
-        Source should not contain line numbers.
     """
     m = ANY_CODE_FENCE_RE.match(patch_output.strip())
     if m:
@@ -1094,7 +1532,7 @@ Example output:
      sum = x + y
      print(sum)
 @@ -6,4 +6,4 @@
- 
+
  def greet():
 -    print("Hello, world!")
 +    print("Hi there!")

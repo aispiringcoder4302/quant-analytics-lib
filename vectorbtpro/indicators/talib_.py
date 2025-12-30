@@ -284,39 +284,39 @@ def talib_func(func_name: str) -> tp.Callable:
     run_talib_func.__doc__ = inspect.cleandoc(
         f"""
         Run `talib.{func_name}` on NumPy arrays, Series, and DataFrames.
-        
+
         Requires [TA-Lib](https://github.com/mrjbq7/ta-lib) installed.
-        
+
         Args:
             *args (ArrayLike): Positional arguments corresponding to TA-Lib indicator input arrays.
             timeframe (Optional[FrequencyLike]): Timeframe specification (e.g., "daily", "15 minutes").
-            
+
                 Resamples the input arrays to this frequency, runs the function, and then resamples 
                 the output arrays back to the original frequency.
                 See `vectorbtpro.utils.datetime_.to_freq`.
             resample_map (KwargsLike): Mapping from input names to resampling aggregation methods.
             resample_kwargs (KwargsLikeSequence): Keyword arguments for resampling inputs.
-            
+
                 See `vectorbtpro.generic.accessors.GenericAccessor.resample_apply`.
             realign_kwargs (KwargsLikeSequence): Keyword arguments for realigning outputs.
-            
+
                 See `vectorbtpro.generic.accessors.GenericAccessor.realign`.
             wrapper (Optional[ArrayWrapper]): Optional instance used for wrapping inputs and outputs.
             skipna (bool): If True, apply the TA-Lib function only on non-NA values.
             silence_warnings (bool): If True, suppress warnings during frequency handling.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting input arrays.
-            
+
                 See `vectorbtpro.base.reshaping.broadcast`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output arrays.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             wrap (Optional[bool]): Determines whether to wrap the outputs in a Pandas format.
             unpack_to (Optional[str]): If provided, unpacks the output into a dictionary or DataFrame.
             **kwargs: Keyword arguments for the TA-Lib function.
-        
+
         Returns:
             Union[MaybeTuple[AnyArray], Dict[str, AnyArray]]: Result from the TA-Lib indicator function. 
-                
+
                 A single output array is returned if the indicator produces one output; otherwise, 
                 a tuple of arrays is returned. If `unpack_to` is specified, the output is unpacked 
                 into a dictionary or DataFrame.
@@ -328,6 +328,9 @@ def talib_func(func_name: str) -> tp.Callable:
 def talib_plot_func(func_name: str) -> tp.Callable:
     """Return a function that plots output arrays of the specified TA-Lib indicator.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+
     Args:
         func_name (str): Name of the TA-Lib indicator function.
 
@@ -335,14 +338,12 @@ def talib_plot_func(func_name: str) -> tp.Callable:
 
     Returns:
         Callable: Plotting function for the TA-Lib indicator.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.plotting`.
     """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("talib")
     from talib.abstract import Function
+
     try:
         from talib.abstract import TA_OUTPUT_FLAGS
     except ImportError:
@@ -416,22 +417,18 @@ def talib_plot_func(func_name: str) -> tp.Callable:
             plot_func_name = "lineplot"
 
             if TA_OUTPUT_FLAGS[2] in flags:
-                # Dotted Line
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = dict()
                 trace_kwargs["line"]["dash"] = "dashdot"
             if TA_OUTPUT_FLAGS[4] in flags:
-                # Dashed Line
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = dict()
                 trace_kwargs["line"]["dash"] = "dash"
             if TA_OUTPUT_FLAGS[8] in flags:
-                # Dot
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = dict()
                 trace_kwargs["line"]["dash"] = "dot"
             if TA_OUTPUT_FLAGS[16] in flags:
-                # Histogram
                 hist = np.asarray(output)
                 hist_diff = generic_nb.diff_1d_nb(hist)
                 marker_colors = np.full(hist.shape, adjust_opacity("silver", 0.75), dtype=object)
@@ -448,14 +445,12 @@ def talib_plot_func(func_name: str) -> tp.Callable:
                 kwargs["bargap"] = 0
                 plot_func_name = "barplot"
             if TA_OUTPUT_FLAGS[2048] in flags:
-                # Values represent an upper limit
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = {}
                 trace_kwargs["line"]["color"] = adjust_opacity(plotting_cfg["color_schema"]["gray"], 0.75)
                 trace_kwargs["fill"] = "tonexty"
                 trace_kwargs["fillcolor"] = "rgba(128, 128, 128, 0.2)"
             if TA_OUTPUT_FLAGS[4096] in flags:
-                # Values represent a lower limit
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = {}
                 trace_kwargs["line"]["color"] = adjust_opacity(plotting_cfg["color_schema"]["gray"], 0.75)
@@ -531,12 +526,12 @@ def talib_plot_func(func_name: str) -> tp.Callable:
     run_talib_plot_func.__doc__ = inspect.cleandoc(
         f"""
         Plot output arrays of `talib.{func_name}`.
-        
+
         Args:
             {', '.join(output_names)} (ArrayLike): TA-Lib indicator output arrays corresponding to the respective outputs.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance used to convert raw output arrays.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output arrays.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             column (Optional[Column]): Identifier of the column to plot.
             limits (Optional[Tuple[float, float]]): Tuple representing the lower and upper limits for the plot.
@@ -546,7 +541,7 @@ def talib_plot_func(func_name: str) -> tp.Callable:
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
-        
+
         Returns:
             BaseFigure: Figure updated with the TA-Lib indicator plots.
         """

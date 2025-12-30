@@ -42,16 +42,16 @@ BinanceDataT = tp.TypeVar("BinanceDataT", bound="BinanceData")
 class BinanceData(RemoteData):
     """Data class for fetching data from Binance using the Python Binance API.
 
-    See:
-        * https://github.com/sammchardy/python-binance for the API client.
-        * `BinanceData.fetch_symbol` for argument details.
-
     !!! info
         For default settings, see `custom.binance` in `vectorbtpro._settings.data`.
 
     !!! note
         If using an exchange from the US, Japan, or another TLD, pass `tld="us"` in
         `client_config` when creating the client.
+
+    See:
+        * https://github.com/sammchardy/python-binance for the API client.
+        * `BinanceData.fetch_symbol` for argument details.
 
     Examples:
         Set up the API key globally (optional):
@@ -259,7 +259,6 @@ class BinanceData(RemoteData):
         silence_warnings = cls.resolve_custom_setting(silence_warnings, "silence_warnings")
         get_klines_kwargs = cls.resolve_custom_setting(get_klines_kwargs, "get_klines_kwargs", merge=True)
 
-        # Prepare parameters
         freq = timeframe
         split = dt.split_freq_str(timeframe)
         if split is not None:
@@ -298,13 +297,11 @@ class BinanceData(RemoteData):
                     return False
             return True
 
-        # Iteratively collect the data
         data = []
         try:
             with ProgressBar(show_progress=show_progress, **pbar_kwargs) as pbar:
                 pbar.set_description("{} → ?".format(_ts_to_str(start_ts if prev_end_ts is None else prev_end_ts)))
                 while True:
-                    # Fetch the klines for the next timeframe
                     next_data = client._klines(
                         symbol=symbol,
                         interval=timeframe,
@@ -316,7 +313,6 @@ class BinanceData(RemoteData):
                     )
                     next_data = list(filter(partial(_filter_func, _prev_end_ts=prev_end_ts), next_data))
 
-                    # Update the timestamps and the progress bar
                     if not len(next_data):
                         break
                     data += next_data
@@ -337,7 +333,6 @@ class BinanceData(RemoteData):
                     "Use update() method to fetch missing data."
                 )
 
-        # Convert data to a DataFrame
         df = pd.DataFrame(
             data,
             columns=[

@@ -31,11 +31,11 @@ FeatherDataT = tp.TypeVar("FeatherDataT", bound="FeatherData")
 class FeatherData(FileData):
     """Data class class for fetching Feather data using PyArrow.
 
-    See:
-        * `FeatherData.fetch_key` for argument details.
-
     !!! info
         For default settings, see `custom.feather` in `vectorbtpro._settings.data`.
+
+    See:
+        * `FeatherData.fetch_key` for argument details.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.feather")

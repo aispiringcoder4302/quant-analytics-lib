@@ -83,6 +83,9 @@ def ma_nb(
 
     Computes the moving average for each column of a 2-dimensional array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): 2D array where each column represents a data series.
         window (FlexArray1dLike): Window size.
@@ -98,9 +101,6 @@ def ma_nb(
 
     Returns:
         Array2d: 2D array of moving average values.
-
-    !!! tip
-        This function is parallelizable.
     """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
@@ -174,6 +174,9 @@ def msd_nb(
 
     Computes the moving standard deviation for each column of a 2-dimensional array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): 2D array where each column represents a data series.
         window (FlexArray1dLike): Window size.
@@ -190,9 +193,6 @@ def msd_nb(
 
     Returns:
         Array2d: 2D array of moving standard deviation values.
-
-    !!! tip
-        This function is parallelizable.
     """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
@@ -276,6 +276,9 @@ def bbands_nb(
 
     Computes Bollinger Bands for each column of a 2-dimensional array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): 2D array where each column is a data series.
         window (FlexArray1dLike): Window size.
@@ -295,9 +298,6 @@ def bbands_nb(
 
     Returns:
         Tuple[Array2d, Array2d, Array2d]: Upper, middle, and lower Bollinger Bands for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
@@ -352,6 +352,9 @@ def bbands_percent_b_nb(close: tp.Array2d, upper: tp.Array2d, lower: tp.Array2d)
 
     Applies `bbands_percent_b_1d_nb` column-wise on 2D arrays of close prices and Bollinger Bands.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): 2-dimensional array of close prices.
         upper (Array2d): 2-dimensional array of upper band values.
@@ -359,9 +362,6 @@ def bbands_percent_b_nb(close: tp.Array2d, upper: tp.Array2d, lower: tp.Array2d)
 
     Returns:
         Array2d: 2-dimensional array of percent b values.
-
-    !!! tip
-        This function is parallelizable.
     """
     percent_b = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
@@ -401,6 +401,9 @@ def bbands_bandwidth_nb(upper: tp.Array2d, middle: tp.Array2d, lower: tp.Array2d
 
     Applies `bbands_bandwidth_1d_nb` column-wise on 2D arrays of Bollinger Bands values.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         upper (Array2d): 2-dimensional array of upper band values.
         middle (Array2d): 2-dimensional array of middle band values.
@@ -408,9 +411,6 @@ def bbands_bandwidth_nb(upper: tp.Array2d, middle: tp.Array2d, lower: tp.Array2d
 
     Returns:
         Array2d: 2-dimensional array of Bollinger Bands bandwidth values.
-
-    !!! tip
-        This function is parallelizable.
     """
     bandwidth = np.empty(upper.shape, dtype=float_)
     for col in prange(upper.shape[1]):
@@ -481,6 +481,9 @@ def avg_gain_nb(
     Computes average gain for each column by applying `avg_gain_1d_nb` on slices
     of a 2D array of close prices.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): 2-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
@@ -496,9 +499,6 @@ def avg_gain_nb(
 
     Returns:
         Array2d: 2-dimensional array of average gain values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
@@ -578,6 +578,9 @@ def avg_loss_nb(
     Computes average loss for each column by applying `avg_loss_1d_nb` on slices
     of a 2D array of close prices.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): 2-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
@@ -593,9 +596,6 @@ def avg_loss_nb(
 
     Returns:
         Array2d: 2-dimensional array of average loss values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
@@ -664,6 +664,9 @@ def rsi_nb(
 
     Computes the RSI for each column by applying `rsi_1d_nb` on slices of a 2D array of close prices.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): 2-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
@@ -679,9 +682,6 @@ def rsi_nb(
 
     Returns:
         Array2d: Array of computed RSI values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
@@ -748,6 +748,9 @@ def stoch_k_nb(
 ) -> tp.Array2d:
     """Calculate the Stochastic Oscillator %K for two-dimensional price arrays column-wise.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         high (Array2d): Two-dimensional array of high prices.
         low (Array2d): Two-dimensional array of low prices.
@@ -759,9 +762,6 @@ def stoch_k_nb(
 
     Returns:
         Array2d: Computed %K values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     window_ = to_1d_array_nb(np.asarray(window))
 
@@ -916,6 +916,9 @@ def stoch_nb(
 
     This function computes the fast %K, slow %K, and slow %D values for each column using `stoch_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         high (Array2d): Two-dimensional array of high prices.
         low (Array2d): Two-dimensional array of low prices.
@@ -964,9 +967,6 @@ def stoch_nb(
 
     Returns:
         Tuple[Array2d, Array2d, Array2d]: Tuple containing fast %K, slow %K, and slow %D values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     fast_k_window_ = to_1d_array_nb(np.asarray(fast_k_window))
     slow_k_window_ = to_1d_array_nb(np.asarray(slow_k_window))
@@ -1134,6 +1134,9 @@ def macd_nb(
     Compute the fast and slow moving averages along each column, derive the MACD as their difference,
     and calculate the signal line as the moving average of the MACD for each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): 2-D array of close prices.
         fast_window (FlexArray1dLike): Window size for computing the fast moving average.
@@ -1178,9 +1181,6 @@ def macd_nb(
     Returns:
         Tuple[Array2d, Array2d]: Tuple where the first element contains MACD values and
             the second contains the signal line.
-
-    !!! tip
-        This function is parallelizable.
     """
     fast_window_ = to_1d_array_nb(np.asarray(fast_window))
     slow_window_ = to_1d_array_nb(np.asarray(slow_window))
@@ -1246,15 +1246,15 @@ def macd_hist_nb(macd: tp.Array2d, signal: tp.Array2d) -> tp.Array2d:
 
     Compute the difference between the MACD and signal line for each element along each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         macd (Array2d): 2-D array of MACD values.
         signal (Array2d): 2-D array of signal line values.
 
     Returns:
         Array2d: 2-D array representing the MACD histogram values.
-
-    !!! tip
-        This function is parallelizable.
     """
     macd_hist = np.empty(macd.shape, dtype=float_)
     for col in prange(macd.shape[1]):
@@ -1323,6 +1323,9 @@ def tr_nb(high: tp.Array2d, low: tp.Array2d, close: tp.Array2d) -> tp.Array2d:
 
     Process each column independently to compute the True Range using high, low, and close prices.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         high (Array2d): 2-D array of high prices.
         low (Array2d): 2-D array of low prices.
@@ -1330,9 +1333,6 @@ def tr_nb(high: tp.Array2d, low: tp.Array2d, close: tp.Array2d) -> tp.Array2d:
 
     Returns:
         Array2d: 2-D array of True Range values computed column-wise.
-
-    !!! tip
-        This function is parallelizable.
     """
     tr = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
@@ -1400,6 +1400,9 @@ def atr_nb(
 
     Computes the True Range and Average True Range for 2-dimensional input arrays column-wise.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         high (Array2d): 2-dimensional array of high prices.
         low (Array2d): 2-dimensional array of low prices.
@@ -1417,9 +1420,6 @@ def atr_nb(
 
     Returns:
         Tuple[Array2d, Array2d]: True Range and Average True Range for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
@@ -1530,6 +1530,9 @@ def adx_nb(
     Computes the average directional movement index components (+DI, -DI, DX, and ADX)
     for 2-dimensional input arrays column-wise.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         high (Array2d): 2-dimensional array of high prices.
         low (Array2d): 2-dimensional array of low prices.
@@ -1547,9 +1550,6 @@ def adx_nb(
 
     Returns:
         Tuple[Array2d, Array2d, Array2d, Array2d]: +DI, -DI, DX, and ADX values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     window_ = to_1d_array_nb(np.asarray(window))
     wtype_ = to_1d_array_nb(np.asarray(wtype))
@@ -1615,15 +1615,15 @@ def obv_nb(close: tp.Array2d, volume: tp.Array2d) -> tp.Array2d:
 
     Calculates the on-balance volume (OBV) for 2-dimensional input arrays column-wise.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): 2-dimensional array of close prices.
         volume (Array2d): 2-dimensional array of trading volumes.
 
     Returns:
         Array2d: Computed on-balance volume for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     obv = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
@@ -1703,6 +1703,9 @@ def ols_nb(
 
     This function applies a 1-dimensional OLS regression on each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         x (Array2d): 2-dimensional array of independent variable values.
         y (Array2d): 2-dimensional array of dependent variable values.
@@ -1720,9 +1723,6 @@ def ols_nb(
 
     Returns:
         Tuple[Array2d, Array2d, Array2d]: Arrays of slopes, intercepts, and z-scores for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     window_ = to_1d_array_nb(np.asarray(window))
     if norm_window is not None:
@@ -1776,6 +1776,9 @@ def ols_pred_nb(x: tp.Array2d, slope: tp.Array2d, intercept: tp.Array2d) -> tp.A
 
     This function applies `ols_pred_1d_nb` to compute predictions column-wise.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         x (Array2d): 2-dimensional array of independent variable values.
         slope (Array2d): 2-dimensional array of slope values.
@@ -1783,9 +1786,6 @@ def ols_pred_nb(x: tp.Array2d, slope: tp.Array2d, intercept: tp.Array2d) -> tp.A
 
     Returns:
         Array2d: 2-dimensional array of predicted values.
-
-    !!! tip
-        This function is parallelizable.
     """
     pred = np.empty(x.shape, dtype=float_)
     for col in prange(x.shape[1]):
@@ -1821,15 +1821,15 @@ def ols_error_nb(y: tp.Array2d, pred: tp.Array2d) -> tp.Array2d:
 
     This function applies error computation column-wise using `ols_error_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         y (Array2d): 2-dimensional array of observed values.
         pred (Array2d): 2-dimensional array of predicted values.
 
     Returns:
         Array2d: 2-dimensional array of errors for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     error = np.empty(y.shape, dtype=float_)
     for col in prange(y.shape[1]):
@@ -1863,14 +1863,14 @@ def ols_angle_nb(slope: tp.Array2d) -> tp.Array2d:
 
     This function applies `ols_angle_1d_nb` column-wise to compute the angles.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         slope (Array2d): 2-dimensional array of slope values.
 
     Returns:
         Array2d: 2-dimensional array of angles in degrees for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     angle = np.empty(slope.shape, dtype=float_)
     for col in prange(slope.shape[1]):
@@ -1908,6 +1908,9 @@ def typical_price_nb(high: tp.Array2d, low: tp.Array2d, close: tp.Array2d) -> tp
 
     This function applies `typical_price_1d_nb` column-wise to compute the typical price.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         high (Array2d): 2-dimensional array of high prices.
         low (Array2d): 2-dimensional array of low prices.
@@ -1915,9 +1918,6 @@ def typical_price_nb(high: tp.Array2d, low: tp.Array2d, close: tp.Array2d) -> tp
 
     Returns:
         Array2d: 2-dimensional array of typical prices for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     typical_price = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
@@ -1990,6 +1990,9 @@ def vwap_nb(
 
     Apply the 1D computation from `vwap_1d_nb` to each column independently.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         high (Array2d): Array of high prices.
         low (Array2d): Array of low prices.
@@ -1999,9 +2002,6 @@ def vwap_nb(
 
     Returns:
         Array2d: 2D array containing the calculated VWAP values.
-
-    !!! tip
-        This function is parallelizable.
     """
     vwap = np.empty(close.shape, dtype=float_)
     for col in prange(close.shape[1]):
@@ -2153,6 +2153,9 @@ def pivot_info_nb(
 
     Apply the 1D pivot information computation from `pivot_info_1d_nb` to each column independently.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         high (Array2d): Array of high prices.
         low (Array2d): Array of low prices.
@@ -2170,9 +2173,6 @@ def pivot_info_nb(
             * Indices of confirmed pivots.
             * Last pivot types.
             * Indices of the last pivots.
-
-    !!! tip
-        This function is parallelizable.
     """
     up_th_ = to_2d_array_nb(np.asarray(up_th))
     down_th_ = to_2d_array_nb(np.asarray(down_th))
@@ -2233,6 +2233,9 @@ def pivot_value_nb(high: tp.Array2d, low: tp.Array2d, last_pivot: tp.Array2d, la
 
     Apply the 1D pivot value computation from `pivot_value_1d_nb` to each column independently.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         high (Array2d): Array of high prices.
         low (Array2d): Array of low prices.
@@ -2241,9 +2244,6 @@ def pivot_value_nb(high: tp.Array2d, low: tp.Array2d, last_pivot: tp.Array2d, la
 
     Returns:
         Array2d: 2D array containing the calculated pivot values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     pivot_value = np.empty(high.shape, dtype=float_)
     for col in prange(high.shape[1]):
@@ -2255,6 +2255,9 @@ def pivot_value_nb(high: tp.Array2d, low: tp.Array2d, last_pivot: tp.Array2d, la
 def pivots_1d_nb(conf_pivot: tp.Array1d, conf_idx: tp.Array1d, last_pivot: tp.Array1d) -> tp.Array1d:
     """Return pivot values based on input configuration arrays.
 
+    !!! warning
+        To be used in plotting only. Do not use it as an indicator!
+
     Args:
         conf_pivot (Array1d): Array of pivot configuration values.
         conf_idx (Array1d): Array of indices where pivot values should be assigned.
@@ -2262,9 +2265,6 @@ def pivots_1d_nb(conf_pivot: tp.Array1d, conf_idx: tp.Array1d, last_pivot: tp.Ar
 
     Returns:
         Array1d: Array of computed pivot values.
-
-    !!! warning
-        To be used in plotting only. Do not use it as an indicator!
     """
     pivots = np.zeros(conf_pivot.shape, dtype=int_)
     for i in range(conf_pivot.shape[0] - 1):
@@ -2286,6 +2286,9 @@ def pivots_1d_nb(conf_pivot: tp.Array1d, conf_idx: tp.Array1d, last_pivot: tp.Ar
 def pivots_nb(conf_pivot: tp.Array2d, conf_idx: tp.Array2d, last_pivot: tp.Array2d) -> tp.Array2d:
     """Return pivot values for a 2-dimensional array by applying `pivots_1d_nb` per column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         conf_pivot (Array2d): Array of pivot configuration values for each column.
         conf_idx (Array2d): Array of indices corresponding to pivot positions for each column.
@@ -2293,9 +2296,6 @@ def pivots_nb(conf_pivot: tp.Array2d, conf_idx: tp.Array2d, last_pivot: tp.Array
 
     Returns:
         Array2d: Array containing the computed pivot values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     pivots = np.empty(conf_pivot.shape, dtype=int_)
     for col in prange(conf_pivot.shape[1]):
@@ -2307,14 +2307,14 @@ def pivots_nb(conf_pivot: tp.Array2d, conf_idx: tp.Array2d, last_pivot: tp.Array
 def modes_1d_nb(pivots: tp.Array1d) -> tp.Array1d:
     """Return mode values computed from pivot signals.
 
+    !!! warning
+        To be used in plotting only. Do not use it as an indicator!
+
     Args:
         pivots (Array1d): Array of pivot values.
 
     Returns:
         Array1d: Array containing mode values corresponding to each pivot entry.
-
-    !!! warning
-        To be used in plotting only. Do not use it as an indicator!
     """
     modes = np.empty(pivots.shape, dtype=int_)
     mode = 0
@@ -2336,14 +2336,14 @@ def modes_1d_nb(pivots: tp.Array1d) -> tp.Array1d:
 def modes_nb(pivots: tp.Array2d) -> tp.Array2d:
     """Return 2-dimensional mode values by applying `modes_1d_nb` to each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         pivots (Array2d): Array of pivot values arranged by columns.
 
     Returns:
         Array2d: Array of computed mode values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     modes = np.empty(pivots.shape, dtype=int_)
     for col in prange(pivots.shape[1]):
@@ -2593,6 +2593,9 @@ def supertrend_nb(
     Applies the one-dimensional `supertrend_1d_nb` to each column of the input arrays to compute
     the Supertrend indicator for multi-dimensional data.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         high (Array2d): Array of high prices.
         low (Array2d): Array of low prices.
@@ -2607,9 +2610,6 @@ def supertrend_nb(
     Returns:
         Tuple[Array2d, Array2d, Array2d, Array2d]: Tuple containing
             the trend, direction, long, and short arrays.
-
-    !!! tip
-        This function is parallelizable.
     """
     period_ = to_1d_array_nb(np.asarray(period))
     multiplier_ = to_1d_array_nb(np.asarray(multiplier))
@@ -2777,6 +2777,9 @@ def signal_detection_nb(
     Applies the one-dimensional `signal_detection_1d_nb` function to each column of the input array
     to detect signals and compute corresponding upper and lower bands for multi-dimensional data.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): Array of close prices.
         lag (FlexArray1dLike): Window size for computing moving averages and standard deviations.
@@ -2812,9 +2815,6 @@ def signal_detection_nb(
     Returns:
         Tuple[Array2d, Array2d, Array2d]: Tuple containing
             the signal array, upper band, and lower band arrays.
-
-    !!! tip
-        This function is parallelizable.
     """
     lag_ = to_1d_array_nb(np.asarray(lag))
     factor_ = to_2d_array_nb(np.asarray(factor))
@@ -3232,6 +3232,9 @@ def rolling_hurst_nb(
 ) -> tp.Array2d:
     """Compute the rolling Hurst exponent for each column in a two-dimensional array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): Two-dimensional array of price data where each column represents a series.
         window (int): Window size.
@@ -3250,9 +3253,6 @@ def rolling_hurst_nb(
 
     Returns:
         Array2d: Two-dimensional array of rolling Hurst exponent values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(close, dtype=float_)
     for col in prange(close.shape[1]):

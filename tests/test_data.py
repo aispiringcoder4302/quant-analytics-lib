@@ -2449,6 +2449,7 @@ class TestData:
             assert_frame_equal(data.run("talib:sma", 3).real, vbt.talib("SMA").run(data.close, 3).real)
             assert_frame_equal(data.run("pandas_ta:sma", 3).sma, vbt.pandas_ta("SMA").run(data.close, 3).sma)
             assert_frame_equal(data.run("wqa101:1").out, vbt.wqa101(1).run(data.close).out)
+            assert_frame_equal(data.run("expr:close + 10").out, data.close + 10)
             assert_frame_equal(data.run("talib_sma", 3).real, vbt.talib("SMA").run(data.close, 3).real)
             assert_frame_equal(data.run("pandas_ta_sma", 3).sma, vbt.pandas_ta("SMA").run(data.close, 3).sma)
             assert_frame_equal(data.run("wqa101_1").out, vbt.wqa101(1).run(data.close).out)
@@ -2526,6 +2527,33 @@ class TestData:
             assert_frame_equal(
                 data.run(
                     ["talib_sma", "talib_ema"],
+                    func_name=vbt.run_func_dict(talib_sma="f1", talib_ema="f2"),
+                    timeperiod=vbt.run_func_dict(f1=3, f2=4),
+                    hide_params=True,
+                ),
+                pd.DataFrame(
+                    [
+                        [np.nan, np.nan, np.nan, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan],
+                        [9.0, 9.0, np.nan, np.nan],
+                        [15.0, 15.0, 12.0, 12.0],
+                        [21.0, 21.0, 18.0, 18.0],
+                    ],
+                    index=data.index,
+                    columns=pd.MultiIndex.from_tuples(
+                        [
+                            ("f1", "real", "S1"),
+                            ("f1", "real", "S2"),
+                            ("f2", "real", "S1"),
+                            ("f2", "real", "S2"),
+                        ],
+                        names=["run_func", "output", "symbol"],
+                    ),
+                ),
+            )
+            assert_frame_equal(
+                data.run(
+                    ["talib_sma", "talib_ema"],
                     timeperiod=vbt.run_func_dict(talib_sma=3, talib_ema=4),
                     hide_params=True,
                 ),
@@ -2585,6 +2613,20 @@ class TestData:
                     timeperiod=vbt.run_func_dict(sma=3, ema=4),
                     location="talib_func",
                     prepend_location=False,
+                ),
+            )
+            assert_frame_equal(
+                data.run(["expr:close + 10", "expr:CP20:close + 20"]),
+                pd.concat(
+                    (data.close + 10, data.close + 20),
+                    axis=1,
+                    keys=pd.MultiIndex.from_tuples(
+                        [
+                            ("expr:close + 10", "out"),
+                            ("expr_cp20", "out"),
+                        ],
+                        names=["run_func", "output"],
+                    ),
                 ),
             )
 
@@ -4148,11 +4190,11 @@ class TestCustom:
             vbt.GBMData.pull(start="2021-01-01 UTC", end="2021-01-06 UTC", randomize=0.1, seed=42).get(),
             pd.Series(
                 [
-                    100.49292505095792, 
-                    100.34905764408163, 
-                    100.99606643427086, 
-                    102.54091282498935, 
-                    102.29597577584751, 
+                    100.49292505095792,
+                    100.34905764408163,
+                    100.99606643427086,
+                    102.54091282498935,
+                    102.29597577584751,
                     102.05164055663859,
                 ],
                 index=pd.DatetimeIndex(

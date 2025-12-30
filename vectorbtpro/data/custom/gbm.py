@@ -31,11 +31,11 @@ __pdoc__ = {}
 class GBMData(SyntheticData):
     """Data class for synthetic data generated via geometric Brownian motion.
 
-    See:
-        * `GBMData.generate_key` for argument details.
-
     !!! info
         For default settings, see `custom.gbm` in `vectorbtpro._settings.data`.
+
+    See:
+        * `GBMData.generate_key` for argument details.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.gbm")
@@ -56,6 +56,14 @@ class GBMData(SyntheticData):
     ) -> tp.KeyData:
         """Generate synthetic data for a feature or symbol using geometric Brownian motion.
 
+        !!! note
+            When setting a seed, pass a seed per feature or symbol using
+            `vectorbtpro.data.base.feature_dict`/`vectorbtpro.data.base.symbol_dict` or, more generally,
+            `vectorbtpro.data.base.key_dict`.
+
+        See:
+            `vectorbtpro.data.nb.generate_gbm_data_nb`
+
         Args:
             key (Key): Feature or symbol identifier.
             index (Index): Pandas index representing time.
@@ -75,14 +83,6 @@ class GBMData(SyntheticData):
 
         Returns:
             KeyData: Generated data and a metadata dictionary.
-
-        See:
-            `vectorbtpro.data.nb.generate_gbm_data_nb`
-
-        !!! note
-            When setting a seed, pass a seed per feature or symbol using
-            `vectorbtpro.data.base.feature_dict`/`vectorbtpro.data.base.symbol_dict` or, more generally,
-            `vectorbtpro.data.base.key_dict`.
         """
         if checks.is_hashable(columns):
             columns = [columns]

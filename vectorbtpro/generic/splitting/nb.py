@@ -24,6 +24,9 @@ __all__ = []
 def split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     """Compute the overlap matrix for splits.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask_arr (Array3d): 3-dimensional boolean array representing split masks.
 
@@ -33,9 +36,6 @@ def split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     Returns:
         Array2d: 2-dimensional integer array where each element `[i, j]` indicates the count
             of overlapping active columns between split `i` and split `j`.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty((mask_arr.shape[0], mask_arr.shape[0]), dtype=int_)
     temp_mask = np.empty((mask_arr.shape[0], mask_arr.shape[2]), dtype=np.bool_)
@@ -56,6 +56,9 @@ def split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
 def norm_split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     """Compute the normalized overlap matrix for splits.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask_arr (Array3d): 3-dimensional boolean array representing split masks.
 
@@ -66,9 +69,6 @@ def norm_split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
         Array2d: 2-dimensional float array where each element `[i, j]` is the ratio of
             the count of overlapping active columns to the total number of active columns
             (union) between split `i` and split `j`.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty((mask_arr.shape[0], mask_arr.shape[0]), dtype=float_)
     temp_mask = np.empty((mask_arr.shape[0], mask_arr.shape[2]), dtype=np.bool_)
@@ -90,6 +90,9 @@ def norm_split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
 def set_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     """Compute the overlap matrix for sets.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask_arr (Array3d): 3-dimensional boolean array where each set is defined
             along the second dimension.
@@ -99,9 +102,6 @@ def set_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     Returns:
         Array2d: 2-dimensional integer array where each element `[j, k]` represents the count
             of common active columns between set `j` and set `k`.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty((mask_arr.shape[1], mask_arr.shape[1]), dtype=int_)
     temp_mask = np.empty((mask_arr.shape[1], mask_arr.shape[2]), dtype=np.bool_)
@@ -122,6 +122,9 @@ def set_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
 def norm_set_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     """Compute the normalized overlap matrix for sets.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask_arr (Array3d): 3-dimensional boolean array where each set is defined
             along the second dimension.
@@ -131,9 +134,6 @@ def norm_set_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     Returns:
         Array2d: 2-dimensional float array where each element `[j, k]` is the ratio of the count
             of overlapping active columns to the total active columns (union) between set `j` and set `k`.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty((mask_arr.shape[1], mask_arr.shape[1]), dtype=float_)
     temp_mask = np.empty((mask_arr.shape[1], mask_arr.shape[2]), dtype=np.bool_)
@@ -155,6 +155,9 @@ def norm_set_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
 def range_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     """Compute the overlap matrix for ranges.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask_arr (Array3d): 3-dimensional boolean array where each range mask is defined
             by a pair of indices corresponding to the first and second dimensions.
@@ -162,9 +165,6 @@ def range_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     Returns:
         Array2d: 2-dimensional integer array with shape `(n*m, n*m)`, where each element
             represents the count of overlapping True values between two range masks.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty((mask_arr.shape[0] * mask_arr.shape[1], mask_arr.shape[0] * mask_arr.shape[1]), dtype=int_)
     for k in prange(mask_arr.shape[0] * mask_arr.shape[1]):
@@ -182,6 +182,9 @@ def range_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
 def norm_range_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     """Compute the normalized overlap matrix for ranges.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask_arr (Array3d): 3-dimensional boolean array where each range mask is defined
             by a pair of indices from the first and second dimensions.
@@ -189,9 +192,6 @@ def norm_range_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
     Returns:
         Array2d: 2-dimensional float array with shape `(n*m, n*m)` where each element is the ratio
             of the count of overlapping True values to the union of True values between two range masks.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty((mask_arr.shape[0] * mask_arr.shape[1], mask_arr.shape[0] * mask_arr.shape[1]), dtype=float_)
     for k in prange(mask_arr.shape[0] * mask_arr.shape[1]):

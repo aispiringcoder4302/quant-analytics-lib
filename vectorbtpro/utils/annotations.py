@@ -54,7 +54,6 @@ except ImportError:
             dict: Dictionary containing the annotations.
         """
         if isinstance(obj, type):
-            # class
             obj_dict = getattr(obj, "__dict__", None)
             if obj_dict and hasattr(obj_dict, "get"):
                 ann = obj_dict.get("__annotations__", None)
@@ -72,15 +71,11 @@ except ImportError:
             obj_locals = dict(vars(obj))
             unwrap = obj
         elif isinstance(obj, types.ModuleType):
-            # module
             ann = getattr(obj, "__annotations__", None)
             obj_globals = getattr(obj, "__dict__")
             obj_locals = None
             unwrap = None
         elif callable(obj):
-            # this includes types.Function, types.BuiltinFunctionType,
-            # types.BuiltinMethodType, functools.partial, functools.singledispatch,
-            # "class funclike" from Lib/test/test_inspect... on and on it goes.
             ann = getattr(obj, "__annotations__", None)
             obj_globals = getattr(obj, "__globals__", None)
             obj_locals = None

@@ -3935,7 +3935,7 @@ class TestGenerators:
                     ]
                 ),
                 columns=pd.MultiIndex.from_tuples(
-                    [("array_0", 0), ("array_0", 1), ("array_1", 0), ("array_1", 1)],
+                    [("array", 0), ("array", 1), ("array_2", 0), ("array_2", 1)],
                     names=["rprob_prob", None],
                 ),
             ),

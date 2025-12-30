@@ -31,11 +31,11 @@ ParquetDataT = tp.TypeVar("ParquetDataT", bound="ParquetData")
 class ParquetData(FileData):
     """Data class for fetching and processing Parquet files using PyArrow or FastParquet.
 
-    See:
-        * `ParquetData.fetch_key` for argument details.
-
     !!! info
         For default settings, see `custom.parquet` in `vectorbtpro._settings.data`.
+
+    See:
+        * `ParquetData.fetch_key` for argument details.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.parquet")
@@ -61,14 +61,14 @@ class ParquetData(FileData):
         """Return True if the provided path is a directory representing a Hive-style partition
         group of Parquet partitions, otherwise False.
 
+        !!! note
+            Assumes the Hive partitioning scheme.
+
         Args:
             path (PathLike): Directory path to check.
 
         Returns:
             bool: True if the path is a Parquet partition group directory, False otherwise.
-
-        !!! note
-            Assumes the Hive partitioning scheme.
         """
         if not isinstance(path, Path):
             path = Path(path)
@@ -113,14 +113,14 @@ class ParquetData(FileData):
     def list_partition_cols(cls, path: tp.PathLike) -> tp.List[str]:
         """List partitioning columns derived from directory names in a Hive-partitioned structure.
 
+        !!! note
+            Assumes the Hive partitioning scheme.
+
         Args:
             path (PathLike): Directory path containing partition directories.
 
         Returns:
             List[str]: List of partition column names extracted from the directory structure.
-
-        !!! note
-            Assumes the Hive partitioning scheme.
         """
         if not isinstance(path, Path):
             path = Path(path)

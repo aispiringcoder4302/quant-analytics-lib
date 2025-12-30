@@ -409,7 +409,6 @@ class TVClient(Configured):
             ts = datetime.datetime.utcfromtimestamp(float(xi[4]))
             row = [ts]
             for i in range(5, 10):
-                # skip converting volume data if does not exists
                 if not volume_data and i == 9:
                     row.append(0.0)
                     continue
@@ -605,9 +604,9 @@ class TVClient(Configured):
                     resp = requests.get(url, headers=headers)
                     symbols_data = json.loads(resp.text.replace("</em>", "").replace("<em>", ""))
                     break
-                except json.JSONDecodeError as e:
+                except json.JSONDecodeError:
                     if i == retries - 1:
-                        raise e
+                        raise
                     if delay is not None:
                         time.sleep(delay)
             symbols_remaining = symbols_data.get("symbols_remaining", 0)
@@ -676,11 +675,6 @@ TVDataT = tp.TypeVar("TVDataT", bound="TVData")
 class TVData(RemoteData):
     """Data class for fetching data from TradingView.
 
-    See:
-        * https://www.tradingview.com/ for TradingView.
-        * `TVClient` for the client class used to fetch data.
-        * `TVData.fetch_symbol` for argument details.
-
     !!! info
         For default settings, see `custom.tv` in `vectorbtpro._settings.data`.
 
@@ -689,6 +683,11 @@ class TVData(RemoteData):
         during authentication, use the `auth_token` parameter instead of `username` and `password`.
         To obtain your authentication token, log in to TradingView, open any chart, access your
         browser's developer tools, and search for "auth_token".
+
+    See:
+        * https://www.tradingview.com/ for TradingView.
+        * `TVClient` for the client class used to fetch data.
+        * `TVData.fetch_symbol` for argument details.
 
     Examples:
         Set up the credentials globally (optional):
@@ -1131,9 +1130,9 @@ class TVData(RemoteData):
                     limit=limit,
                 )
                 break
-            except Exception as e:
+            except Exception:
                 if i == retries - 1:
-                    raise e
+                    raise
                 if delay is not None:
                     time.sleep(delay)
         df.rename(

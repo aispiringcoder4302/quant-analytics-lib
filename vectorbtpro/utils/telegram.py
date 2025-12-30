@@ -131,6 +131,9 @@ if __version_info__ < (20, 0):
 
         See https://github.com/python-telegram-bot/python-telegram-bot/wiki/ to get started.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.telegram`.
+
         Args:
             giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
 
@@ -139,9 +142,6 @@ if __version_info__ < (20, 0):
                 See `vectorbtpro.utils.requests_.text_to_giphy_url`.
             **kwargs: Keyword arguments for configuring the updater;
                 they override settings for the bot.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.telegram`.
 
         Examples:
             Let's extend `TelegramBot` to track cryptocurrency prices:
@@ -162,7 +162,6 @@ if __version_info__ < (20, 0):
             if __version_info__ >= (20, 0):
                 raise RuntimeError(f"This implementation is not compatible with telegram version {TG_VER}")
 
-            # Enable logging
             logging.basicConfig(
                 format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
             )
@@ -314,15 +313,15 @@ if __version_info__ < (20, 0):
             Keyword arguments are passed to `telegram.ext.updater.Updater.start_polling`
             to override the default bot settings from `vectorbtpro._settings.telegram`.
 
+            !!! info
+                For default settings, see `bot` in `vectorbtpro._settings.telegram`.
+
             Args:
                 in_background (bool): Run the bot in the background if True; otherwise, block the main thread.
                 **kwargs: Keyword arguments for `Updater.start_polling`.
 
             Returns:
                 None
-
-            !!! info
-                For default settings, see `bot` in `vectorbtpro._settings.telegram`.
             """
             from vectorbtpro._settings import settings
 
@@ -630,15 +629,6 @@ else:
 
         See https://github.com/python-telegram-bot/python-telegram-bot/wiki/ to get started.
 
-        Args:
-            giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
-
-                These settings are merged with the default configuration obtained from
-                `vectorbtpro._settings.telegram` under the giphy key.
-                See `vectorbtpro.utils.requests_.text_to_giphy_url`.
-            **kwargs: Keyword arguments for configuring the updater;
-                they override settings for the bot.
-
         !!! info
             For default settings, see `vectorbtpro._settings.telegram`.
 
@@ -652,6 +642,15 @@ else:
             >>> import nest_asyncio
             >>> nest_asyncio.apply()
             ```
+
+        Args:
+            giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
+
+                These settings are merged with the default configuration obtained from
+                `vectorbtpro._settings.telegram` under the giphy key.
+                See `vectorbtpro.utils.requests_.text_to_giphy_url`.
+            **kwargs: Keyword arguments for configuring the updater;
+                they override settings for the bot.
 
         Examples:
             Let's extend `TelegramBot` to track cryptocurrency prices, as a Python script:
@@ -672,7 +671,6 @@ else:
             if __version_info__ < (20, 0):
                 raise RuntimeError(f"This implementation is not compatible with telegram version {TG_VER}")
 
-            # Enable logging
             logging.basicConfig(
                 format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
             )
@@ -738,11 +736,11 @@ else:
             builder method. If a value is a dict, it is unpacked to provide multiple keyword
             arguments (except for `defaults`, which is passed as a single argument).
 
-            Returns:
-                Application: Constructed application instance.
-
             !!! info
                 For default settings, see `bot` in `vectorbtpro._settings.telegram`.
+
+            Returns:
+                Application: Constructed application instance.
             """
             from vectorbtpro._settings import settings
 
@@ -1122,6 +1120,9 @@ else:
         ) -> None:
             """Start the bot.
 
+            !!! info
+                For default settings, see `bot` in `vectorbtpro._settings.telegram`.
+
             Args:
                 close_loop (bool): Whether to close the event loop after stopping the bot.
                 stop_signals (Sequence[int]): Signals used to stop the event loop.
@@ -1132,9 +1133,6 @@ else:
 
             Returns:
                 None
-
-            !!! info
-                For default settings, see `bot` in `vectorbtpro._settings.telegram`.
             """
             from vectorbtpro._settings import settings
 

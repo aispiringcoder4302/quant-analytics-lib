@@ -13,9 +13,9 @@
 import enum
 import inspect
 import re
-from pathlib import Path
 from collections.abc import Iterable
 from functools import cached_property as cachedproperty
+from pathlib import Path
 
 import attr
 import pandas as pd
@@ -386,8 +386,9 @@ def get_dict_attr(obj: tp.Union[object, type], attr: str) -> tp.Any:
     else:
         cls = type(obj)
     for obj in [obj] + cls.mro():
-        if attr in obj.__dict__:
-            return obj.__dict__[attr]
+        dct = get_attr(obj, "__dict__", {})
+        if attr in dct:
+            return dct[attr]
     raise AttributeError
 
 
@@ -428,6 +429,10 @@ def deep_getattr(
 ) -> tp.Any:
     """Retrieve attributes from an object following a specified chain.
 
+    !!! tip
+        If your attribute chain contains only attributes and methods without arguments,
+        represent it as a single string.
+
     Args:
         obj (Any): Root object from which to retrieve attributes.
         attr_chain (Union[str, tuple, Iterable]): Chain of attributes to access.
@@ -445,10 +450,6 @@ def deep_getattr(
 
     Returns:
         Any: Resulting attribute value or the result from calling the attribute.
-
-    !!! tip
-        If your attribute chain contains only attributes and methods without arguments,
-        represent it as a single string.
     """
     checks.assert_instance_of(attr_chain, (str, tuple, Iterable))
 
@@ -523,6 +524,9 @@ class AttrResolverMixin(Base):
     ) -> AttrResolverMixinT:
         """Resolve self with optional keyword conditions.
 
+        !!! note
+            `cond_kwargs` can be modified in-place.
+
         Args:
             cond_kwargs (KwargsLike): Keyword arguments for conditional resolution.
             custom_arg_names (Optional[Set[str]]): Set of custom argument names for resolution.
@@ -531,9 +535,6 @@ class AttrResolverMixin(Base):
 
         Returns:
             AttrResolverMixin: Resolved self.
-
-        !!! note
-            `cond_kwargs` can be modified in-place.
         """
         return self
 
@@ -697,11 +698,302 @@ class AttrResolverMixin(Base):
         return deep_getattr(self, *args, **kwargs)
 
 
+def get_attr(
+    obj: tp.Any,
+    attr_name: str,
+    default: tp.Any = MISSING,
+    *,
+    safe: bool = True,
+    static_only: bool = False,
+    resolve_descriptor: bool = False,
+) -> tp.Any:
+    """Get an attribute of an object.
+
+    Args:
+        obj (Any): Object to retrieve the attribute from.
+        attr_name (str): Name of the attribute to retrieve.
+        default (Any): Default value to return if the attribute is not found.
+        safe (bool): If True and the class defines `__getattr__`, return default or raise `AttributeError`.
+        static_only (bool): If True, only use static attribute retrieval without calling `getattr`.
+        resolve_descriptor (bool): If True, resolve descriptors by calling `getattr`.
+
+    Returns:
+        Any: Value of the attribute.
+    """
+    try:
+        value = inspect.getattr_static(obj, attr_name)
+    except AttributeError:
+        if safe:
+            cls = type(obj)
+            if any("__getattr__" in get_attr(c, "__dict__", {}) for c in cls.__mro__):
+                if default is not MISSING:
+                    return default
+                raise
+        if static_only:
+            if isinstance(obj, type) and hasattr(obj, "__attrs_attrs__"):
+                for a in getattr(obj, "__attrs_attrs__", ()):
+                    if getattr(a, "name", None) == attr_name:
+                        return a
+            if default is not MISSING:
+                return default
+            raise
+        value = getattr(obj, attr_name, default)
+        if value is MISSING:
+            raise
+        return value
+    else:
+        is_descriptor = (
+            inspect.isdatadescriptor(value)
+            or inspect.isgetsetdescriptor(value)
+            or inspect.ismemberdescriptor(value)
+            or inspect.ismethoddescriptor(value)
+        )
+        safe_descriptors = {
+            "__self__",
+            "__func__",
+            "__objclass__",
+            "__wrapped__",
+            "__name__",
+            "__qualname__",
+            "__module__",
+            "__dict__",
+        }
+        if is_descriptor and (resolve_descriptor or attr_name in safe_descriptors):
+            try:
+                return getattr(obj, attr_name)
+            except AttributeError:
+                pass
+        return value
+
+
+def iter_slot_names(slots: tp.Optional[tp.Union[str, tp.Iterable, tp.Dict]]) -> tp.Generator[str, None, None]:
+    """Iterate over slot names defined in `__slots__`.
+
+    Args:
+        slots (Optional[Union[str, Iterable, Dict]]): Value of `__slots__`.
+
+    Yields:
+        str: Slot names.
+    """
+    if slots is None:
+        return
+    if isinstance(slots, str):
+        yield slots
+        return
+    if isinstance(slots, dict):
+        for k in slots.keys():
+            if isinstance(k, str):
+                yield k
+        return
+    if isinstance(slots, Iterable):
+        for item in slots:
+            if isinstance(item, str):
+                yield item
+            elif isinstance(item, dict):
+                for k in item.keys():
+                    if isinstance(k, str):
+                        yield k
+        return
+
+
+def iter_attr_names(obj: tp.Any) -> tp.Generator[str, None, None]:
+    """Iterate over attribute names of a class, object, or module.
+
+    Args:
+        obj (Any): Object, class, or module whose attributes are to be iterated.
+
+    Yields:
+        str: Attribute names.
+    """
+
+    def _iter_class_like(cls, seen):
+        for c in inspect.getmro(cls):
+            for n, _ in inspect.getmembers_static(c):
+                if n not in seen:
+                    seen.add(n)
+                    yield n
+            attrs_attrs = getattr(c, "__attrs_attrs__", None)
+            if attrs_attrs:
+                for a in attrs_attrs:
+                    name = getattr(a, "name", None)
+                    if isinstance(name, str) and name not in seen:
+                        seen.add(name)
+                        yield name
+
+    if inspect.ismodule(obj):
+        seen = set()
+        for n, _ in inspect.getmembers_static(obj):
+            if n not in seen:
+                seen.add(n)
+                yield n
+        return
+    if inspect.isclass(obj):
+        seen = set()
+        yield from _iter_class_like(obj, seen)
+        return
+    seen = set()
+    dct = get_attr(obj, "__dict__", {})
+    if isinstance(dct, dict):
+        for n in dct:
+            if n not in seen:
+                seen.add(n)
+                yield n
+    slots = get_attr(type(obj), "__slots__", ())
+    for n in iter_slot_names(slots):
+        if n not in seen:
+            seen.add(n)
+            yield n
+    yield from _iter_class_like(type(obj), seen)
+
+
+@define
+class AttrMeta(DefineMixin):
+    """Class representing metadata of an attribute of an object."""
+
+    name: str = define.field()
+    """Name of the attribute."""
+
+    type: tp.Optional[str] = define.field(default=None)
+    """Type name of the attribute."""
+
+    kind: tp.Optional[str] = define.field(default=None)
+    """Kind of the attribute."""
+
+    refname: tp.Optional[str] = define.field(default=None)
+    """Fully qualified reference name of the attribute."""
+
+    is_own: bool = define.field(default=False)
+    """Indicates whether the attribute is defined directly on the object."""
+
+
+def get_type_and_kind(obj: tp.Any) -> tp.Tuple[str, str]:
+    """Get the type name and kind of an object.
+
+    Args:
+        obj (Any): Object whose type and kind are to be determined.
+
+    Returns:
+        Tuple[str, str]: Type name and kind of the object.
+    """
+    type_name = type(obj).__name__
+    if inspect.ismodule(obj):
+        kind = "module"
+    elif inspect.isclass(obj) or isinstance(obj, type):
+        kind = "class"
+    elif inspect.isroutine(obj) or callable(obj):
+        kind = "callable"
+    else:
+        kind = "data"
+    return type_name, kind
+
+
+def is_own(obj: tp.Any, name: str) -> bool:
+    """Check if an attribute is defined directly on a class, object, or module.
+    
+    Args:
+        obj (Any): Object, class, or module to check.
+        name (str): Name of the attribute to check.
+    
+    Returns:
+        bool: True if the attribute is defined directly on the object, False otherwise.
+    """
+    if inspect.ismodule(obj):
+        return name in get_attr(obj, "__dict__", {})
+    if inspect.isclass(obj):
+        return name in get_attr(obj, "__dict__", {})
+    inst_dict = get_attr(obj, "__dict__", {})
+    if name in inst_dict:
+        return True
+    return False
+
+
 def get_attrs(
-    obj,
+    obj: tp.Any,
     own_only: bool = False,
     incl_private: bool = False,
-    sort_by: tp.Optional[tp.MaybeIterable[str]] = "attr",
+    return_meta: bool = False,
+) -> tp.List[tp.Union[str, AttrMeta]]:
+    """Get attributes of a class, object, or module as a list of `AttrMeta` instances.
+
+    Args:
+        obj (Any): Object, class, or module whose attributes are to be parsed.
+        own_only (bool): If True, include only attributes that are defined directly on the object.
+        incl_private (bool): If True, include private attributes (those starting with an underscore).
+        return_meta (bool): If True, return metadata as `AttrMeta` instances.
+
+    Returns:
+        List[AttrMeta]: List of `AttrMeta` instances with metadata for each attribute,
+            or list of attribute names if `return_meta` is False.
+    """
+    from vectorbtpro.utils.refs import ensure_refname
+
+    cls = obj if inspect.isclass(obj) or inspect.ismodule(obj) else type(obj)
+    is_mod = inspect.ismodule(cls)
+    attrs = set(iter_attr_names(obj))
+    if not incl_private:
+        attrs = {a for a in attrs if checks.is_public_name(a)}
+    else:
+        attrs = {a for a in attrs if checks.is_public_name(a) or checks.is_private_name(a)}
+    obj_refname = ensure_refname(obj, can_be_refname=False, raise_error=False)
+    obj_root = obj_refname.split(".", 1)[0] if obj_refname is not None else None
+
+    attr_meta = []
+    for name in sorted(attrs):
+        target = obj if not is_mod else cls
+        try:
+            raw = inspect.getattr_static(target, name)
+            raw_is_none = False
+        except AttributeError:
+            try:
+                raw = inspect.getattr_static(cls, name)
+                raw_is_none = False
+            except AttributeError:
+                try:
+                    raw = getattr(obj, name)
+                    raw_is_none = False
+                except Exception:
+                    raw = None
+                    raw_is_none = True
+
+        raw_refname = ensure_refname(raw, can_be_refname=False, allow_type_fallback=False, raise_error=False)
+        refname = ensure_refname(f"{obj_refname}.{name}", raise_error=False) if obj_refname is not None else None
+        if raw_refname is not None:
+            raw_root = raw_refname.split(".", 1)[0]
+            use_raw = False
+            if refname is None:
+                use_raw = True
+            elif obj_root is None:
+                use_raw = True
+            elif raw_root == obj_root:
+                use_raw = True
+            else:
+                use_raw = False
+            if use_raw:
+                refname = raw_refname
+
+        _is_own = is_own(cls if is_mod else obj, name)
+        if own_only and not _is_own:
+            continue
+
+        dct = {"name": name}
+        if not raw_is_none:
+            dct["type"], dct["kind"] = get_type_and_kind(raw)
+        else:
+            dct["type"], dct["kind"] = None, None
+        dct["refname"] = refname
+        dct["is_own"] = _is_own
+        attr_meta.append(AttrMeta(**dct))
+
+    if not return_meta:
+        return [am.name for am in attr_meta]
+    return attr_meta
+
+
+def get_attr_df(
+    obj: tp.Any,
+    own_only: bool = False,
+    incl_private: bool = False,
+    sort_by: tp.Optional[tp.MaybeIterable[str]] = "name",
 ) -> tp.Frame:
     """Get attributes of a class, object, or module as a DataFrame with metadata.
 
@@ -712,73 +1004,32 @@ def get_attrs(
         sort_by (Optional[MaybeIterable[str]]): Column name (or sequence of names) used to sort the resulting DataFrame.
 
     Returns:
-        Frame: DataFrame with columns describing each attribute (name, type, and reference name).
+        Frame: DataFrame with columns describing each attribute (name, type, and fully qualified name).
     """
-    from vectorbtpro.utils.module_ import get_refname, resolve_refname
+    attr_meta = get_attrs(obj=obj, own_only=own_only, incl_private=incl_private, return_meta=True)
+    attr_dicts = []
+    for m in attr_meta:
+        attr_dict = m.asdict()
+        for k, v in attr_dict.items():
+            if v is None:
+                attr_dict[k] = "?"
+        attr_dicts.append(attr_dict)
 
-    cls = obj if inspect.isclass(obj) or inspect.ismodule(obj) else type(obj)
-    is_mod = inspect.ismodule(cls)
-    attrs = set(dir(obj if not is_mod else cls))
-    attrs.update(getattr(obj, "__dict__", {}).keys())
-    if not is_mod:
-        slots = getattr(obj, "__slots__", ())
-        if isinstance(slots, str):
-            attrs.add(slots)
-        else:
-            attrs.update(slots)
-    if not incl_private:
-        attrs = {a for a in attrs if not a.startswith("_")}
-    obj_refname = get_refname(obj)
-
-    rows = []
-    for name in attrs:
-        target = obj if not is_mod else cls
-        try:
-            value = inspect.getattr_static(target, name)
-            value_is_none = False
-        except AttributeError:
-            try:
-                value = inspect.getattr_static(cls, name)
-                value_is_none = False
-            except AttributeError:
-                try:
-                    value = getattr(obj, name)
-                    value_is_none = False
-                except Exception:
-                    value = None
-                    value_is_none = True
-
-        refname = get_refname(value)
-        if refname is None:
-            refname = resolve_refname(obj_refname + "." + name)
-        if own_only and refname is not None and refname != obj_refname + "." + name:
-            continue
-
-        dct = {"attr": name}
-        if not value_is_none:
-            dct["type"] = type(value).__name__
-        else:
-            dct["type"] = "?"
-        if refname is not None:
-            dct["refname"] = refname
-        else:
-            dct["refname"] = "?"
-        rows.append(dct)
-
-    df = pd.DataFrame(rows)
-    df.set_index("attr", inplace=True, verify_integrity=True)
-    if sort_by is not None:
-        sort_cols = [sort_by] if isinstance(sort_by, str) else list(sort_by)
-        if "attr" not in sort_cols:
-            sort_cols.append("attr")
-        df = df.sort_values(by=sort_cols, kind="mergesort")
+    df = pd.DataFrame(attr_dicts)
+    if not df.empty:
+        df.set_index("name", inplace=True, verify_integrity=True)
+        if sort_by is not None:
+            sort_cols = [sort_by] if isinstance(sort_by, str) else list(sort_by)
+            if "name" not in sort_cols:
+                sort_cols.append("name")
+            df = df.sort_values(by=sort_cols, kind="mergesort")
     return df
 
 
 def attr_tree(obj: tp.Any = None, own_only: bool = False, incl_private: bool = False, **kwargs) -> str:
     """Get a visual tree of an object's attributes.
 
-    The function combines `get_attrs` (to collect metadata on the attributes of `obj`) with
+    The function combines `get_attr_df` (to collect metadata on the attributes of `obj`) with
     `vectorbtpro.utils.path_.dir_tree_from_paths` (to render a textual tree) so you can quickly
     inspect where an attribute is defined, its type, and whether is is an alias of another attribute.
 
@@ -786,8 +1037,8 @@ def attr_tree(obj: tp.Any = None, own_only: bool = False, incl_private: bool = F
     represents the hierarchy of modules and classes from which the attributes are inherited.
 
     Each leaf in the tree is formatted as `<name> [<type>] (@ <refname>)`, where the `@ <refname>` suffix
-    is shown only when the attribute's reference name either differs from the attribute's own name
-    (indicating an alias or re-export).
+    is shown only when the attribute's reference name either differs from the attribute's
+    own name (indicating an alias or re-export).
 
     Args:
         obj (Any): Object, class, or module whose attributes are to be visualized.
@@ -798,7 +1049,7 @@ def attr_tree(obj: tp.Any = None, own_only: bool = False, incl_private: bool = F
     Returns:
         str: Printable, newline-separated string representing the attribute hierarchy.
     """
-    df = get_attrs(obj=obj, own_only=own_only, incl_private=incl_private)
+    df = get_attr_df(obj=obj, own_only=own_only, incl_private=incl_private)
     paths, display_names = [], []
 
     for a, r in df.iterrows():

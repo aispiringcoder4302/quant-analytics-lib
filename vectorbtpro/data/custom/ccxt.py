@@ -40,14 +40,14 @@ class CCXTData(RemoteData):
 
     This class provides functionality to retrieve market data via the CCXT API.
 
-    See:
-        * https://github.com/ccxt/ccxt for more information on CCXT.
-        * `CCXTData.fetch_symbol` for argument details.
-
     !!! info
         For default settings, see `custom.ccxt` in `vectorbtpro._settings.data`.
 
         Global settings can be configured per exchange identifier using the `exchanges` dictionary.
+
+    See:
+        * https://github.com/ccxt/ccxt for more information on CCXT.
+        * `CCXTData.fetch_symbol` for argument details.
 
     Examples:
         Set up the API key globally (optional):
@@ -488,9 +488,9 @@ class CCXTData(RemoteData):
                 for i in range(retries):
                     try:
                         return method(*args, **kwargs)
-                    except ccxt.NetworkError as e:
+                    except ccxt.NetworkError:
                         if i == retries - 1:
-                            raise e
+                            raise
                         if not silence_warnings:
                             warn(traceback.format_exc())
                         if delay is not None:
@@ -511,7 +511,6 @@ class CCXTData(RemoteData):
         if return_fetch_method:
             return dict(fetch_func=_fetch, start=start, end=end, tz=tz)
 
-        # Establish the timestamps
         if find_earliest_date:
             start = cls.fetch_find_earliest_date(_fetch, start=start, end=end, tz=tz, for_internal_use=True)
         if start is not None:
@@ -541,17 +540,14 @@ class CCXTData(RemoteData):
                     return False
             return True
 
-        # Iteratively collect the data
         data = []
         try:
             with ProgressBar(show_progress=show_progress, **pbar_kwargs) as pbar:
                 pbar.set_description("{} → ?".format(_ts_to_str(start_ts if prev_end_ts is None else prev_end_ts)))
                 while True:
-                    # Fetch the klines for the next timeframe
                     next_data = _fetch(start_ts if prev_end_ts is None else prev_end_ts, limit)
                     next_data = list(filter(partial(_filter_func, _prev_end_ts=prev_end_ts), next_data))
 
-                    # Update the timestamps and the progress bar
                     if not len(next_data):
                         break
                     data += next_data
@@ -572,7 +568,6 @@ class CCXTData(RemoteData):
                     "Use update() method to fetch missing data."
                 )
 
-        # Convert data to a DataFrame
         df = pd.DataFrame(data, columns=["Open time", "Open", "High", "Low", "Close", "Volume"])
         df.index = pd.to_datetime(df["Open time"], unit="ms", utc=True)
         del df["Open time"]

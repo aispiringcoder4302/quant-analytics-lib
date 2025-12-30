@@ -164,7 +164,7 @@ base_arg_config = ReadonlyConfig(
         init_cash=dict(map_enum_kwargs=dict(enum=enums.InitCashMode, look_for_type=str)),
         init_position=dict(),
         init_price=dict(),
-        cash_deposits=dict(),
+        cash_deposits=dict(broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=0.0))),
         group_by=dict(),
         cash_sharing=dict(),
         freq=dict(),
@@ -172,7 +172,6 @@ base_arg_config = ReadonlyConfig(
         sim_end=dict(),
         call_seq=dict(map_enum_kwargs=dict(enum=enums.CallSeqType, look_for_type=str)),
         attach_call_seq=dict(),
-        keep_inout_flex=dict(),
         in_outputs=dict(has_default=False),
     )
 )
@@ -531,11 +530,11 @@ class BasePFPreparer(BasePreparer):
     def init_position(self) -> tp.Array1d:
         """Aligned initial position values for portfolio simulation.
 
-        Returns:
-            Array1d: Aligned initial position values.
-
         !!! note
             A warning is issued if non-zero positions are detected with undefined initial prices.
+
+        Returns:
+            Array1d: Aligned initial position values.
         """
         init_position = self.align_pc_arr(
             self.pre__init_position,
@@ -569,15 +568,19 @@ class BasePFPreparer(BasePreparer):
             ArrayLike: Cash deposits broadcasted to the required shape.
         """
         cash_deposits = self["cash_deposits"]
-        checks.assert_subdtype(cash_deposits, np.number, arg_name="cash_deposits")
-        return broadcast(
-            cash_deposits,
-            to_shape=(self.target_shape[0], len(self.cs_group_lens)),
-            to_pd=False,
-            keep_flex=self.keep_inout_flex,
-            reindex_kwargs=dict(fill_value=0.0),
-            require_kwargs=self.broadcast_kwargs.get("require_kwargs", {}),
+        def_broadcast_kwargs = dict(self.broadcast_kwargs)
+        def_broadcast_kwargs.pop("wrapper_kwargs", None)
+        def_broadcast_kwargs.pop("return_wrapper", None)
+        def_broadcast_kwargs["to_shape"] = (self.target_shape[0], len(self.cs_group_lens))
+        if self.arg_config["cash_deposits"].get("full_shape", False):
+            def_broadcast_kwargs["keep_flex"] = False
+        broadcast_kwargs = merge_dicts(
+            def_broadcast_kwargs,
+            self.arg_config["cash_deposits"].get("broadcast_kwargs", {}),
         )
+        cash_deposits = broadcast(cash_deposits, **broadcast_kwargs)
+        checks.assert_subdtype(cash_deposits, np.number, arg_name="cash_deposits")
+        return cash_deposits
 
     @cachedproperty
     def auto_sim_start(self) -> tp.Optional[tp.ArrayLike]:
@@ -826,6 +829,11 @@ order_arg_config = ReadonlyConfig(
             broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=np.nan)),
         ),
         size_granularity=dict(
+            broadcast=True,
+            subdtype=np.number,
+            broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=np.nan)),
+        ),
+        cash_limit=dict(
             broadcast=True,
             subdtype=np.number,
             broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=np.nan)),
@@ -1194,14 +1202,28 @@ fs_arg_config = ReadonlyConfig(
             subdtype=np.bool_,
             broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=False)),
         ),
+        pre_sim_func_nb=dict(),
+        pre_sim_args=dict(type="args", substitute_templates=True),
+        pre_group_func_nb=dict(),
+        pre_group_args=dict(type="args", substitute_templates=True),
+        pre_segment_func_nb=dict(),
+        pre_segment_args=dict(type="args", substitute_templates=True),
         adjust_func_nb=dict(),
         adjust_args=dict(type="args", substitute_templates=True),
         signal_func_nb=dict(),
         signal_args=dict(type="args", substitute_templates=True),
-        post_signal_func_nb=dict(),
-        post_signal_args=dict(type="args", substitute_templates=True),
+        pre_order_segment_func_nb=dict(),
+        pre_order_segment_args=dict(type="args", substitute_templates=True),
+        post_order_func_nb=dict(),
+        post_order_args=dict(type="args", substitute_templates=True),
+        post_signal_func_nb=dict(obsolete_by="post_order_func_nb"),
+        post_signal_args=dict(obsolete_by="post_order_args"),
         post_segment_func_nb=dict(),
         post_segment_args=dict(type="args", substitute_templates=True),
+        post_group_func_nb=dict(),
+        post_group_args=dict(type="args", substitute_templates=True),
+        post_sim_func_nb=dict(),
+        post_sim_args=dict(type="args", substitute_templates=True),
         order_mode=dict(),
         val_price=dict(
             broadcast=True,
@@ -1487,9 +1509,15 @@ class FSPreparer(BasePFPreparer):
         """
         return (
             self["adjust_func_nb"] is not None
+            or self["pre_sim_func_nb"] is not None
+            or self["pre_group_func_nb"] is not None
+            or self["pre_segment_func_nb"] is not None
             or self["signal_func_nb"] is not None
-            or self["post_signal_func_nb"] is not None
+            or self["pre_order_segment_func_nb"] is not None
+            or self["post_order_func_nb"] is not None
             or self["post_segment_func_nb"] is not None
+            or self["post_group_func_nb"] is not None
+            or self["post_sim_func_nb"] is not None
             or self.order_mode
             or self.pre__staticized is not None
         )
@@ -1586,6 +1614,57 @@ class FSPreparer(BasePFPreparer):
             bool: True if signal function mode is enabled, False otherwise.
         """
         return self.dynamic_mode and not self.signals_mode and not self.order_mode
+    
+    @cachedproperty
+    def pre_sim_func_nb(self) -> tp.Optional[tp.Callable]:
+        """Processed `pre_sim_func_nb` argument.
+
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
+
+        If a value is provided, it is returned. Outside dynamic mode, returns None.
+
+        Returns:
+            Optional[Callable]: Pre-simulation function callable or None.
+        """
+        if self.dynamic_mode:
+            if self["pre_sim_func_nb"] is None:
+                return nb.no_pre_func_nb
+            return self["pre_sim_func_nb"]
+        return None
+
+    @cachedproperty
+    def pre_group_func_nb(self) -> tp.Optional[tp.Callable]:
+        """Processed `pre_group_func_nb` argument.
+
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
+
+        If a value is provided, it is returned. Outside dynamic mode, returns None.
+
+        Returns:
+            Optional[Callable]: Pre-group function callable or None.
+        """
+        if self.dynamic_mode:
+            if self["pre_group_func_nb"] is None:
+                return nb.no_pre_func_nb
+            return self["pre_group_func_nb"]
+        return None
+
+    @cachedproperty
+    def pre_segment_func_nb(self) -> tp.Optional[tp.Callable]:
+        """Processed `pre_segment_func_nb` argument.
+
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
+
+        If a value is provided, it is returned. Outside dynamic mode, returns None.
+
+        Returns:
+            Optional[Callable]: Pre-segment function callable or None.
+        """
+        if self.dynamic_mode:
+            if self["pre_segment_func_nb"] is None:
+                return nb.no_pre_func_nb
+            return self["pre_segment_func_nb"]
+        return None
 
     @cachedproperty
     def adjust_func_nb(self) -> tp.Optional[tp.Callable]:
@@ -1632,8 +1711,25 @@ class FSPreparer(BasePFPreparer):
         return None
 
     @cachedproperty
-    def post_signal_func_nb(self) -> tp.Optional[tp.Callable]:
-        """Processed `post_signal_func_nb` argument.
+    def pre_order_segment_func_nb(self) -> tp.Optional[tp.Callable]:
+        """Processed `pre_order_segment_func_nb` argument.
+
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
+
+        If a value is provided, it is returned. Outside dynamic mode, returns None.
+
+        Returns:
+            Optional[Callable]: Pre-order segment function callable or None.
+        """
+        if self.dynamic_mode:
+            if self["pre_order_segment_func_nb"] is None:
+                return nb.no_pre_func_nb
+            return self["pre_order_segment_func_nb"]
+        return None
+
+    @cachedproperty
+    def post_order_func_nb(self) -> tp.Optional[tp.Callable]:
+        """Processed `post_order_func_nb` argument.
 
         In dynamic mode, if not provided, a default `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`
         is returned; otherwise, the provided callable is used.
@@ -1641,12 +1737,12 @@ class FSPreparer(BasePFPreparer):
         If dynamic mode is inactive, returns None.
 
         Returns:
-            Optional[Callable]: Post signal function callable or None.
+            Optional[Callable]: Post-order function callable or None.
         """
         if self.dynamic_mode:
-            if self["post_signal_func_nb"] is None:
+            if self["post_order_func_nb"] is None:
                 return nb.no_post_func_nb
-            return self["post_signal_func_nb"]
+            return self["post_order_func_nb"]
         return None
 
     @cachedproperty
@@ -1660,7 +1756,7 @@ class FSPreparer(BasePFPreparer):
         If a value is provided, it is returned. Outside dynamic mode, returns None.
 
         Returns:
-            Optional[Callable]: Post segment function callable or None.
+            Optional[Callable]: Post-segment function callable or None.
         """
         if self.dynamic_mode:
             if self["post_segment_func_nb"] is None:
@@ -1668,6 +1764,48 @@ class FSPreparer(BasePFPreparer):
                     return nb.save_post_segment_func_nb
                 return nb.no_post_func_nb
             return self["post_segment_func_nb"]
+        return None
+
+    @cachedproperty
+    def post_group_func_nb(self) -> tp.Optional[tp.Callable]:
+        """Processed `post_group_func_nb` argument.
+
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_signals.save_post_group_func_nb`
+        if saving state, value, or returns is enabled; otherwise, returns
+        `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
+
+        If a value is provided, it is returned. Outside dynamic mode, returns None.
+
+        Returns:
+            Optional[Callable]: Post-group function callable or None.
+        """
+        if self.dynamic_mode:
+            if self["post_group_func_nb"] is None:
+                if self.save_state or self.save_value or self.save_returns:
+                    return nb.save_post_group_func_nb
+                return nb.no_post_func_nb
+            return self["post_group_func_nb"]
+        return None
+
+    @cachedproperty
+    def post_sim_func_nb(self) -> tp.Optional[tp.Callable]:
+        """Processed `post_sim_func_nb` argument.
+
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_signals.save_post_sim_func_nb`
+        if saving state, value, or returns is enabled; otherwise, returns
+        `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
+
+        If a value is provided, it is returned. Outside dynamic mode, returns None.
+
+        Returns:
+            Optional[Callable]: Post-simulation function callable or None.
+        """
+        if self.dynamic_mode:
+            if self["post_sim_func_nb"] is None:
+                if self.save_state or self.save_value or self.save_returns:
+                    return nb.save_post_sim_func_nb
+                return nb.no_post_func_nb
+            return self["post_sim_func_nb"]
         return None
 
     @cachedproperty
@@ -1684,6 +1822,14 @@ class FSPreparer(BasePFPreparer):
         if isinstance(staticized, dict):
             staticized = dict(staticized)
             if self.dynamic_mode:
+                if self["pre_sim_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["pre_sim_func_nb"], "pre_sim_func_nb")
+                if self["pre_group_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["pre_group_func_nb"], "pre_group_func_nb")
+                if self["pre_segment_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["pre_segment_func_nb"], "pre_segment_func_nb")
+                if self["adjust_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["adjust_func_nb"], "adjust_func_nb")
                 if self["signal_func_nb"] is None:
                     if self.ls_mode:
                         self.adapt_staticized_to_udf(staticized, "ls_signal_func_nb", "signal_func_nb")
@@ -1696,14 +1842,22 @@ class FSPreparer(BasePFPreparer):
                         staticized["suggest_fname"] = "from_order_signal_func_nb"
                 else:
                     self.adapt_staticized_to_udf(staticized, self["signal_func_nb"], "signal_func_nb")
-                if self["adjust_func_nb"] is not None:
-                    self.adapt_staticized_to_udf(staticized, self["adjust_func_nb"], "adjust_func_nb")
-                if self["post_signal_func_nb"] is not None:
-                    self.adapt_staticized_to_udf(staticized, self["post_signal_func_nb"], "post_signal_func_nb")
+                if self["pre_order_segment_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(
+                        staticized, 
+                        self["pre_order_segment_func_nb"], 
+                        "pre_order_segment_func_nb",
+                    )
+                if self["post_order_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["post_order_func_nb"], "post_order_func_nb")
                 if self["post_segment_func_nb"] is not None:
                     self.adapt_staticized_to_udf(staticized, self["post_segment_func_nb"], "post_segment_func_nb")
                 elif self.save_state or self.save_value or self.save_returns:
                     self.adapt_staticized_to_udf(staticized, "save_post_segment_func_nb", "post_segment_func_nb")
+                if self["post_group_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["post_group_func_nb"], "post_group_func_nb")
+                if self["post_sim_func_nb"] is not None:
+                    self.adapt_staticized_to_udf(staticized, self["post_sim_func_nb"], "post_sim_func_nb")
         return staticized
 
     @cachedproperty
@@ -2152,14 +2306,26 @@ class FSPreparer(BasePFPreparer):
                 order_mode=self.order_mode,
                 use_stops=self.use_stops,
                 stop_ladder=self.stop_ladder,
+                pre_sim_func_nb=self.pre_sim_func_nb,
+                pre_sim_args=self.pre__pre_sim_args,
+                pre_group_func_nb=self.pre_group_func_nb,
+                pre_group_args=self.pre__pre_group_args,
+                pre_segment_func_nb=self.pre_segment_func_nb,
+                pre_segment_args=self.pre__pre_segment_args,
                 adjust_func_nb=self.adjust_func_nb,
                 adjust_args=self.pre__adjust_args,
                 signal_func_nb=self.signal_func_nb,
                 signal_args=self.pre__signal_args,
-                post_signal_func_nb=self.post_signal_func_nb,
-                post_signal_args=self.pre__post_signal_args,
+                pre_order_segment_func_nb=self.pre_order_segment_func_nb,
+                pre_order_segment_args=self.pre__pre_order_segment_args,
+                post_order_func_nb=self.post_order_func_nb,
+                post_order_args=self.pre__post_order_args,
                 post_segment_func_nb=self.post_segment_func_nb,
                 post_segment_args=self.pre__post_segment_args,
+                post_group_func_nb=self.post_group_func_nb,
+                post_group_args=self.pre__post_group_args,
+                post_sim_func_nb=self.post_sim_func_nb,
+                post_sim_args=self.pre__post_sim_args,
                 ffill_val_price=self.ffill_val_price,
                 update_value=self.update_value,
                 fill_pos_info=self.fill_pos_info,
@@ -2312,9 +2478,15 @@ class FSPreparer(BasePFPreparer):
         target_arg_map = dict(BasePFPreparer.target_arg_map.func(self))
         if self.dynamic_mode:
             if self.staticized is not None:
+                target_arg_map["pre_sim_func_nb"] = None
+                target_arg_map["pre_group_func_nb"] = None
+                target_arg_map["pre_segment_func_nb"] = None
                 target_arg_map["signal_func_nb"] = None
-                target_arg_map["post_signal_func_nb"] = None
+                target_arg_map["pre_order_segment_func_nb"] = None
+                target_arg_map["post_order_func_nb"] = None
                 target_arg_map["post_segment_func_nb"] = None
+                target_arg_map["post_group_func_nb"] = None
+                target_arg_map["post_sim_func_nb"] = None
         else:
             target_arg_map["group_lens"] = "cs_group_lens"
         return target_arg_map
@@ -2330,7 +2502,7 @@ FSPreparer.override_arg_config_doc(__pdoc__)
 
 fof_arg_config = ReadonlyConfig(
     dict(
-        segment_mask=dict(),
+        segment_mask=dict(broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=False))),
         call_pre_segment=dict(),
         call_post_segment=dict(),
         pre_sim_func_nb=dict(),
@@ -2684,22 +2856,23 @@ class FOFPreparer(BasePFPreparer):
             ArrayLike: Post-broadcasted segment mask.
         """
         segment_mask = self.pre__segment_mask
+        def_broadcast_kwargs = dict(self.broadcast_kwargs)
+        def_broadcast_kwargs.pop("wrapper_kwargs", None)
+        def_broadcast_kwargs.pop("return_wrapper", None)
+        def_broadcast_kwargs["to_shape"] = (self.target_shape[0], len(self.group_lens))
+        if self.arg_config["segment_mask"].get("full_shape", False):
+            def_broadcast_kwargs["keep_flex"] = False
+        broadcast_kwargs = merge_dicts(
+            def_broadcast_kwargs,
+            self.arg_config["segment_mask"].get("broadcast_kwargs", {}),
+        )
         if checks.is_int(segment_mask):
-            if self.keep_inout_flex:
-                _segment_mask = np.full((self.target_shape[0], 1), False)
-            else:
-                _segment_mask = np.full((self.target_shape[0], len(self.group_lens)), False)
+            broadcast_kwargs.pop("keep_flex", None)
+            _segment_mask = broadcast(False, keep_flex=False, **broadcast_kwargs)
             _segment_mask[0::segment_mask] = True
             segment_mask = _segment_mask
         else:
-            segment_mask = broadcast(
-                segment_mask,
-                to_shape=(self.target_shape[0], len(self.group_lens)),
-                to_pd=False,
-                keep_flex=self.keep_inout_flex,
-                reindex_kwargs=dict(fill_value=False),
-                require_kwargs=self.broadcast_kwargs.get("require_kwargs", {}),
-            )
+            segment_mask = broadcast(segment_mask, **broadcast_kwargs)
         checks.assert_subdtype(segment_mask, np.bool_, arg_name="segment_mask")
         return segment_mask
 
@@ -2829,7 +3002,7 @@ class FDOFPreparer(FOFPreparer):
         * Returns `vectorbtpro.portfolio.nb.from_order_func.def_pre_segment_func_nb` otherwise.
 
         Returns:
-            Callable: Function used to process pre-segment data.
+            Callable: Pre-segment function callable.
         """
         pre_segment_func_nb = self["pre_segment_func_nb"]
         if pre_segment_func_nb is None:
@@ -2847,7 +3020,7 @@ class FDOFPreparer(FOFPreparer):
         `vectorbtpro.portfolio.nb.from_order_func.def_order_func_nb` is used.
 
         Returns:
-            Callable: Function used for order processing.
+            Callable: Order function callable.
 
         Raises:
             ValueError: If `order_func_nb` is provided when `flexible` is True.
@@ -2867,7 +3040,7 @@ class FDOFPreparer(FOFPreparer):
         `vectorbtpro.portfolio.nb.from_order_func.def_flex_order_func_nb` is used.
 
         Returns:
-            Callable: Function used for processing flexible orders.
+            Callable: Flexible order function callable.
 
         Raises:
             ValueError: If `flex_order_func_nb` is provided when `flexible` is False.
@@ -2952,6 +3125,7 @@ class FDOFPreparer(FOFPreparer):
             self.min_size,
             self.max_size,
             self.size_granularity,
+            self.cash_limit,
             self.leverage,
             self.leverage_mode,
             self.reject_prob,

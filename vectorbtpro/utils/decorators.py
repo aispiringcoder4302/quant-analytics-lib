@@ -10,8 +10,8 @@
 
 """Module providing class and function decorators."""
 
-from functools import wraps
 import threading
+from functools import wraps
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.base import Base
@@ -159,12 +159,12 @@ class custom_property(property, Base):
     """Class for defining a custom extensible property that stores the decorated function and
     its configuration options as attributes.
 
+    !!! note
+        `custom_property` instances are defined at the class level, so modifying the property affects all instances.
+
     Args:
         func (Callable): Function to be decorated as a property.
         **options: Configuration options for the property.
-
-    !!! note
-        `custom_property` instances are defined at the class level, so modifying the property affects all instances.
     """
 
     def __new__(cls: tp.Type[custom_propertyT], *args, **options) -> tp.Union[tp.Callable, custom_propertyT]:
@@ -237,17 +237,17 @@ class custom_property(property, Base):
 class cacheable_property(custom_property):
     """Class for defining a cacheable property extending `custom_property` to support caching of computed values.
 
-    Args:
-        func (Callable): Function to be decorated as a cacheable property.
-        use_cache (bool): Whether to use caching.
-        whitelist (bool): Whether to whitelist the property.
-        **options: Configuration options for the property.
-
     !!! note
         This property assumes the instance remains unchanged; changes to dependent attributes are not detected.
 
     !!! info
         For default settings, see `vectorbtpro._settings.caching`.
+
+    Args:
+        func (Callable): Function to be decorated as a cacheable property.
+        use_cache (bool): Whether to use caching.
+        whitelist (bool): Whether to whitelist the property.
+        **options: Configuration options for the property.
     """
 
     def __init__(self, func: tp.Callable, use_cache: bool = False, whitelist: bool = False, **options) -> None:
@@ -395,6 +395,12 @@ def cacheable(
 
     See notes on `cacheable_property`.
 
+    !!! note
+        To decorate an instance method, use `cacheable_method`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.caching`.
+
     Args:
         func (Callable): Function to be decorated.
         use_cache (bool): Whether to use caching.
@@ -405,12 +411,6 @@ def cacheable(
 
     Returns:
         Union[Callable, cacheable_function]: Decorated function with caching enabled.
-
-    !!! note
-        To decorate an instance method, use `cacheable_method`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.caching`.
     """
 
     def decorator(func: tp.Callable) -> cacheable_functionT:
@@ -465,15 +465,15 @@ def cacheable(
 def cached(*args, **options) -> tp.Union[tp.Callable, cacheable_functionT]:
     """Decorate a function with caching enabled, equivalent to using `cacheable` with `use_cache=True`.
 
+    !!! note
+        To decorate an instance method, use `cached_method`.
+
     Args:
         func (Callable): Function to be decorated.
         **options: Configuration options for the function.
 
     Returns:
         Union[Callable, cacheable_function]: Decorated function with caching enabled.
-
-    !!! note
-        To decorate an instance method, use `cached_method`.
     """
     return cacheable(*args, use_cache=True, _decorator_name="cached", **options)
 
@@ -545,6 +545,9 @@ def cacheable_method(
 
     See notes on `cacheable_property`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.caching`.
+
     Args:
         func (Callable): Function to be decorated.
         use_cache (bool): Whether to use caching.
@@ -555,9 +558,6 @@ def cacheable_method(
 
     Returns:
         Union[Callable, cacheable_method]: Decorated method with caching enabled.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.caching`.
     """
 
     def decorator(func: tp.Callable) -> cacheable_methodT:

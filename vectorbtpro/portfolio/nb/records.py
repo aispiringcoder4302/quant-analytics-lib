@@ -185,10 +185,8 @@ def fill_trade_record_nb(
     Returns:
         None: Function modifies `new_records` in place.
     """
-    # Calculate PnL and return
     pnl, ret = get_trade_stats_nb(size, entry_price, entry_fees, exit_price, exit_fees, direction)
 
-    # Save trade
     new_records["id"][r] = r
     new_records["col"][r] = col
     new_records["size"][r] = size
@@ -270,7 +268,6 @@ def fill_entry_trades_in_position_nb(
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
 
-    # Iterate over orders located within a single position
     for c in range(first_c, last_c + 1):
         if c == -1:
             entry_order_id = -1
@@ -287,7 +284,6 @@ def fill_entry_trades_in_position_nb(
             entry_price = order_record["price"]
             order_side = order_record["side"]
 
-            # Ignore exit orders
             if (direction == TradeDirection.Long and order_side == OrderSide.Sell) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Buy
             ):
@@ -300,14 +296,11 @@ def fill_entry_trades_in_position_nb(
                 entry_size = order_record["size"]
                 entry_fees = order_record["fees"]
 
-        # Take a size-weighted average of exit price
         exit_price = exit_gross_sum / exit_size_sum
 
-        # Take a fraction of exit fees
         size_fraction = entry_size / exit_size_sum
         exit_fees = size_fraction * exit_fees_sum
 
-        # Fill the record
         if status == TradeStatus.Closed:
             exit_order_record = order_records[col_idxs[col_start_idxs[col] + last_c]]
             if exit_order_record["idx"] < sim_start or exit_order_record["idx"] >= sim_end:
@@ -366,6 +359,9 @@ def get_entry_trades_nb(
 
     Entry trade records are defined as buy orders in a long position and sell orders in a short position.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         order_records (RecordArray): Array of order records.
 
@@ -394,13 +390,10 @@ def get_entry_trades_nb(
 
             Has the `vectorbtpro.portfolio.enums.trade_dt` dtype.
 
-    !!! tip
-        This function is parallelizable.
-
     Examples:
         ```pycon
         >>> from vectorbtpro import *
-    
+
         >>> close = order_price = np.array([
         ...     [1, 6],
         ...     [2, 5],
@@ -420,7 +413,7 @@ def get_entry_trades_nb(
         >>> target_shape = close.shape
         >>> group_lens = np.full(target_shape[1], 1)
         >>> init_cash = np.full(target_shape[1], 100)
-    
+
         >>> sim_out = vbt.pf_nb.from_orders_nb(
         ...     target_shape,
         ...     group_lens,
@@ -430,7 +423,7 @@ def get_entry_trades_nb(
         ...     fees=np.asarray([[0.01]]),
         ...     slippage=np.asarray([[0.01]])
         ... )
-    
+
         >>> col_map = vbt.rec_nb.col_map_nb(sim_out.order_records['col'], target_shape[1])
         >>> entry_trade_records = vbt.pf_nb.get_entry_trades_nb(sim_out.order_records, close, col_map)
         >>> pd.DataFrame.from_records(entry_trade_records)
@@ -443,7 +436,7 @@ def get_entry_trades_nb(
         5   1    1   0.1               1          1         4.95     0.00495
         6   2    1   1.0               4          4         1.98     0.01980
         7   3    1   1.0               5          5         1.01     0.01010
-    
+
            exit_order_id  exit_idx  exit_price  exit_fees       pnl    return  \\
         0              3         3    3.060000   0.030600  2.009300  1.989406
         1              3         3    3.060000   0.003060  0.098920  0.489703
@@ -453,7 +446,7 @@ def get_entry_trades_nb(
         5              3         3    3.948182   0.003948  0.091284  0.184411
         6              5         5    1.010000   0.010100  0.940100  0.474798
         7             -1         5    1.000000   0.000000 -0.020100 -0.019901
-    
+
            direction  status  parent_id
         0          0       1          0
         1          0       1          0
@@ -490,7 +483,6 @@ def get_entry_trades_nb(
         _init_price = float(flex_select_1d_pc_nb(init_price_, col))
 
         if _init_position != 0:
-            # Prepare initial position
             first_c = -1
             in_position = True
             parent_id = 0
@@ -536,7 +528,6 @@ def get_entry_trades_nb(
                 raise ValueError(invalid_price_msg)
 
             if not in_position:
-                # New position opened
                 first_c = c
                 in_position = True
                 parent_id += 1
@@ -556,7 +547,6 @@ def get_entry_trades_nb(
             if (direction == TradeDirection.Long and order_side == OrderSide.Buy) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Sell
             ):
-                # Position increased
                 entry_size_sum += order_size
                 entry_gross_sum += order_size * order_price
                 entry_fees_sum += order_fees
@@ -565,14 +555,12 @@ def get_entry_trades_nb(
                 direction == TradeDirection.Short and order_side == OrderSide.Buy
             ):
                 if is_close_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position closed
                     last_c = c
                     in_position = False
                     exit_size_sum = entry_size_sum
                     exit_gross_sum += order_size * order_price
                     exit_fees_sum += order_fees
 
-                    # Fill trade records
                     counts[col] = fill_entry_trades_in_position_nb(
                         order_records,
                         col_map,
@@ -595,19 +583,16 @@ def get_entry_trades_nb(
                         counts[col],
                     )
                 elif is_less_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position decreased
                     exit_size_sum += order_size
                     exit_gross_sum += order_size * order_price
                     exit_fees_sum += order_fees
                 else:
-                    # Position closed
                     last_c = c
                     remaining_size = add_nb(entry_size_sum, -exit_size_sum)
                     exit_size_sum = entry_size_sum
                     exit_gross_sum += remaining_size * order_price
                     exit_fees_sum += remaining_size / order_size * order_fees
 
-                    # Fill trade records
                     counts[col] = fill_entry_trades_in_position_nb(
                         order_records,
                         col_map,
@@ -630,7 +615,6 @@ def get_entry_trades_nb(
                         counts[col],
                     )
 
-                    # New position opened
                     first_c = c
                     parent_id += 1
                     if order_side == OrderSide.Buy:
@@ -647,7 +631,6 @@ def get_entry_trades_nb(
                     exit_fees_sum = 0.0
 
         if in_position and is_less_nb(exit_size_sum, entry_size_sum):
-            # Position hasn't been closed
             last_c = col_len - 1
             remaining_size = add_nb(entry_size_sum, -exit_size_sum)
             exit_size_sum = entry_size_sum
@@ -661,7 +644,6 @@ def get_entry_trades_nb(
             exit_gross_sum += remaining_size * last_close
             exit_idx = _sim_end - 1
 
-            # Fill trade records
             counts[col] = fill_entry_trades_in_position_nb(
                 order_records,
                 col_map,
@@ -715,6 +697,9 @@ def get_exit_trades_nb(
 
     Exit trade records correspond to sell orders in a long position and buy orders in a short position.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         order_records (RecordArray): Array of order records.
 
@@ -740,9 +725,6 @@ def get_exit_trades_nb(
         RecordArray: Array of aggregated exit trade records.
 
             Has the `vectorbtpro.portfolio.enums.trade_dt` dtype.
-
-    !!! tip
-        This function is parallelizable.
 
     Examples:
         Building upon the example in `get_exit_trades_nb`:
@@ -806,7 +788,6 @@ def get_exit_trades_nb(
         _init_price = float(flex_select_1d_pc_nb(init_price_, col))
 
         if _init_position != 0:
-            # Prepare initial position
             in_position = True
             parent_id = 0
             entry_order_id = -1
@@ -849,7 +830,6 @@ def get_exit_trades_nb(
                 raise ValueError(invalid_price_msg)
 
             if not in_position:
-                # Trade opened
                 in_position = True
                 entry_order_id = order_id
                 entry_idx = order_idx
@@ -865,7 +845,6 @@ def get_exit_trades_nb(
             if (direction == TradeDirection.Long and order_side == OrderSide.Buy) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Sell
             ):
-                # Position increased
                 entry_size_sum += order_size
                 entry_gross_sum += order_size * order_price
                 entry_fees_sum += order_fees
@@ -874,7 +853,6 @@ def get_exit_trades_nb(
                 direction == TradeDirection.Short and order_side == OrderSide.Buy
             ):
                 if is_close_or_less_nb(order_size, entry_size_sum):
-                    # Trade closed
                     if is_close_nb(order_size, entry_size_sum):
                         exit_size = entry_size_sum
                     else:
@@ -884,10 +862,8 @@ def get_exit_trades_nb(
                     exit_order_id = order_id
                     exit_idx = order_idx
 
-                    # Take a size-weighted average of entry price
                     entry_price = entry_gross_sum / entry_size_sum
 
-                    # Take a fraction of entry fees
                     size_fraction = exit_size / entry_size_sum
                     entry_fees = size_fraction * entry_fees_sum
 
@@ -911,30 +887,24 @@ def get_exit_trades_nb(
                     counts[col] += 1
 
                     if is_close_nb(order_size, entry_size_sum):
-                        # Position closed
                         entry_order_id = -1
                         entry_idx = -1
                         direction = -1
                         in_position = False
                     else:
-                        # Position decreased, previous orders have now less impact
                         size_fraction = (entry_size_sum - order_size) / entry_size_sum
                         entry_size_sum *= size_fraction
                         entry_gross_sum *= size_fraction
                         entry_fees_sum *= size_fraction
                 else:
-                    # Trade reversed
-                    # Close current trade
                     cl_exit_size = entry_size_sum
                     cl_exit_price = order_price
                     cl_exit_fees = cl_exit_size / order_size * order_fees
                     cl_exit_order_id = order_id
                     cl_exit_idx = order_idx
 
-                    # Take a size-weighted average of entry price
                     entry_price = entry_gross_sum / entry_size_sum
 
-                    # Take a fraction of entry fees
                     size_fraction = cl_exit_size / entry_size_sum
                     entry_fees = size_fraction * entry_fees_sum
 
@@ -957,7 +927,6 @@ def get_exit_trades_nb(
                     )
                     counts[col] += 1
 
-                    # Open a new trade
                     entry_size_sum = order_size - cl_exit_size
                     entry_gross_sum = entry_size_sum * order_price
                     entry_fees_sum = order_fees - cl_exit_fees
@@ -970,7 +939,6 @@ def get_exit_trades_nb(
                     parent_id += 1
 
         if in_position and is_less_nb(-entry_size_sum, 0):
-            # Trade hasn't been closed
             exit_size = entry_size_sum
             last_close = flex_select_nb(close_, _sim_end - 1, col)
             if np.isnan(last_close):
@@ -984,10 +952,8 @@ def get_exit_trades_nb(
             exit_order_id = -1
             exit_idx = _sim_end - 1
 
-            # Take a size-weighted average of entry price
             entry_price = entry_gross_sum / entry_size_sum
 
-            # Take a fraction of entry fees
             size_fraction = exit_size / entry_size_sum
             entry_fees = size_fraction * entry_fees_sum
 
@@ -1033,7 +999,6 @@ def fill_position_record_nb(new_records: tp.RecordArray, r: int, trade_records: 
     Returns:
         None: Function modifies `new_records` in place.
     """
-    # Aggregate trades
     col = trade_records["col"][0]
     size = np.sum(trade_records["size"])
     entry_order_id = trade_records["entry_order_id"][0]
@@ -1048,7 +1013,6 @@ def fill_position_record_nb(new_records: tp.RecordArray, r: int, trade_records: 
     status = trade_records["status"][-1]
     pnl, ret = get_trade_stats_nb(size, entry_price, entry_fees, exit_price, exit_fees, direction)
 
-    # Save position
     new_records["id"][r] = r
     new_records["col"][r] = col
     new_records["size"][r] = size
@@ -1119,6 +1083,9 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
     Trades—whether entry trades, exit trades, or positions—are processed uniformly to calculate
     aggregated metrics such as size, weighted entry and exit prices, fees, profit, and return.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -1129,9 +1096,6 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
         RecordArray: Array of aggregated position records after repartitioning based on column counts.
 
             Has the `vectorbtpro.portfolio.enums.trade_dt` dtype.
-
-    !!! tip
-        This function is parallelizable.
 
     Examples:
         Building upon the example in `get_exit_trades_nb`:
@@ -1193,7 +1157,6 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
                     if trade_r - from_trade_r > 1:
                         fill_position_record_nb(new_records[:, col], counts[col], trade_records[from_trade_r:trade_r])
                     else:
-                        # Speed up
                         copy_trade_record_nb(new_records[:, col], counts[col], trade_records[from_trade_r])
                     counts[col] += 1
                 from_trade_r = trade_r
@@ -1202,7 +1165,6 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
         if trade_r - from_trade_r > 0:
             fill_position_record_nb(new_records[:, col], counts[col], trade_records[from_trade_r : trade_r + 1])
         else:
-            # Speed up
             copy_trade_record_nb(new_records[:, col], counts[col], trade_records[from_trade_r])
         counts[col] += 1
 
@@ -1234,6 +1196,9 @@ def get_long_view_orders_nb(
 ) -> tp.RecordArray:
     """Return a view of order records corresponding to long positions only.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         order_records (RecordArray): Array of order records.
 
@@ -1255,9 +1220,6 @@ def get_long_view_orders_nb(
 
     Returns:
         RecordArray: Filtered order records containing only long position entries.
-
-    !!! tip
-        This function is parallelizable.
     """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
@@ -1284,7 +1246,6 @@ def get_long_view_orders_nb(
         _init_price = float(flex_select_1d_pc_nb(init_price_, col))
 
         if _init_position != 0:
-            # Prepare initial position
             in_position = True
             if _init_position >= 0:
                 direction = TradeDirection.Long
@@ -1322,7 +1283,6 @@ def get_long_view_orders_nb(
                 raise ValueError(invalid_price_msg)
 
             if not in_position:
-                # New position opened
                 in_position = True
                 if order_side == OrderSide.Buy:
                     direction = TradeDirection.Long
@@ -1336,7 +1296,6 @@ def get_long_view_orders_nb(
             if (direction == TradeDirection.Long and order_side == OrderSide.Buy) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Sell
             ):
-                # Position increased
                 entry_size_sum += order_size
                 entry_gross_sum += order_size * order_price
                 if direction == TradeDirection.Long:
@@ -1346,7 +1305,6 @@ def get_long_view_orders_nb(
                 direction == TradeDirection.Short and order_side == OrderSide.Buy
             ):
                 if is_close_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position closed
                     in_position = False
                     exit_size_sum = entry_size_sum
                     exit_gross_sum += order_size * order_price
@@ -1354,17 +1312,14 @@ def get_long_view_orders_nb(
                         out[r] = order_record
                         r += 1
                 elif is_less_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position decreased
                     exit_size_sum += order_size
                     exit_gross_sum += order_size * order_price
                     if direction == TradeDirection.Long:
                         out[r] = order_record
                         r += 1
                 else:
-                    # Position closed
                     remaining_size = add_nb(entry_size_sum, -exit_size_sum)
 
-                    # New position opened
                     entry_size_sum = add_nb(order_size, -remaining_size)
                     entry_gross_sum = entry_size_sum * order_price
                     exit_size_sum = 0.0
@@ -1416,6 +1371,9 @@ def get_short_view_orders_nb(
     The function simulates the evolution of trading positions for each column using the provided
     initial position and price, and applies simulation range filters defined by `sim_start` and `sim_end`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         order_records (RecordArray): Array of order records.
 
@@ -1437,9 +1395,6 @@ def get_short_view_orders_nb(
 
     Returns:
         RecordArray: Filtered order records corresponding to short positions.
-
-    !!! tip
-        This function is parallelizable.
     """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
@@ -1466,7 +1421,6 @@ def get_short_view_orders_nb(
         _init_price = float(flex_select_1d_pc_nb(init_price_, col))
 
         if _init_position != 0:
-            # Prepare initial position
             in_position = True
             if _init_position >= 0:
                 direction = TradeDirection.Long
@@ -1504,7 +1458,6 @@ def get_short_view_orders_nb(
                 raise ValueError(invalid_price_msg)
 
             if not in_position:
-                # New position opened
                 in_position = True
                 if order_side == OrderSide.Buy:
                     direction = TradeDirection.Long
@@ -1518,7 +1471,6 @@ def get_short_view_orders_nb(
             if (direction == TradeDirection.Long and order_side == OrderSide.Buy) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Sell
             ):
-                # Position increased
                 entry_size_sum += order_size
                 entry_gross_sum += order_size * order_price
                 if direction == TradeDirection.Short:
@@ -1528,7 +1480,6 @@ def get_short_view_orders_nb(
                 direction == TradeDirection.Short and order_side == OrderSide.Buy
             ):
                 if is_close_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position closed
                     in_position = False
                     exit_size_sum = entry_size_sum
                     exit_gross_sum += order_size * order_price
@@ -1536,17 +1487,14 @@ def get_short_view_orders_nb(
                         out[r] = order_record
                         r += 1
                 elif is_less_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position decreased
                     exit_size_sum += order_size
                     exit_gross_sum += order_size * order_price
                     if direction == TradeDirection.Short:
                         out[r] = order_record
                         r += 1
                 else:
-                    # Position closed
                     remaining_size = add_nb(entry_size_sum, -exit_size_sum)
 
-                    # New position opened
                     entry_size_sum = add_nb(order_size, -remaining_size)
                     entry_gross_sum = entry_size_sum * order_price
                     exit_size_sum = 0.0
@@ -1604,6 +1552,9 @@ def get_position_feature_nb(
     and close prices across multiple columns. The calculation adapts based on the selected
     `feature` and the flags controlling the treatment of open and closed positions.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         order_records (RecordArray): Array of order records.
 
@@ -1632,9 +1583,6 @@ def get_position_feature_nb(
 
     Returns:
         Array2d: Array of computed feature values matching the shape of `close`.
-
-    !!! tip
-        This function is parallelizable.
     """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
@@ -1659,7 +1607,6 @@ def get_position_feature_nb(
         _init_price = float(flex_select_1d_pc_nb(init_price_, col))
 
         if _init_position != 0:
-            # Prepare initial position
             in_position = True
             was_in_position = True
             if _init_position >= 0:
@@ -1727,7 +1674,6 @@ def get_position_feature_nb(
                             exit_price = exit_gross_sum / exit_size_sum
                             out[last_order_idx:order_idx, col] = exit_price
 
-                # New position opened
                 in_position = True
                 was_in_position = True
                 if order_side == OrderSide.Buy:
@@ -1742,26 +1688,21 @@ def get_position_feature_nb(
             if (direction == TradeDirection.Long and order_side == OrderSide.Buy) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Sell
             ):
-                # Position increased
                 entry_size_sum += order_size
                 entry_gross_sum += order_size * order_price
             elif (direction == TradeDirection.Long and order_side == OrderSide.Sell) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Buy
             ):
                 if is_close_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position closed
                     in_position = False
                     exit_size_sum = entry_size_sum
                     exit_gross_sum += order_size * order_price
                 elif is_less_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position decreased
                     exit_size_sum += order_size
                     exit_gross_sum += order_size * order_price
                 else:
-                    # Position closed
                     remaining_size = add_nb(entry_size_sum, -exit_size_sum)
 
-                    # New position opened
                     if order_side == OrderSide.Buy:
                         direction = TradeDirection.Long
                     else:
@@ -2151,6 +2092,9 @@ def best_price_nb(
 ) -> tp.Array1d:
     """Compute the best price for each trade using `trade_best_worst_price_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2165,9 +2109,6 @@ def best_price_nb(
 
     Returns:
         Array1d: Array of best prices computed for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(len(trade_records), dtype=float_)
     for r in prange(len(trade_records)):
@@ -2212,6 +2153,9 @@ def worst_price_nb(
 ) -> tp.Array1d:
     """Compute the worst price for each trade using `trade_best_worst_price_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2226,9 +2170,6 @@ def worst_price_nb(
 
     Returns:
         Array1d: Array of worst prices computed for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(len(trade_records), dtype=float_)
     for r in prange(len(trade_records)):
@@ -2275,6 +2216,9 @@ def best_price_idx_nb(
 ) -> tp.Array1d:
     """Compute the index of the best price for each trade using `trade_best_worst_price_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2290,9 +2234,6 @@ def best_price_idx_nb(
 
     Returns:
         Array1d: Array of indices corresponding to the best prices for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(len(trade_records), dtype=float_)
     for r in prange(len(trade_records)):
@@ -2340,6 +2281,9 @@ def worst_price_idx_nb(
 ) -> tp.Array1d:
     """Return worst price index for each trade by applying `trade_best_worst_price_nb` on each trade.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2355,9 +2299,6 @@ def worst_price_idx_nb(
 
     Returns:
         Array1d: Array of worst price indexes for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(len(trade_records), dtype=float_)
     for r in prange(len(trade_records)):
@@ -2392,6 +2333,9 @@ def expanding_best_price_nb(
     Calculates a 2D array where each column corresponds to a trade and each row represents
     the best price reached up to that time index, starting from the trade's entry.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2407,9 +2351,6 @@ def expanding_best_price_nb(
     Returns:
         Array2d: 2D array where each column represents a trade and each row contains
             the best price up to that time index.
-
-    !!! tip
-        This function is parallelizable.
     """
     if max_duration is None:
         _max_duration = 0
@@ -2470,6 +2411,9 @@ def expanding_worst_price_nb(
     Calculates a 2D array where each column corresponds to a trade and each row represents
     the worst price reached up to that time index, starting from the trade's entry.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2485,9 +2429,6 @@ def expanding_worst_price_nb(
     Returns:
         Array2d: 2D array where each column represents a trade and each row contains
             the worst price up to that time index.
-
-    !!! tip
-        This function is parallelizable.
     """
     if max_duration is None:
         _max_duration = 0
@@ -2588,6 +2529,9 @@ def mfe_nb(
 
     Iterates over the provided arrays and computes the MFE for each trade using the `trade_mfe_nb` function.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         size (Array1d): Array of trade sizes.
         direction (Array1d): Array of trade direction indicators.
@@ -2597,9 +2541,6 @@ def mfe_nb(
 
     Returns:
         Array1d: Array containing the MFE values for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(size.shape[0], dtype=float_)
     for r in prange(size.shape[0]):
@@ -2669,6 +2610,9 @@ def mae_nb(
 
     Iterates over the provided arrays and computes the MAE for each trade using the `trade_mae_nb` function.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         size (Array1d): Array of trade sizes.
         direction (Array1d): Array of trade direction indicators.
@@ -2678,9 +2622,6 @@ def mae_nb(
 
     Returns:
         Array1d: Array containing the MAE values for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(size.shape[0], dtype=float_)
     for r in prange(size.shape[0]):
@@ -2711,6 +2652,9 @@ def expanding_mfe_nb(
 ) -> tp.Array2d:
     """Get expanding maximum favorable excursion (MFE) for each trade using expanding best prices.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2720,9 +2664,6 @@ def expanding_mfe_nb(
 
     Returns:
         Array2d: 2D array of expanding MFE values for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(expanding_best_price, dtype=float_)
     for r in prange(expanding_best_price.shape[1]):
@@ -2754,6 +2695,9 @@ def expanding_mae_nb(
 ) -> tp.Array2d:
     """Get expanding maximum adverse excursion (MAE) for each trade using expanding worst prices.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2763,9 +2707,6 @@ def expanding_mae_nb(
 
     Returns:
         Array2d: 2D array of expanding MAE values for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(expanding_worst_price, dtype=float_)
     for r in prange(expanding_worst_price.shape[1]):
@@ -2811,6 +2752,9 @@ def edge_ratio_nb(
 ) -> tp.Array1d:
     """Get the edge ratio for each column based on normalized trade outcomes.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2828,9 +2772,6 @@ def edge_ratio_nb(
     Returns:
         Array1d: 1D array containing the edge ratio for each column, computed as the ratio of
             the mean normalized MFE to the mean normalized MAE.
-
-    !!! tip
-        This function is parallelizable.
     """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
@@ -2926,6 +2867,9 @@ def running_edge_ratio_nb(
     excursion (MAE) for trades associated with each column. Normalization is performed using
     the provided volatility array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2945,9 +2889,6 @@ def running_edge_ratio_nb(
 
     Returns:
         Array2d: 2D array with shape (max_duration, number of columns) containing the running edge ratio.
-
-    !!! tip
-        This function is parallelizable.
     """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens

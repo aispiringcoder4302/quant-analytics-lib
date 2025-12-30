@@ -37,15 +37,15 @@ _rotate_cols = settings["indexing"]["rotate_cols"]
 def flex_choose_i_1d_nb(arr: tp.FlexArray1d, i: int) -> int:
     """Choose a position in a flexible 1-dimensional array as if it were broadcast against rows or columns.
 
+    !!! note
+        Array must be one-dimensional.
+
     Args:
         arr (FlexArray1d): Flexible 1-dimensional array.
         i (int): Index used for position selection.
 
     Returns:
         int: Computed index based on the array shape.
-
-    !!! note
-        Array must be one-dimensional.
     """
     if arr.shape[0] == 1:
         flex_i = 0
@@ -58,15 +58,15 @@ def flex_choose_i_1d_nb(arr: tp.FlexArray1d, i: int) -> int:
 def flex_select_1d_nb(arr: tp.FlexArray1d, i: int) -> tp.Scalar:
     """Select an element from a flexible 1-dimensional array as if it were broadcast against rows or columns.
 
+    !!! note
+        Array must be one-dimensional.
+
     Args:
         arr (FlexArray1d): Flexible 1-dimensional array.
         i (int): Index used for selecting the element.
 
     Returns:
         Scalar: Element selected from the array.
-
-    !!! note
-        Array must be one-dimensional.
     """
     flex_i = flex_choose_i_1d_nb(arr, i)
     return arr[flex_i]
@@ -76,6 +76,9 @@ def flex_select_1d_nb(arr: tp.FlexArray1d, i: int) -> tp.Scalar:
 def flex_choose_i_pr_1d_nb(arr: tp.FlexArray1d, i: int, rotate_rows: bool = _rotate_rows) -> int:
     """Choose a position in a flexible 1-dimensional array as if it were broadcast along rows.
 
+    !!! note
+        Array must be one-dimensional.
+
     Args:
         arr (FlexArray1d): Flexible 1-dimensional array.
         i (int): Index used for row selection.
@@ -83,9 +86,6 @@ def flex_choose_i_pr_1d_nb(arr: tp.FlexArray1d, i: int, rotate_rows: bool = _rot
 
     Returns:
         int: Computed index considering rotational indexing if enabled.
-
-    !!! note
-        Array must be one-dimensional.
     """
     if arr.shape[0] == 1:
         flex_i = 0
@@ -100,6 +100,9 @@ def flex_choose_i_pr_1d_nb(arr: tp.FlexArray1d, i: int, rotate_rows: bool = _rot
 def flex_choose_i_pr_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rotate_rows) -> int:
     """Choose a position in a flexible 2-dimensional array as if it were broadcast along rows.
 
+    !!! note
+        Array must be two-dimensional.
+
     Args:
         arr (FlexArray2d): Flexible 2-dimensional array.
         i (int): Index used for row selection.
@@ -107,9 +110,6 @@ def flex_choose_i_pr_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rotate
 
     Returns:
         int: Computed row index considering rotational indexing if enabled.
-
-    !!! note
-        Array must be two-dimensional.
     """
     if arr.shape[0] == 1:
         flex_i = 0
@@ -124,6 +124,9 @@ def flex_choose_i_pr_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rotate
 def flex_select_1d_pr_nb(arr: tp.FlexArray1d, i: int, rotate_rows: bool = _rotate_rows) -> tp.Scalar:
     """Select an element from a flexible 1-dimensional array as if it were broadcast along rows.
 
+    !!! note
+        Array must be one-dimensional.
+
     Args:
         arr (FlexArray1d): Flexible 1-dimensional array.
         i (int): Index used for selecting the element.
@@ -131,9 +134,6 @@ def flex_select_1d_pr_nb(arr: tp.FlexArray1d, i: int, rotate_rows: bool = _rotat
 
     Returns:
         Scalar: Element selected from the array.
-
-    !!! note
-        Array must be one-dimensional.
     """
     flex_i = flex_choose_i_pr_1d_nb(arr, i, rotate_rows=rotate_rows)
     return arr[flex_i]
@@ -143,6 +143,9 @@ def flex_select_1d_pr_nb(arr: tp.FlexArray1d, i: int, rotate_rows: bool = _rotat
 def flex_choose_i_pc_1d_nb(arr: tp.FlexArray1d, col: int, rotate_cols: bool = _rotate_cols) -> int:
     """Choose a position in a flexible 1-dimensional array as if it were broadcast along columns.
 
+    !!! note
+        Array must be one-dimensional.
+
     Args:
         arr (FlexArray1d): Flexible 1-dimensional array.
         col (int): Index used for column selection.
@@ -150,9 +153,6 @@ def flex_choose_i_pc_1d_nb(arr: tp.FlexArray1d, col: int, rotate_cols: bool = _r
 
     Returns:
         int: Computed column index considering rotational indexing if enabled.
-
-    !!! note
-        Array must be one-dimensional.
     """
     if arr.shape[0] == 1:
         flex_col = 0
@@ -167,6 +167,9 @@ def flex_choose_i_pc_1d_nb(arr: tp.FlexArray1d, col: int, rotate_cols: bool = _r
 def flex_choose_i_pc_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _rotate_cols) -> int:
     """Choose a position in a flexible 2-dimensional array as if it were broadcast along columns.
 
+    !!! note
+        Array must be two-dimensional.
+
     Args:
         arr (FlexArray2d): Flexible 2-dimensional array.
         col (int): Index used for column selection.
@@ -174,9 +177,6 @@ def flex_choose_i_pc_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _rota
 
     Returns:
         int: Computed column index considering rotational indexing if enabled.
-
-    !!! note
-        Array must be two-dimensional.
     """
     if arr.shape[1] == 1:
         flex_col = 0
@@ -191,6 +191,9 @@ def flex_choose_i_pc_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _rota
 def flex_select_1d_pc_nb(arr: tp.FlexArray1d, col: int, rotate_cols: bool = _rotate_cols) -> tp.Scalar:
     """Select an element from a flexible 1-dimensional array as if it were broadcast along columns.
 
+    !!! note
+        Array must be one-dimensional.
+
     Args:
         arr (FlexArray1d): Flexible 1-dimensional array.
         col (int): Index used for selecting the element.
@@ -198,9 +201,6 @@ def flex_select_1d_pc_nb(arr: tp.FlexArray1d, col: int, rotate_cols: bool = _rot
 
     Returns:
         Scalar: Element selected from the array.
-
-    !!! note
-        Array must be one-dimensional.
     """
     flex_col = flex_choose_i_pc_1d_nb(arr, col, rotate_cols=rotate_cols)
     return arr[flex_col]
@@ -216,6 +216,9 @@ def flex_choose_i_and_col_nb(
 ) -> tp.Tuple[int, int]:
     """Choose positions in a flexible 2-dimensional array as if it were broadcast along rows and columns.
 
+    !!! note
+        Array must be two-dimensional.
+
     Args:
         arr (FlexArray2d): Flexible 2-dimensional array.
         i (int): Index used for row selection.
@@ -225,9 +228,6 @@ def flex_choose_i_and_col_nb(
 
     Returns:
         Tuple[int, int]: Tuple containing the computed row and column indices.
-
-    !!! note
-        Array must be two-dimensional.
     """
     if arr.shape[0] == 1:
         flex_i = 0
@@ -256,6 +256,9 @@ def flex_select_nb(
 ) -> tp.Scalar:
     """Select an element from a flexible 2-dimensional array as if it were broadcast along rows and columns.
 
+    !!! note
+        Array must be two-dimensional.
+
     Args:
         arr (FlexArray2d): Flexible 2-dimensional array.
         i (int): Index used for row selection.
@@ -265,9 +268,6 @@ def flex_select_nb(
 
     Returns:
         Scalar: Element selected from the array.
-
-    !!! note
-        Array must be two-dimensional.
     """
     flex_i, flex_col = flex_choose_i_and_col_nb(
         arr,
@@ -283,6 +283,9 @@ def flex_select_nb(
 def flex_select_row_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rotate_rows) -> tp.Array1d:
     """Select a row from a flexible 2-dimensional array, returning a 1-dimensional array.
 
+    !!! note
+        Array must be two-dimensional.
+
     Args:
         arr (FlexArray2d): Flexible 2-dimensional array.
         i (int): Index used for row selection.
@@ -290,9 +293,6 @@ def flex_select_row_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rotate_
 
     Returns:
         Array1d: Selected row as a 1-dimensional array.
-
-    !!! note
-        Array must be two-dimensional.
     """
     flex_i = flex_choose_i_pr_nb(arr, i, rotate_rows=rotate_rows)
     return arr[flex_i]
@@ -302,6 +302,9 @@ def flex_select_row_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rotate_
 def flex_select_col_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _rotate_cols) -> tp.Array1d:
     """Select a column from a flexible 2-dimensional array, returning a 1-dimensional array.
 
+    !!! note
+        Array must be two-dimensional.
+
     Args:
         arr (FlexArray2d): Flexible 2-dimensional array.
         col (int): Index used for column selection.
@@ -309,9 +312,6 @@ def flex_select_col_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _rotat
 
     Returns:
         Array1d: Selected column as a 1-dimensional array.
-
-    !!! note
-        Array must be two-dimensional.
     """
     flex_col = flex_choose_i_pc_nb(arr, col, rotate_cols=rotate_cols)
     return arr[:, flex_col]
@@ -321,6 +321,9 @@ def flex_select_col_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _rotat
 def flex_select_2d_row_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rotate_rows) -> tp.Array2d:
     """Select a row from a flexible 2-dimensional array, returning a 2-dimensional array.
 
+    !!! note
+        Array must be two-dimensional.
+
     Args:
         arr (FlexArray2d): Flexible 2-dimensional array.
         i (int): Index used for row selection.
@@ -328,9 +331,6 @@ def flex_select_2d_row_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rota
 
     Returns:
         Array2d: 2-dimensional array containing the selected row.
-
-    !!! note
-        Array must be two-dimensional.
     """
     flex_i = flex_choose_i_pr_nb(arr, i, rotate_rows=rotate_rows)
     return arr[flex_i : flex_i + 1]
@@ -340,6 +340,9 @@ def flex_select_2d_row_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rota
 def flex_select_2d_col_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _rotate_cols) -> tp.Array2d:
     """Select a column from a flexible 2-dimensional array, returning a 2-dimensional array.
 
+    !!! note
+        Array must be two-dimensional.
+
     Args:
         arr (FlexArray2d): Flexible 2-dimensional array.
         col (int): Index used for column selection.
@@ -347,9 +350,6 @@ def flex_select_2d_col_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _ro
 
     Returns:
         Array2d: 2-dimensional array containing the selected column.
-
-    !!! note
-        Array must be two-dimensional.
     """
     flex_col = flex_choose_i_pc_nb(arr, col, rotate_cols=rotate_cols)
     return arr[:, flex_col : flex_col + 1]

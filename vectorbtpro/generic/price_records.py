@@ -412,14 +412,14 @@ class PriceRecords(Records):
     def get_bar_close_time(self, **kwargs) -> MappedArray:
         """Return a mapped array with the closing time of the bar.
 
+        !!! note
+            Ensure that `wrapper.freq` is provided, as it is required to compute the closing time.
+
         Args:
             **kwargs: Keyword arguments for `PriceRecords.map_array`.
 
         Returns:
             MappedArray: Mapped array of bar close times.
-
-        !!! note
-            Ensure that `wrapper.freq` is provided, as it is required to compute the closing time.
         """
         if self.wrapper.freq is None:
             raise ValueError("Must provide frequency")

@@ -488,6 +488,9 @@ def contains_in_obj(
 ) -> bool:
     """Return whether any element in the given object satisfies the match function using an iterative search.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.search`.
+
     Args:
         obj (Any): Object to search.
         match_func (Callable): Function that accepts a key and a value and returns True
@@ -505,14 +508,11 @@ def contains_in_obj(
 
             Uses `vectorbtpro.utils.checks.is_instance_of` to check.
         max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
-        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
+        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal, None = unlimited).
         **kwargs: Keyword arguments for `match_func`.
 
     Returns:
         bool: True if any element matches the criteria, False otherwise.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.search`.
     """
     from vectorbtpro._settings import settings
 
@@ -593,6 +593,9 @@ def find_in_obj(
     Apply `match_func` to each element (with its current path key) to determine if it is a match.
     The search does not evaluate dictionary keys.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.search`.
+
     Args:
         obj (Any): Object to search within.
         match_func (Callable): Function that accepts a key and a value and returns True
@@ -611,14 +614,11 @@ def find_in_obj(
             Uses `vectorbtpro.utils.checks.is_instance_of` to check.
         stringify_keys (bool): If True, convert path keys to a string representation.
         max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
-        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
+        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal, None = unlimited).
         **kwargs: Keyword arguments for `match_func`.
 
     Returns:
         PathDict: Mapping of path-like keys (using tuples for nested levels) to their corresponding values.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.search`.
     """
     from vectorbtpro._settings import settings
 
@@ -768,6 +768,14 @@ def find_and_replace_in_obj(
 ) -> tp.Any:
     """Recursively find and replace matching elements within an object.
 
+    !!! note
+        When processing nested structures (e.g., dictionaries or lists), finding a match triggers the creation
+        of a copy of the object, which loses the original reference. To ensure consistent behavior, either
+        operate on a deep or hybrid copy or disable `make_copy` to modify in place.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.search`.
+
     Args:
         obj (Any): Object to search and replace within.
         match_func (Callable): Function that accepts a key and a value and returns True
@@ -782,21 +790,13 @@ def find_and_replace_in_obj(
 
             Uses `vectorbtpro.utils.checks.is_instance_of` to check.
         max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
-        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
+        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal, None = unlimited).
         make_copy (bool): Flag to indicate whether to modify a copy of the object.
         check_any_first (bool): If True, checks if any element matches before processing.
         **kwargs: Keyword arguments for `match_func` and `replace_func`.
 
     Returns:
         Any: Modified object with replacements applied.
-
-    !!! note
-        When processing nested structures (e.g., dictionaries or lists), finding a match triggers the creation
-        of a copy of the object, which loses the original reference. To ensure consistent behavior, either
-        operate on a deep or hybrid copy or disable `make_copy` to modify in place.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.search`.
     """
     from vectorbtpro._settings import settings
 
@@ -926,6 +926,9 @@ def flatten_obj(
 ) -> tp.PathDict:
     """Recursively flatten a nested object into a dictionary mapping path keys to corresponding values.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.search`.
+
     Args:
         obj (Any): Object to search within.
         traversal (Optional[str]): Traversal strategy.
@@ -943,13 +946,10 @@ def flatten_obj(
             Uses `vectorbtpro.utils.checks.is_instance_of` to check.
         stringify_keys (bool): If True, convert path keys to a string representation.
         max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
-        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
+        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal, None = unlimited).
 
     Returns:
         PathDict: Mapping of path-like keys (using tuples for nested levels) to their corresponding values.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.search`.
     """
     from vectorbtpro._settings import settings
 
@@ -1296,6 +1296,9 @@ def find_regex(
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
     """Return details about regex pattern matches within a string.
 
+    !!! note
+        If `group` is None and the pattern contains exactly one group, that group is automatically selected.
+
     Args:
         pattern (str): Regular expression pattern to search for.
         string (str): String in which to search.
@@ -1313,9 +1316,6 @@ def find_regex(
 
     Returns:
         Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
-
-    !!! note
-        If `group` is None and the pattern contains exactly one group, that group is automatically selected.
     """
     if ignore_case:
         flags |= re.IGNORECASE

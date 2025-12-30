@@ -35,8 +35,8 @@ from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.chunking import ChunkMeta, iter_chunk_meta, get_chunk_meta_key, ArraySelector, ArraySlicer
 from vectorbtpro.utils.config import merge_dicts, resolve_dict, Configured
 from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
-from vectorbtpro.utils.execution import Task, execute
 from vectorbtpro.utils.eval_ import evaluate
+from vectorbtpro.utils.execution import Task, execute
 from vectorbtpro.utils.magic_decorators import attach_binary_magic_methods, attach_unary_magic_methods
 from vectorbtpro.utils.parsing import get_context_vars, get_func_arg_names
 from vectorbtpro.utils.template import substitute_templates
@@ -463,6 +463,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
     ) -> tp.Union[None, float, tp.PandasFrequency]:
         """Determine the frequency of the index as a Pandas Timedelta or frequency.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
+
         Args:
             index (Optional[Index]): Index from which to infer the frequency.
 
@@ -474,9 +477,6 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Returns:
             Union[None, float, PandasFrequency]: Inferred frequency, or None if conversion fails.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.wrapping`.
         """
         from vectorbtpro._settings import settings
 
@@ -567,6 +567,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
     ) -> float:
         """Return the number of periods in the index, accounting for its datetime-like properties.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
+
         Args:
             index (Optional[Index]): Index to process.
 
@@ -577,9 +580,6 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Returns:
             float: Calculated number of periods.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.wrapping`.
         """
         from vectorbtpro._settings import settings
 
@@ -628,6 +628,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
     ) -> tp.Union[pd.Index, tp.MaybeArray]:
         """Convert an array of values to a duration based on the index frequency from `BaseIDXAccessor.freq`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
+
         Args:
             a (MaybeArray): Input array containing numerical values.
             to_pd (bool): Determines whether to return a Pandas timedelta representation.
@@ -635,9 +638,6 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Returns:
             Union[pd.Index, MaybeArray]: Array converted to time durations.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.wrapping`.
         """
         from vectorbtpro._settings import settings
 
@@ -804,6 +804,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return the result of splitting the Pandas object using
         `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
 
+        !!! note
+            Splits the Pandas object itself, not the accessor.
+
         Args:
             *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
             splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
@@ -813,9 +816,6 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Returns:
             Any: Result of the split operation.
-
-        !!! note
-            Splits the Pandas object itself, not the accessor.
         """
         from vectorbtpro.generic.splitting.base import Splitter
 
@@ -833,6 +833,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return the result of splitting and applying a function using
         `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
 
+        !!! note
+            Splits the Pandas object itself, not the accessor.
+
         Args:
             apply_func (Callable): Function to apply to each split.
             *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
@@ -843,9 +846,6 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Returns:
             Any: Result after applying the split and apply operation.
-
-        !!! note
-            Splits the Pandas object itself, not the accessor.
         """
         from vectorbtpro.generic.splitting.base import Splitter, Takeable
 
@@ -869,6 +869,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
         The chunking is performed along the appropriate axis: if the object is one-dimensional,
         the axis is set to 0; otherwise, 1 is used.
 
+        !!! note
+            Splits the underlying Pandas object, not the accessor.
+
         Args:
             min_size (Optional[int]): Minimum number of elements to split.
             n_chunks (Union[None, int, str]): Specification for the number of chunks.
@@ -883,9 +886,6 @@ class BaseIDXAccessor(Configured, IndexApplier):
         Yields:
             Union[Index, Tuple[ChunkMeta, Index]]: Index chunk or a tuple with
                 the chunk metadata and index chunk.
-
-        !!! note
-            Splits the underlying Pandas object, not the accessor.
         """
         if chunk_meta is None:
             chunk_meta = iter_chunk_meta(size=len(self.obj), min_size=min_size, n_chunks=n_chunks, chunk_len=chunk_len)
@@ -912,6 +912,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
         The function can be specified as a callable or as a string representing a method name.
         Each chunk is derived from the instance's underlying Pandas object.
 
+        !!! note
+            Splits the underlying Pandas object, not the accessor.
+
         Args:
             apply_func (Union[str, Callable]): Function or method name to apply to each chunk.
             *args: Positional arguments for `apply_func`.
@@ -925,9 +928,6 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Returns:
             MergeableResults: Merged results from applying the function on all chunks.
-
-        !!! note
-            Splits the underlying Pandas object, not the accessor.
         """
         if isinstance(apply_func, str):
             apply_func = getattr(type(self), apply_func)
@@ -963,12 +963,6 @@ class BaseAccessor(Wrapping):
     for matrix operations, and the resulting 2-dimensional output is converted back to a Series using
     `BaseAccessor.wrapper`.
 
-    Args:
-        wrapper (Union[ArrayWrapper, tp.ArrayLike]): Wrapper instance or array if `obj` is not provided.
-        obj (Optional[tp.ArrayLike]): Array if `wrapper` is an array wrapper.
-        **kwargs: Keyword arguments distributed between
-            `vectorbtpro.base.wrapping.ArrayWrapper` and `vectorbtpro.base.wrapping.Wrapping`.
-
     !!! note
         When using magic methods, ensure that `.vbt` is called on the operand on the left
         if the other operand is an array.
@@ -976,6 +970,12 @@ class BaseAccessor(Wrapping):
         Accessors do not use caching.
 
         Grouping is supported only by methods that accept the `group_by` argument.
+
+    Args:
+        wrapper (Union[ArrayWrapper, tp.ArrayLike]): Wrapper instance or array if `obj` is not provided.
+        obj (Optional[tp.ArrayLike]): Array if `wrapper` is an array wrapper.
+        **kwargs: Keyword arguments distributed between
+            `vectorbtpro.base.wrapping.ArrayWrapper` and `vectorbtpro.base.wrapping.Wrapping`.
 
     Examples:
         Build a symmetric matrix:
@@ -1360,11 +1360,11 @@ class BaseAccessor(Wrapping):
     def is_series(cls_or_self) -> bool:
         """Determine whether the underlying object is a Pandas Series.
 
-        Returns:
-            bool: True if the underlying object is a Series, False otherwise.
-
         !!! abstract
             This method should be overridden in a subclass.
+
+        Returns:
+            bool: True if the underlying object is a Series, False otherwise.
         """
         if isinstance(cls_or_self, type):
             raise NotImplementedError
@@ -1374,11 +1374,11 @@ class BaseAccessor(Wrapping):
     def is_frame(cls_or_self) -> bool:
         """Determine whether the underlying object is a Pandas DataFrame.
 
-        Returns:
-            bool: True if the underlying object is a DataFrame, False otherwise.
-
         !!! abstract
             This method should be overridden in a subclass.
+
+        Returns:
+            bool: True if the underlying object is a DataFrame, False otherwise.
         """
         if isinstance(cls_or_self, type):
             raise NotImplementedError
@@ -1446,6 +1446,9 @@ class BaseAccessor(Wrapping):
     ) -> tp.Union[BaseAccessorT, tp.SeriesFrame]:
         """Apply an indexing operation to the accessor.
 
+        !!! note
+            If `wrap` is False, returns Pandas object, not accessor!
+
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.Wrapping.apply_to_index`.
             wrap (bool): If False, return the underlying Pandas object; if True, return an accessor.
@@ -1454,9 +1457,6 @@ class BaseAccessor(Wrapping):
         Returns:
             Union[BaseAccessor, SeriesFrame]: Accessor instance with the applied indexing,
                 or the underlying Pandas object if `wrap` is False.
-
-        !!! note
-            If `wrap` is False, returns Pandas object, not accessor!
         """
         result = Wrapping.apply_to_index(self, *args, **kwargs)
         if wrap:
@@ -2103,6 +2103,9 @@ class BaseAccessor(Wrapping):
     ) -> tp.SeriesFrame:
         """Apply a function to the object with broadcasting and template substitution support.
 
+        !!! note
+            The resulting array must have the same shape as the original array.
+
         Args:
             apply_func (Callable): Function to apply.
             *args: Positional arguments for `apply_func`.
@@ -2123,9 +2126,6 @@ class BaseAccessor(Wrapping):
 
         Returns:
             SeriesFrame: Result after applying the function.
-
-        !!! note
-            The resulting array must have the same shape as the original array.
 
         Examples:
             Using instance method:
@@ -2249,6 +2249,9 @@ class BaseAccessor(Wrapping):
 
         See also `vectorbtpro.base.combining.apply_and_concat`.
 
+        !!! note
+            The arrays to be concatenated must have the same shape as the broadcast input arrays.
+
         Args:
             ntimes (int): Number of times to execute `apply_func`.
             apply_func (Callable): Function to execute, with the iteration index as its first parameter.
@@ -2272,9 +2275,6 @@ class BaseAccessor(Wrapping):
         Returns:
             MaybeTuple[Frame]: Wrapped result as a single DataFrame or a tuple of frames,
                 or None if no result is produced.
-
-        !!! note
-            The arrays to be concatenated must have the same shape as the broadcast input arrays.
 
         Examples:
             Using instance method:
@@ -2385,6 +2385,12 @@ class BaseAccessor(Wrapping):
     ) -> tp.SeriesFrame:
         """Combine this object with additional objects using a specified combine function.
 
+        !!! note
+            If `combine_func` is Numba-compiled, inputs are broadcast using `WRITEABLE` and
+            `C_CONTIGUOUS` flags, which may incur significant overhead for large objects with
+            differing shapes or memory orders. Ensure that all objects have the same data type
+            and that each argument in `*args` is Numba-compatible.
+
         Args:
             obj (array_like): Object or sequence of objects to combine with.
             combine_func (callable): Function used to combine two arrays.
@@ -2420,12 +2426,6 @@ class BaseAccessor(Wrapping):
 
         Returns:
             SeriesFrame: Result after combining the objects.
-
-        !!! note
-            If `combine_func` is Numba-compiled, inputs are broadcast using `WRITEABLE` and
-            `C_CONTIGUOUS` flags, which may incur significant overhead for large objects with
-            differing shapes or memory orders. Ensure that all objects have the same data type
-            and that each argument in `*args` is Numba-compatible.
 
         Examples:
             Using instance method:
@@ -2534,10 +2534,8 @@ class BaseAccessor(Wrapping):
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self.obj,) + objs
         if checks.is_numba_func(combine_func):
-            # Numba requires writeable arrays and in the same order
             broadcast_kwargs = merge_dicts(dict(require_kwargs=dict(requirements=["W", "C"])), broadcast_kwargs)
 
-        # Broadcast and substitute templates
         broadcast_named_args = {**{"obj_" + str(i): obj for i, obj in enumerate(objs)}, **broadcast_named_args}
         broadcast_named_args, wrapper = reshaping.broadcast(
             broadcast_named_args,
@@ -2556,7 +2554,6 @@ class BaseAccessor(Wrapping):
         if concat is None:
             concat = len(inputs) > 2
         if concat:
-            # Concat the results horizontally
             if isinstance(cls_or_self, type):
                 raise TypeError("Use instance method to concatenate")
             out = combining.combine_and_concat(inputs[0], inputs[1:], combine_func, *args, **kwargs)
@@ -2567,7 +2564,6 @@ class BaseAccessor(Wrapping):
                 new_columns = indexes.combine_indexes([top_columns, wrapper.columns])
             return wrapper.wrap(out, **merge_dicts(dict(columns=new_columns, force_2d=True), wrap_kwargs))
         else:
-            # Combine arguments pairwise into one object
             out = combining.combine_multiple(inputs, combine_func, *args, **kwargs)
             return wrapper.wrap(out, **resolve_dict(wrap_kwargs))
 
@@ -2588,6 +2584,9 @@ class BaseAccessor(Wrapping):
         Perform element-wise evaluation of the provided array expression.
         If `use_numexpr` is enabled, only one-line expressions are supported.
         Otherwise, the evaluation is performed via `vectorbtpro.utils.eval_.evaluate`.
+
+        !!! note
+            All required variables will broadcast against each other prior to the evaluation.
 
         Args:
             expr (str): Expression string.
@@ -2611,9 +2610,6 @@ class BaseAccessor(Wrapping):
 
         Returns:
             Any: Evaluated expression wrapped using the broadcast wrapper.
-
-        !!! note
-            All required variables will broadcast against each other prior to the evaluation.
 
         Examples:
             ```pycon

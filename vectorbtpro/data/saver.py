@@ -80,28 +80,28 @@ class DataSaver(DataUpdater):
     def init_save_data(self, **kwargs) -> None:
         """Perform an initial data save.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             **kwargs: Keyword arguments for data saving.
 
         Returns:
             None
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def save_data(self, **kwargs) -> None:
         """Perform a data save.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             **kwargs: Keyword arguments for data saving.
 
         Returns:
             None
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -120,7 +120,6 @@ class DataSaver(DataUpdater):
         Returns:
             None
         """
-        # In case the method was called by the user
         kwargs = merge_dicts(
             dict(save_kwargs=self.save_kwargs),
             self.update_kwargs,

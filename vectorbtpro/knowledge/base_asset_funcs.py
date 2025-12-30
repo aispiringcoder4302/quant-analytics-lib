@@ -57,6 +57,9 @@ class AssetFunc(Base):
     def call(cls, d: tp.Any, *args, **kwargs) -> tp.Any:
         """Call the asset function.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             d: Input data.
             *args: Additional positional arguments.
@@ -64,9 +67,6 @@ class AssetFunc(Base):
 
         Returns:
             Any: Result of the asset function call.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -178,9 +178,9 @@ class GetAssetFunc(AssetFunc):
                 for p in path:
                     try:
                         xs.append(search_.get_pathlike_key(x, p, keep_path=True))
-                    except (KeyError, IndexError, AttributeError) as e:
+                    except (KeyError, IndexError, AttributeError):
                         if not skip_missing:
-                            raise e
+                            raise
                         continue
                 if len(xs) == 0:
                     return NoResult
@@ -188,9 +188,9 @@ class GetAssetFunc(AssetFunc):
             else:
                 try:
                     x = search_.get_pathlike_key(x, path, keep_path=keep_path)
-                except (KeyError, IndexError, AttributeError) as e:
+                except (KeyError, IndexError, AttributeError):
                     if not skip_missing:
-                        raise e
+                        raise
                     return NoResult
         if source is not None:
             _template_context = flat_merge_dicts(
@@ -302,9 +302,9 @@ class SetAssetFunc(AssetFunc):
             if p is not None:
                 try:
                     x = search_.get_pathlike_key(x, p[:-1])
-                except (KeyError, IndexError, AttributeError) as e:
+                except (KeyError, IndexError, AttributeError):
                     if not skip_missing:
-                        raise e
+                        raise
                     continue
             _template_context = flat_merge_dicts(
                 {
@@ -393,9 +393,9 @@ class RemoveAssetFunc(AssetFunc):
         for p in paths:
             try:
                 d = search_.remove_pathlike_key(d, p, make_copy=make_copy, prev_keys=prev_keys)
-            except (KeyError, IndexError, AttributeError) as e:
+            except (KeyError, IndexError, AttributeError):
                 if not skip_missing:
-                    raise e
+                    raise
                 continue
         if not changed_only or len(prev_keys) > 0:
             return d
@@ -490,9 +490,9 @@ class MoveAssetFunc(AssetFunc):
                 x = search_.get_pathlike_key(d, p)
                 d = search_.remove_pathlike_key(d, p, make_copy=make_copy, prev_keys=prev_keys)
                 d = search_.set_pathlike_key(d, new_paths[i], x, make_copy=make_copy, prev_keys=prev_keys)
-            except (KeyError, IndexError, AttributeError) as e:
+            except (KeyError, IndexError, AttributeError):
                 if not skip_missing:
-                    raise e
+                    raise
                 continue
         if not changed_only or len(prev_keys) > 0:
             return d
@@ -694,9 +694,9 @@ class ReorderAssetFunc(AssetFunc):
             if p is not None:
                 try:
                     x = search_.get_pathlike_key(x, p)
-                except (KeyError, IndexError, AttributeError) as e:
+                except (KeyError, IndexError, AttributeError):
                     if not skip_missing:
-                        raise e
+                        raise
                     continue
             if isinstance(new_order, CustomTemplate):
                 _template_context = flat_merge_dicts(
@@ -1052,9 +1052,9 @@ class FindAssetFunc(AssetFunc):
                 x = d
                 try:
                     x = search_.get_pathlike_key(x, p, keep_path=keep_path)
-                except (KeyError, IndexError, AttributeError) as e:
+                except (KeyError, IndexError, AttributeError):
                     if not skip_missing:
-                        raise e
+                        raise
                     continue
                 if source is not None:
                     _template_context = flat_merge_dicts(
@@ -1156,9 +1156,9 @@ class FindAssetFunc(AssetFunc):
                     for p in path:
                         try:
                             xs.append(search_.get_pathlike_key(x, p, keep_path=True))
-                        except (KeyError, IndexError, AttributeError) as e:
+                        except (KeyError, IndexError, AttributeError):
                             if not skip_missing:
-                                raise e
+                                raise
                             continue
                     if len(xs) == 0:
                         if return_type.lower() == "item":
@@ -1170,9 +1170,9 @@ class FindAssetFunc(AssetFunc):
                 else:
                     try:
                         x = search_.get_pathlike_key(x, path, keep_path=keep_path)
-                    except (KeyError, IndexError, AttributeError) as e:
+                    except (KeyError, IndexError, AttributeError):
                         if not skip_missing:
-                            raise e
+                            raise
                         if return_type.lower() == "item":
                             return NoResult
                         if return_type.lower() == "bool":
@@ -1454,9 +1454,9 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 if p is not None:
                     try:
                         x = search_.get_pathlike_key(x, p, keep_path=keep_path)
-                    except (KeyError, IndexError, AttributeError) as e:
+                    except (KeyError, IndexError, AttributeError):
                         if not skip_missing:
-                            raise e
+                            raise
                         continue
                 path_dct = search_.find_in_obj(
                     x,
@@ -1475,9 +1475,9 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 if p is not None:
                     try:
                         x = search_.get_pathlike_key(x, p, keep_path=keep_path)
-                    except (KeyError, IndexError, AttributeError) as e:
+                    except (KeyError, IndexError, AttributeError):
                         if not skip_missing:
-                            raise e
+                            raise
                         continue
                 path_dct = search_.find_in_obj(
                     x,
@@ -1639,9 +1639,9 @@ class FindRemoveAssetFunc(FindAssetFunc):
             if p is not None:
                 try:
                     x = search_.get_pathlike_key(x, p, keep_path=keep_path)
-                except (KeyError, IndexError, AttributeError) as e:
+                except (KeyError, IndexError, AttributeError):
                     if not skip_missing:
-                        raise e
+                        raise
                     continue
             path_dct = search_.find_in_obj(
                 x,
@@ -1743,9 +1743,9 @@ class FlattenAssetFunc(AssetFunc):
             if p is not None:
                 try:
                     x = search_.get_pathlike_key(x, p)
-                except (KeyError, IndexError, AttributeError) as e:
+                except (KeyError, IndexError, AttributeError):
                     if not skip_missing:
-                        raise e
+                        raise
                     continue
             x = search_.flatten_obj(x, **kwargs)
             d = search_.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)
@@ -1828,9 +1828,9 @@ class UnflattenAssetFunc(AssetFunc):
             if p is not None:
                 try:
                     x = search_.get_pathlike_key(x, p)
-                except (KeyError, IndexError, AttributeError) as e:
+                except (KeyError, IndexError, AttributeError):
                     if not skip_missing:
-                        raise e
+                        raise
                     continue
             x = search_.unflatten_obj(x, **kwargs)
             d = search_.set_pathlike_key(d, p, x, make_copy=make_copy, prev_keys=prev_keys)

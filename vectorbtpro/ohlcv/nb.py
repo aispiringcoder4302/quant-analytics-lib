@@ -24,10 +24,10 @@ from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.flex_indexing import flex_select_1d_pr_nb, flex_select_1d_nb
 from vectorbtpro.base.reshaping import to_1d_array_nb
+from vectorbtpro.ohlcv.enums import PriceFeature
 from vectorbtpro.registries.ch_registry import register_chunkable
 from vectorbtpro.registries.jit_registry import register_jitted
 from vectorbtpro.utils import chunking as ch
-from vectorbtpro.ohlcv.enums import PriceFeature
 
 __all__ = []
 
@@ -230,6 +230,9 @@ def mirror_ohlc_nb(
 ) -> tp.Tuple[tp.Array2d, tp.Array2d, tp.Array2d, tp.Array2d]:
     """Generate mirrored OHLC arrays for two-dimensional inputs by applying the 1D operation column-wise.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         open (Optional[Array2d]): 2D array of open prices.
@@ -251,9 +254,6 @@ def mirror_ohlc_nb(
     Returns:
         Tuple[Array2d, Array2d, Array2d, Array2d]: Mirrored open, high, low, and
             close arrays with the specified shape.
-
-    !!! tip
-        This function is parallelizable.
     """
     start_value_ = to_1d_array_nb(np.asarray(start_value))
     ref_feature_ = to_1d_array_nb(np.asarray(ref_feature))

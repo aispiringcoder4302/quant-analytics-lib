@@ -10,33 +10,33 @@
 
 """Module providing custom asset classes."""
 
+import base64
+import hashlib
 import inspect
 import io
 import os
 import pkgutil
 import re
-import base64
-import hashlib
 import tempfile
 import webbrowser
 from collections import defaultdict, deque
+from functools import partial
 from pathlib import Path
 from types import ModuleType
-from functools import partial
 from urllib.parse import urlparse, urlunparse
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils import checks
-from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig, SpecSettingsPath
-from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.knowledge.asset_pipelines import EarlyReturn, BasicAssetPipeline
 from vectorbtpro.knowledge.base_assets import AssetCacheManager, KnowledgeAsset
 from vectorbtpro.knowledge.formatting import FormatHTML
-from vectorbtpro.utils.module_ import prepare_refname, get_caller_qualname
+from vectorbtpro.utils import checks
+from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig, SpecSettingsPath
+from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, dir_tree_from_paths
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import suggest_compression
+from vectorbtpro.utils.refs import ensure_refname, get_caller_qualname
 from vectorbtpro.utils.search_ import find, replace
 from vectorbtpro.utils.template import CustomTemplate
 from vectorbtpro.utils.warnings_ import warn
@@ -113,13 +113,13 @@ VBTAssetT = tp.TypeVar("VBTAssetT", bound="VBTAsset")
 class VBTAsset(KnowledgeAsset):
     """Class for working with VBT content.
 
+    !!! info
+        For default settings, see `assets.vbt` in `vectorbtpro._settings.knowledge`.
+
     Args:
         *args: Positional arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
         release_name (Optional[str]): Release name.
         **kwargs: Keyword arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
-
-    !!! info
-        For default settings, see `assets.vbt` in `vectorbtpro._settings.knowledge`.
     """
 
     _settings_path: tp.SettingsPath = "knowledge.assets.vbt"
@@ -257,6 +257,19 @@ class VBTAsset(KnowledgeAsset):
         if isinstance(assets_dir, CustomTemplate):
             cache_dir = cls.get_setting("cache_dir")
             if isinstance(cache_dir, CustomTemplate):
+                try:
+                    if "cache_dir" in cache_dir.get_context_vars():
+                        from vectorbtpro._settings import settings
+
+                        _cache_dir = settings["knowledge"]["cache_dir"]
+                        if isinstance(_cache_dir, CustomTemplate):
+                            _cache_dir = _cache_dir.substitute(template_context, eval_id="cache_dir")
+                        template_context = flat_merge_dicts(
+                            dict(cache_dir=_cache_dir),
+                            template_context,
+                        )
+                except NotImplementedError:
+                    pass
                 cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
             template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
             release_dir = cls.get_setting("release_dir")
@@ -392,6 +405,7 @@ class VBTAsset(KnowledgeAsset):
     def find_link(
         self: VBTAssetT,
         link: tp.MaybeList[str],
+        field: str = "link",
         mode: str = "end",
         per_path: bool = False,
         single_item: bool = True,
@@ -403,6 +417,7 @@ class VBTAsset(KnowledgeAsset):
 
         Args:
             link (MaybeList[str]): Link or list of links to search for.
+            field (str): Field to search in.
             mode (str): Search mode.
 
                 See `vectorbtpro.utils.search_.find`.
@@ -433,7 +448,7 @@ class VBTAsset(KnowledgeAsset):
                 links = list(chain(*map(_extend_link, link)))
             else:
                 raise TypeError("Link must be either string or list")
-        found = self.find(links, path="link", mode=mode, per_path=per_path, single_item=single_item, **kwargs)
+        found = self.find(links, path=field, mode=mode, per_path=per_path, single_item=single_item, **kwargs)
         if isinstance(found, (type(self), list)):
             if len(found) == 0:
                 if allow_empty:
@@ -444,11 +459,11 @@ class VBTAsset(KnowledgeAsset):
                     top_parents = self.get_top_parent_links(list(found))
                     if len(top_parents) == 1:
                         for i, d in enumerate(found):
-                            if d["link"] == top_parents[0]:
+                            if d[field] == top_parents[0]:
                                 if isinstance(found, type(self)):
                                     return found.replace(data=[d], single_item=True)
                                 return d
-                links_block = "\n".join([d["link"] for d in found])
+                links_block = "\n".join([d[field] for d in found])
                 raise MultipleItemsFoundError(f"Multiple items matching {link!r}:\n\n{links_block}")
         elif found is None:
             if allow_empty:
@@ -733,6 +748,19 @@ class VBTAsset(KnowledgeAsset):
             if isinstance(markdown_dir, CustomTemplate):
                 cache_dir = self.get_setting("cache_dir")
                 if isinstance(cache_dir, CustomTemplate):
+                    try:
+                        if "cache_dir" in cache_dir.get_context_vars():
+                            from vectorbtpro._settings import settings
+
+                            _cache_dir = settings["knowledge"]["cache_dir"]
+                            if isinstance(_cache_dir, CustomTemplate):
+                                _cache_dir = _cache_dir.substitute(template_context, eval_id="cache_dir")
+                            template_context = flat_merge_dicts(
+                                dict(cache_dir=_cache_dir),
+                                template_context,
+                            )
+                    except NotImplementedError:
+                        pass
                     cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
                 template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
                 release_dir = self.get_setting("release_dir")
@@ -908,6 +936,9 @@ class VBTAsset(KnowledgeAsset):
     ) -> tp.Union[Path, tp.Tuple[Path, dict]]:
         """Save asset content as HTML files and open them in a web browser.
 
+        !!! note
+            An index page is created if there are multiple top-level parent entries.
+
         Args:
             cache (Optional[bool]): Flag to determine whether to use the cache directory.
 
@@ -930,9 +961,6 @@ class VBTAsset(KnowledgeAsset):
         Returns:
             Union[Path, Tuple[Path, dict]]: Directory where HTML files are stored, and optionally
                 a mapping of links to file paths.
-
-        !!! note
-            An index page is created if there are multiple top-level parent entries.
         """
         from vectorbtpro.knowledge.custom_asset_funcs import ToHTMLAssetFunc
 
@@ -948,6 +976,19 @@ class VBTAsset(KnowledgeAsset):
             if isinstance(html_dir, CustomTemplate):
                 cache_dir = self.get_setting("cache_dir")
                 if isinstance(cache_dir, CustomTemplate):
+                    try:
+                        if "cache_dir" in cache_dir.get_context_vars():
+                            from vectorbtpro._settings import settings
+
+                            _cache_dir = settings["knowledge"]["cache_dir"]
+                            if isinstance(_cache_dir, CustomTemplate):
+                                _cache_dir = _cache_dir.substitute(template_context, eval_id="cache_dir")
+                            template_context = flat_merge_dicts(
+                                dict(cache_dir=_cache_dir),
+                                template_context,
+                            )
+                    except NotImplementedError:
+                        pass
                     cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
                 template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
                 release_dir = self.get_setting("release_dir")
@@ -1067,6 +1108,9 @@ class VBTAsset(KnowledgeAsset):
         pagination using `vectorbtpro.knowledge.formatting.FormatHTML`. Opens the default web
         browser and returns the file path of the generated HTML page.
 
+        !!! note
+            The file __won't__ be deleted automatically.
+
         Args:
             link (Optional[str]): Link identifier of the page to display.
 
@@ -1085,9 +1129,6 @@ class VBTAsset(KnowledgeAsset):
 
         Returns:
             Path: File path of the generated HTML file.
-
-        !!! note
-            The file __won't__ be deleted automatically.
         """
         open_browser = self.resolve_setting(open_browser, "open_browser", sub_path="display")
 
@@ -1224,7 +1265,7 @@ class VBTAsset(KnowledgeAsset):
         allow_prefix: tp.Optional[bool] = None,
         allow_suffix: tp.Optional[bool] = None,
     ) -> tp.List[str]:
-        """Generate reference name targets based on a reference string.
+        """Generate targets based on a reference name.
 
         This method constructs a list of targets representing a module, class, attribute, or callable.
         It optionally includes:
@@ -1237,8 +1278,8 @@ class VBTAsset(KnowledgeAsset):
         Each target is formatted using `VBTAsset.prepare_mention_target`.
 
         Args:
-            refname (str): Dot-separated reference name.
-            resolve (bool): Whether to resolve annotated reference name parts.
+            refname (str): Reference name.
+            resolve (bool): Whether to resolve the reference to an actual object.
             incl_shortcuts (Optional[bool]): Include shortcuts from `import vectorbtpro as vbt`.
             incl_shortcut_access (Optional[bool]): Include attribute access forms when applicable.
             incl_shortcut_call (Optional[bool]): Include callable forms when applicable.
@@ -1253,7 +1294,7 @@ class VBTAsset(KnowledgeAsset):
         Returns:
             List[str]: Sorted list of generated reference name targets.
         """
-        from vectorbtpro.utils.module_ import annotate_refname_parts
+        from vectorbtpro.utils.refs import annotate_refname_parts
         import vectorbtpro as vbt
 
         incl_shortcuts = cls.resolve_setting(incl_shortcuts, "incl_shortcuts")
@@ -1283,15 +1324,15 @@ class VBTAsset(KnowledgeAsset):
         targets = set()
         new_target = _prepare_target(refname)
         targets.add(new_target)
-        refname_parts = refname.split(".")
         if resolve:
+            refname_parts = refname.split(".")
             annotated_parts = annotate_refname_parts(refname)
             if len(annotated_parts) >= 2 and isinstance(annotated_parts[-2]["obj"], type):
                 cls_refname = ".".join(refname_parts[:-1])
                 cls_aliases = {annotated_parts[-2]["name"]}
                 attr_aliases = set()
                 for k, v in vbt.__dict__.items():
-                    v_refname = prepare_refname(v, raise_error=False)
+                    v_refname = ensure_refname(v, can_be_refname=False, raise_error=False)
                     if v_refname is not None:
                         if v_refname == cls_refname:
                             cls_aliases.add(k)
@@ -1321,7 +1362,7 @@ class VBTAsset(KnowledgeAsset):
                     targets.add(new_target)
                 aliases = {annotated_parts[-1]["name"]}
                 for k, v in vbt.__dict__.items():
-                    v_refname = prepare_refname(v, raise_error=False)
+                    v_refname = ensure_refname(v, can_be_refname=False, raise_error=False)
                     if v_refname is not None:
                         if v_refname == refname:
                             aliases.add(k)
@@ -1350,7 +1391,7 @@ class VBTAsset(KnowledgeAsset):
         obj: tp.MaybeList,
         *,
         attr: tp.Optional[str] = None,
-        module: tp.Union[None, str, ModuleType] = None,
+        module: tp.Optional[tp.ModuleLike] = None,
         resolve: bool = True,
         incl_base_attr: tp.Optional[bool] = None,
         incl_shortcuts: tp.Optional[bool] = None,
@@ -1365,7 +1406,7 @@ class VBTAsset(KnowledgeAsset):
         """Generate mention targets for an object.
 
         This method generates a list of mention targets for a given object or list of objects.
-        It first resolves the object reference using `vectorbtpro.utils.module_.prepare_refname`.
+        It first resolves the object reference name using `vectorbtpro.utils.refs.ensure_refname`.
         If an attribute is specified, the method checks whether it is defined on the object
         itself or on a base class. When the attribute belongs to a base class and `incl_base_attr` is True,
         targets are generated for both the object attribute and the corresponding base class attribute.
@@ -1374,8 +1415,8 @@ class VBTAsset(KnowledgeAsset):
         Args:
             obj (MaybeList): Object or list of objects to generate mention targets for.
             attr (Optional[str]): Attribute name to target on the object.
-            module (Union[None, str, ModuleType]): Module context used in reference resolution.
-            resolve (bool): Whether to resolve the object's reference name.
+            module (Optional[ModuleLike]): Module context used in reference resolution.
+            resolve (bool): Whether to resolve the reference to an actual object.
             incl_base_attr (Optional[bool]): Include targets for base class attributes if applicable.
             incl_shortcuts (Optional[bool]): Include shortcuts from `import vectorbtpro as vbt`.
             incl_shortcut_access (Optional[bool]): Include attribute access forms when applicable.
@@ -1391,7 +1432,7 @@ class VBTAsset(KnowledgeAsset):
         Returns:
             List[str]: List of generated mention targets.
         """
-        from vectorbtpro.utils.module_ import prepare_refname
+        from vectorbtpro.utils.refs import ensure_refname
 
         incl_base_attr = self.resolve_setting(incl_base_attr, "incl_base_attr")
 
@@ -1401,14 +1442,14 @@ class VBTAsset(KnowledgeAsset):
         else:
             objs = obj
         for obj in objs:
-            obj_refname = prepare_refname(obj, module=module, resolve=resolve)
+            obj_refname = ensure_refname(obj, module=module, resolve=resolve)
             if attr is not None:
                 checks.assert_instance_of(attr, str, arg_name="attr")
                 if isinstance(obj, tuple):
                     attr_obj = (*obj, attr)
                 else:
                     attr_obj = (obj, attr)
-                base_attr_refname = prepare_refname(attr_obj, module=module, resolve=resolve)
+                base_attr_refname = ensure_refname(attr_obj, module=module, resolve=resolve)
                 obj_refname += "." + attr
                 if base_attr_refname == obj_refname:
                     obj_refname = base_attr_refname
@@ -1488,7 +1529,7 @@ class VBTAsset(KnowledgeAsset):
         obj: tp.MaybeList,
         *,
         attr: tp.Optional[str] = None,
-        module: tp.Union[None, str, ModuleType] = None,
+        module: tp.Optional[tp.ModuleLike] = None,
         resolve: bool = True,
         incl_shortcuts: tp.Optional[bool] = None,
         incl_shortcut_access: tp.Optional[bool] = None,
@@ -1517,8 +1558,8 @@ class VBTAsset(KnowledgeAsset):
         Args:
             obj (MaybeList): Object or list of objects to find mentions for.
             attr (Optional[str]): Attribute name to target on the object.
-            module (Union[None, str, ModuleType]): Module context used in reference resolution.
-            resolve (bool): Whether to resolve the object's reference name.
+            module (Optional[ModuleLike]): Module context used in reference resolution.
+            resolve (bool): Whether to resolve the reference to an actual object.
             incl_shortcuts (Optional[bool]): Include shortcuts from `import vectorbtpro as vbt`.
             incl_shortcut_access (Optional[bool]): Include attribute access forms when applicable.
             incl_shortcut_call (Optional[bool]): Include callable forms when applicable.
@@ -1875,20 +1916,20 @@ class PagesAsset(VBTAsset):
         obj: tp.Any,
         *,
         attr: tp.Optional[str] = None,
-        module: tp.Union[None, str, ModuleType] = None,
+        module: tp.Optional[tp.ModuleLike] = None,
         resolve: bool = True,
         **kwargs,
     ) -> tp.MaybePagesAsset:
         """Return the page corresponding to an object or its reference name.
 
-        If an attribute is provided, it is appended to the object reference.
-        The object reference is prepared using `vectorbtpro.utils.module_.prepare_refname`.
+        If an attribute is provided, it is appended to the object reference name.
+        The object reference name is resolved using `vectorbtpro.utils.refs.ensure_refname`.
 
         Args:
             obj (Any): Object to search for.
             attr (Optional[str]): Attribute name to target on the object.
-            module (Union[None, str, ModuleType]): Module context used in reference resolution.
-            resolve (bool): Whether to resolve the object's reference name.
+            module (Optional[ModuleLike]): Module context used in reference resolution.
+            resolve (bool): Whether to resolve the reference to an actual object.
             **kwargs: Keyword arguments for `PagesAsset.find_refname`.
 
         Returns:
@@ -1900,7 +1941,7 @@ class PagesAsset(VBTAsset):
                 obj = (*obj, attr)
             else:
                 obj = (obj, attr)
-        refname = prepare_refname(obj, module=module, resolve=resolve)
+        refname = ensure_refname(obj, module=module, resolve=resolve)
         return self.find_refname(refname, **kwargs)
 
     @classmethod
@@ -1966,7 +2007,7 @@ class PagesAsset(VBTAsset):
         obj: tp.MaybeList,
         *,
         attr: tp.Optional[str] = None,
-        module: tp.Union[None, str, ModuleType] = None,
+        module: tp.Optional[tp.ModuleLike] = None,
         resolve: bool = True,
         only_obj: bool = False,
         use_parent: tp.Optional[bool] = None,
@@ -1988,15 +2029,15 @@ class PagesAsset(VBTAsset):
     ) -> tp.Union[PagesAssetT, tp.Tuple[PagesAssetT, dict]]:
         """Return API pages and headings relevant to the provided object(s).
 
-        Prepares the object reference using `vectorbtpro.utils.module_.prepare_refname` and extends the asset
-        with related pages based on various options. This includes incorporating base classes/attributes,
-        ancestors, reference descendants, and aggregation of links.
+        Resolves the object reference name using `vectorbtpro.utils.refs.ensure_refname` and
+        extends the asset with related pages based on various options. This includes incorporating
+        base classes/attributes, ancestors, reference descendants, and aggregation of links.
 
         Args:
             obj (MaybeList): Object or list of objects to find API pages for.
             attr (Optional[str]): Attribute name to target on the object.
-            module (Union[None, str, ModuleType]): Module context used in reference resolution.
-            resolve (bool): Whether to resolve the object's reference name.
+            module (Optional[ModuleLike]): Module context used in reference resolution.
+            resolve (bool): Whether to resolve the reference to an actual object.
             only_obj (bool): If True, disable all extensions and return only the object itself.
             use_parent (Optional[bool]): Include the object's parent page.
             use_base_parents (Optional[bool]): Include base classes/attributes of the parent.
@@ -2031,7 +2072,8 @@ class PagesAsset(VBTAsset):
             aggregate_ancestors (Optional[bool]): Override aggregation for ancestor headings.
             aggregate_refs (Optional[bool]): Override aggregation for reference headings.
             aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
-            topo_sort (Optional[bool]): Create a topological graph from reference names and sort pages and headings.
+            topo_sort (Optional[bool]): Create a topological graph from reference names and
+                sort pages and headings.
 
                 Set `return_refname_graph` to True to also return the graph.
             return_refname_graph (bool): Return a tuple of the asset and reference name graph if True.
@@ -2040,7 +2082,7 @@ class PagesAsset(VBTAsset):
             Union[PagesAsset, Tuple[PagesAsset, dict]]: Asset with relevant API pages and headings,
                 optionally accompanied by a reference name graph.
         """
-        from vectorbtpro.utils.module_ import prepare_refname, annotate_refname_parts
+        from vectorbtpro.utils.refs import ensure_refname, annotate_refname_parts
 
         incl_bases = self.resolve_setting(incl_bases, "incl_bases")
         incl_ancestors = self.resolve_setting(incl_ancestors, "incl_ancestors")
@@ -2076,7 +2118,7 @@ class PagesAsset(VBTAsset):
                     obj = (*obj, attr)
                 else:
                     obj = (obj, attr)
-            obj_refname = prepare_refname(obj, module=module, resolve=resolve)
+            obj_refname = ensure_refname(obj, module=module, resolve=resolve)
             refname_graph = defaultdict(list)
             if resolve:
                 annotated_parts = annotate_refname_parts(obj_refname)
@@ -2131,9 +2173,9 @@ class PagesAsset(VBTAsset):
                         if _attr is not None:
                             if not hasattr(c, _attr):
                                 continue
-                            refname = prepare_refname((c, _attr))
+                            refname = ensure_refname((c, _attr))
                         else:
-                            refname = prepare_refname(c)
+                            refname = ensure_refname(c)
                         if (use_parent and refname == obj_refname) or use_base_parents:
                             refname = ".".join(refname.split(".")[:-1])
                         if refname not in base_refnames_set:
@@ -2144,9 +2186,9 @@ class PagesAsset(VBTAsset):
                                     if _attr is not None:
                                         if not hasattr(b, _attr):
                                             continue
-                                        b_refname = prepare_refname((b, _attr))
+                                        b_refname = ensure_refname((b, _attr))
                                     else:
-                                        b_refname = prepare_refname(b)
+                                        b_refname = ensure_refname(b)
                                     if use_base_parents:
                                         b_refname = ".".join(b_refname.split(".")[:-1])
                                     if refname != b_refname:
@@ -2381,7 +2423,7 @@ class PagesAsset(VBTAsset):
         obj: tp.MaybeList,
         *,
         attr: tp.Optional[str] = None,
-        module: tp.Union[None, str, ModuleType] = None,
+        module: tp.Optional[tp.ModuleLike] = None,
         resolve: bool = True,
         incl_pages: tp.Optional[tp.MaybeIterable[str]] = None,
         excl_pages: tp.Optional[tp.MaybeIterable[str]] = None,
@@ -2415,8 +2457,8 @@ class PagesAsset(VBTAsset):
         Args:
             obj (MaybeList): Object or list of objects to find documentation for.
             attr (Optional[str]): Attribute name to target on the object.
-            module (Union[None, str, ModuleType]): Module context used in reference resolution.
-            resolve (bool): Whether to resolve the object's reference name.
+            module (Optional[ModuleLike]): Module context used in reference resolution.
+            resolve (bool): Whether to resolve the reference to an actual object.
             incl_pages (Optional[MaybeIterable[str]]): Iterable of page identifiers or parts to include.
             excl_pages (Optional[MaybeIterable[str]]): Iterable of page identifiers or parts to exclude.
             page_find_mode (Optional[str]): Mode used for matching pages in `vectorbtpro.utils.search_.find`.
@@ -3572,7 +3614,7 @@ class MessagesAsset(VBTAsset):
         obj: tp.MaybeList,
         *,
         attr: tp.Optional[str] = None,
-        module: tp.Union[None, str, ModuleType] = None,
+        module: tp.Optional[tp.ModuleLike] = None,
         resolve: bool = True,
         **kwargs,
     ) -> tp.MaybeMessagesAsset:
@@ -3584,8 +3626,8 @@ class MessagesAsset(VBTAsset):
         Args:
             obj (MaybeList): Object or list of objects to search for.
             attr (Optional[str]): Attribute name to target on the object.
-            module (Union[None, str, ModuleType]): Module context used in reference resolution.
-            resolve (bool): Whether to resolve the object's reference name.
+            module (Optional[ModuleLike]): Module context used in reference resolution.
+            resolve (bool): Whether to resolve the reference to an actual object.
             **kwargs: Keyword arguments for `MessagesAsset.find_obj_mentions`.
 
         Returns:
@@ -3657,7 +3699,7 @@ class ExamplesAsset(VBTAsset):
         obj: tp.MaybeList,
         *,
         attr: tp.Optional[str] = None,
-        module: tp.Union[None, str, ModuleType] = None,
+        module: tp.Optional[tp.ModuleLike] = None,
         resolve: bool = True,
         **kwargs,
     ) -> tp.MaybeExamplesAsset:
@@ -3669,8 +3711,8 @@ class ExamplesAsset(VBTAsset):
         Args:
             obj (MaybeList): Object or list of objects to search for.
             attr (Optional[str]): Attribute name to target on the object.
-            module (Union[None, str, ModuleType]): Module context used in reference resolution.
-            resolve (bool): Whether to resolve the object's reference name.
+            module (Optional[ModuleLike]): Module context used in reference resolution.
+            resolve (bool): Whether to resolve the reference to an actual object.
             **kwargs: Keyword arguments for `ExamplesAsset.find_obj_mentions`.
 
         Returns:
@@ -3701,7 +3743,7 @@ def find_api(
     *,
     as_query: tp.Optional[bool] = None,
     attr: tp.Optional[str] = None,
-    module: tp.Union[None, str, ModuleType] = None,
+    module: tp.Optional[tp.ModuleLike] = None,
     resolve: bool = True,
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
@@ -3719,8 +3761,8 @@ def find_api(
         obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
         attr (Optional[str]): Attribute name to target on the object.
-        module (Union[None, str, ModuleType]): Module context used in reference resolution.
-        resolve (bool): Whether to resolve the object's reference name.
+        module (Optional[ModuleLike]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the reference to an actual object.
         pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull`.
         aggregate (Optional[bool]): Whether to aggregate headings into pages.
@@ -3771,7 +3813,7 @@ def find_docs(
     *,
     as_query: tp.Optional[bool] = None,
     attr: tp.Optional[str] = None,
-    module: tp.Union[None, str, ModuleType] = None,
+    module: tp.Optional[tp.ModuleLike] = None,
     resolve: bool = True,
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
@@ -3789,8 +3831,8 @@ def find_docs(
         obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
         attr (Optional[str]): Attribute name to target on the object.
-        module (Union[None, str, ModuleType]): Module context used in reference resolution.
-        resolve (bool): Whether to resolve the object's reference name.
+        module (Optional[ModuleLike]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the reference to an actual object.
         pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull`.
         aggregate (Optional[bool]): Whether to aggregate headings into pages.
@@ -3841,7 +3883,7 @@ def find_messages(
     *,
     as_query: tp.Optional[bool] = None,
     attr: tp.Optional[str] = None,
-    module: tp.Union[None, str, ModuleType] = None,
+    module: tp.Optional[tp.ModuleLike] = None,
     resolve: bool = True,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
@@ -3853,14 +3895,18 @@ def find_messages(
 ) -> tp.MaybeMessagesAsset:
     """Find messages associated with an object or query.
 
+    !!! note
+        If `obj_or_query` is provided and not treated as a query, messages are retrieved using
+        `MessagesAsset.find_obj_messages`. Otherwise, messages are filtered by ranking via `MessagesAsset.rank`.
+
     Args:
         obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
 
             If None, all messages are returned.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
         attr (Optional[str]): Attribute name to target on the object.
-        module (Union[None, str, ModuleType]): Module context used in reference resolution.
-        resolve (bool): Whether to resolve the object's reference name.
+        module (Optional[ModuleLike]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the reference to an actual object.
         messages_asset (Optional[MaybeType[MessagesAsset]]): Class or instance representing messages assets.
         pull_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.pull`.
         aggregate (Union[bool, str]): Option to aggregate messages; if a string, it specifies the aggregation key.
@@ -3871,10 +3917,6 @@ def find_messages(
 
     Returns:
         MaybeMessagesAsset: New messages asset of messages processed according to the specified parameters.
-
-    !!! note
-        If `obj_or_query` is provided and not treated as a query, messages are retrieved using
-        `MessagesAsset.find_obj_messages`. Otherwise, messages are filtered by ranking via `MessagesAsset.rank`.
     """
     if messages_asset is None:
         messages_asset = MessagesAsset
@@ -3910,7 +3952,7 @@ def find_examples(
     *,
     as_query: tp.Optional[bool] = None,
     attr: tp.Optional[str] = None,
-    module: tp.Union[None, str, ModuleType] = None,
+    module: tp.Optional[tp.ModuleLike] = None,
     resolve: bool = True,
     examples_asset: tp.Optional[tp.MaybeType[ExamplesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
@@ -3921,14 +3963,18 @@ def find_examples(
 ) -> tp.MaybeExamplesAsset:
     """Find code examples associated with an object or query.
 
+    !!! note
+        If `obj_or_query` is provided and not treated as a query, examples are retrieved using
+        `ExamplesAsset.find_obj_examples`. Otherwise, examples are filtered by ranking via `ExamplesAsset.rank`.
+
     Args:
         obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
 
             If None, all code examples are returned.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
         attr (Optional[str]): Attribute name to target on the object.
-        module (Union[None, str, ModuleType]): Module context used in reference resolution.
-        resolve (bool): Whether to resolve the object's reference name.
+        module (Optional[ModuleLike]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the reference to an actual object.
         examples_asset (Optional[MaybeType[ExamplesAsset]]): Class or instance representing examples assets.
         pull_kwargs (KwargsLike): Keyword arguments for `ExamplesAsset.pull`.
         latest_first (bool): If True, sorts code examples in reverse chronological order.
@@ -3938,10 +3984,6 @@ def find_examples(
 
     Returns:
         MaybeExamplesAsset: New examples asset of code examples processed according to the specified parameters.
-
-    !!! note
-        If `obj_or_query` is provided and not treated as a query, examples are retrieved using
-        `ExamplesAsset.find_obj_examples`. Otherwise, examples are filtered by ranking via `ExamplesAsset.rank`.
     """
     if examples_asset is None:
         examples_asset = ExamplesAsset
@@ -3973,7 +4015,7 @@ def find_assets(
     *,
     as_query: tp.Optional[bool] = None,
     attr: tp.Optional[str] = None,
-    module: tp.Union[None, str, ModuleType] = None,
+    module: tp.Optional[tp.ModuleLike] = None,
     resolve: bool = True,
     asset_names: tp.MaybeIterable[str] = "all",
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
@@ -4004,12 +4046,20 @@ def find_assets(
 ) -> tp.MaybeDict[tp.VBTAsset]:
     """Return a dictionary of assets relevant to a given object(s) or query.
 
+    !!! note
+        Keyword arguments are passed to all functions (except for `find_api` when `obj_or_query` is an object
+        since it doesn't share common arguments with other three functions), unless `combine` and `as_query`
+        are both True; in this case they are passed to `VBTAsset.rank`. Use specialized arguments like
+        `api_kwargs` to provide keyword arguments to the respective function.
+
+        If `obj_or_query` is a query, will rank the combined asset. Otherwise, will rank each individual asset.
+
     Args:
         obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
         attr (Optional[str]): Attribute name to target on the object.
-        module (Union[None, str, ModuleType]): Module context used in reference resolution.
-        resolve (bool): Whether to resolve the object's reference name.
+        module (Optional[ModuleLike]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the reference to an actual object.
         asset_names (Optional[MaybeIterable[str]]): List specifying the order and selection of assets.
 
             May include ellipsis (`...`) to adjust ordering. Allowed asset names are:
@@ -4061,14 +4111,6 @@ def find_assets(
     Returns:
         Dict[VBTAsset]: Dictionary mapping asset names to their corresponding assets;
             entries with no content are omitted.
-
-    !!! note
-        Keyword arguments are passed to all functions (except for `find_api` when `obj_or_query` is an object
-        since it doesn't share common arguments with other three functions), unless `combine` and `as_query`
-        are both True; in this case they are passed to `VBTAsset.rank`. Use specialized arguments like
-        `api_kwargs` to provide keyword arguments to the respective function.
-
-        If `obj_or_query` is a query, will rank the combined asset. Otherwise, will rank each individual asset.
     """
     if as_query is None:
         as_query = obj_or_query is not None and not is_obj_or_query_ref(obj_or_query)

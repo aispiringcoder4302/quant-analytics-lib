@@ -13,6 +13,7 @@
 import datetime
 import traceback
 from collections.abc import Collection, Iterable, Sequence, Hashable, Mapping
+from functools import partial
 from inspect import signature, getmro
 from keyword import iskeyword
 from types import FunctionType, BuiltinFunctionType, MethodType
@@ -39,6 +40,12 @@ class Comparable(Base):
     def equals(self, other: tp.Any, *args, **kwargs) -> bool:
         """Return whether the current object is deeply equal to another object.
 
+        !!! note
+            This method should accept all keyword arguments supported by `is_deep_equal`.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             other (Any): Object to compare against.
             *args: Positional arguments for `is_deep_equal`.
@@ -46,12 +53,6 @@ class Comparable(Base):
 
         Returns:
             bool: True if the objects are equal, False otherwise.
-
-        !!! note
-            This method should accept all keyword arguments supported by `is_deep_equal`.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -110,14 +111,14 @@ def is_numba_enabled() -> bool:
 def is_numba_func(obj: tp.Any) -> bool:
     """Return whether the object is identified as a Numba-compiled function based on configuration.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.numba`.
+
     Args:
         obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a Numba-compiled function, False otherwise.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.numba`.
     """
     from vectorbtpro._settings import settings
 
@@ -135,7 +136,8 @@ def is_numba_func(obj: tp.Any) -> bool:
 
 
 def is_function(obj: tp.Any) -> bool:
-    """Return whether the object is a lambda function, built-in function, method, or Numba-compiled function.
+    """Return whether the object is a lambda function, built-in function, method, Numba-compiled function,
+    a `functools.partial` object wrapping a function, or a NumPy ufunc.
 
     Args:
         obj (Any): Object to check.
@@ -143,7 +145,14 @@ def is_function(obj: tp.Any) -> bool:
     Returns:
         bool: True if the object is a function, False otherwise.
     """
-    return is_classic_func(obj) or is_builtin_func(obj) or is_method(obj) or is_numba_func(obj)
+    return (
+        is_classic_func(obj)
+        or is_builtin_func(obj)
+        or is_method(obj)
+        or is_numba_func(obj)
+        or (isinstance(obj, partial) and is_function(obj.func))
+        or isinstance(obj, np.ufunc)
+    )
 
 
 def is_bool(obj: tp.Any) -> bool:
@@ -517,18 +526,17 @@ def is_complex_sequence(obj: tp.Any) -> bool:
 def is_hashable(obj: tp.Any) -> bool:
     """Return whether the object can be hashed.
 
+    !!! note
+        An object with a `__hash__` method might still be unhashable if invoking `hash` raises a TypeError.
+
     Args:
         obj (Any): Object to check.
 
     Returns:
         bool: True if the object is hashable, False otherwise.
-
-    !!! note
-        An object with a `__hash__` method might still be unhashable if invoking `hash` raises a TypeError.
     """
     if not isinstance(obj, Hashable):
         return False
-    # Having __hash__() method does not mean that it's hashable
     try:
         hash(obj)
     except TypeError:
@@ -736,9 +744,9 @@ def is_deep_equal(
         elif isinstance(obj1, np.ndarray):
             try:
                 _check_array(np.testing.assert_array_equal)
-            except Exception as e:
+            except Exception:
                 if check_exact:
-                    raise e
+                    raise
                 _check_array(np.testing.assert_allclose)
         elif isinstance(obj1, (tuple, list)):
             if len(obj1) != len(obj2):
@@ -941,16 +949,52 @@ def is_mapping_like(obj: tp.Any) -> bool:
     return is_mapping(obj) or is_series(obj) or is_index(obj) or is_namedtuple(obj)
 
 
-def is_valid_variable_name(obj: str) -> bool:
+def is_valid_variable_name(name: str) -> bool:
     """Return True if the object is a valid variable name.
 
     Args:
-        obj (str): String representing the variable name.
+        name (str): String representing the variable name.
 
     Returns:
         bool: True if the string is a valid variable name, False otherwise.
     """
-    return obj.isidentifier() and not iskeyword(obj)
+    return name.isidentifier() and not iskeyword(name)
+
+
+def is_dunder_name(name: str) -> bool:
+    """Return True if the name is a dunder (double underscore) name.
+
+    Args:
+        name (str): String representing the name.
+
+    Returns:
+        bool: True if the name is a dunder name, False otherwise.
+    """
+    return len(name) > 4 and name.startswith("__") and name.endswith("__") and not set(name[2:-2]) <= {"_"}
+
+
+def is_private_name(name: str) -> bool:
+    """Return True if the name is a private (single underscore) name.
+
+    Args:
+        name (str): String representing the name.
+
+    Returns:
+        bool: True if the name is a private name, False otherwise.
+    """
+    return name.startswith("_") and not is_dunder_name(name)
+
+
+def is_public_name(name: str) -> bool:
+    """Return True if the name is a public name.
+
+    Args:
+        name (str): String representing the name.
+
+    Returns:
+        bool: True if the name is a public name, False otherwise.
+    """
+    return not name.startswith("_")
 
 
 def in_notebook() -> bool:
@@ -1308,6 +1352,9 @@ def assert_ndim(obj: tp.ArrayLike, ndims: tp.MaybeTuple[int]) -> None:
 def assert_len_equal(obj1: tp.Sized, obj2: tp.Sized) -> None:
     """Assert that the lengths of `obj1` and `obj2` are equal.
 
+    !!! note
+        The objects are not converted to NumPy arrays.
+
     Args:
         obj1 (Sized): First object whose length is compared.
         obj2 (Sized): Second object whose length is compared.
@@ -1317,9 +1364,6 @@ def assert_len_equal(obj1: tp.Sized, obj2: tp.Sized) -> None:
 
     Raises:
         AssertionError: If the lengths of `obj1` and `obj2` do not match.
-
-    !!! note
-        The objects are not converted to NumPy arrays.
     """
     if len(obj1) != len(obj2):
         raise AssertionError(f"Lengths of {obj1} and {obj2} do not match")

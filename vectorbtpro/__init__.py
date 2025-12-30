@@ -110,7 +110,7 @@ if settings["importing"]["auto_import"]:
     from vectorbtpro.records import nb as rec_nb
     from vectorbtpro.returns import nb as ret_nb, enums as ret_enums
     from vectorbtpro.signals import nb as sig_nb, enums as sig_enums
-    from vectorbtpro.utils import datetime_ as dt, datetime_nb as dt_nb
+    from vectorbtpro.utils import array_ as arr, datetime_ as dt, datetime_nb as dt_nb
     from vectorbtpro.utils.datetime_ import (
         to_offset as offset,
         to_timedelta as timedelta,
@@ -180,11 +180,11 @@ def whats_imported() -> None:
     import pandas as pd
 
     from vectorbtpro.utils.formatting import ptable
-    from vectorbtpro.utils.module_ import get_refname
+    from vectorbtpro.utils.refs import ensure_refname
 
     values = {}
     for k, v in imported_star.items():
-        refname = get_refname(v)
+        refname = ensure_refname(v, can_be_refname=False, raise_error=False)
         if refname is not None and str(v).startswith("<"):
             values[k] = refname
         else:

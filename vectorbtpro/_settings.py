@@ -304,7 +304,7 @@ caching = frozen_cfg(
 __pdoc__["caching"] = Sub(
     """Sub-configuration with settings applied across `vectorbtpro.registries.ca_registry`, 
 `vectorbtpro.utils.caching`, and the cacheable decorators in `vectorbtpro.utils.decorators`.
-    
+
 !!! note
     The `use_cached_accessors` setting is applied only at import.
 
@@ -751,6 +751,7 @@ _settings["broadcasting"] = broadcasting
 indexing = frozen_cfg(
     rotate_rows=False,
     rotate_cols=False,
+    name_numbering="none_based",
 )
 """_"""
 
@@ -854,7 +855,6 @@ data = frozen_cfg(
     missing_index="nan",
     missing_columns="raise",
     custom=flex_cfg(
-        # Synthetic
         synthetic=flex_cfg(
             start=None,
             end=None,
@@ -895,9 +895,7 @@ data = frozen_cfg(
             dt=1.0,
             seed=None,
         ),
-        # Local
         local=flex_cfg(),
-        # File
         file=flex_cfg(
             match_paths=True,
             match_regex=None,
@@ -937,7 +935,6 @@ data = frozen_cfg(
             engine="auto",
             read_kwargs=flex_cfg(),
         ),
-        # Database
         db=flex_cfg(),
         sql=flex_cfg(
             engine=None,
@@ -979,7 +976,6 @@ data = frozen_cfg(
             df_kwargs=flex_cfg(),
             sql_kwargs=flex_cfg(),
         ),
-        # Remote
         remote=flex_cfg(),
         yf=flex_cfg(
             period="max",
@@ -1188,7 +1184,7 @@ plotting = frozen_cfg(
     auto_rangebreaks=False,
     pre_show_func=None,
     show_kwargs=flex_cfg(),
-    use_gl=False,
+    use_webgl=True,
     color_schema=flex_cfg(
         increasing="#26a69a",
         decreasing="#ee534f",
@@ -1546,7 +1542,7 @@ signals = frozen_cfg(
 
 __pdoc__["signals"] = Sub(
     """Sub-configuration with settings applied to `vectorbtpro.signals.accessors.SignalsAccessor`.
-    
+
 ```python
 ${config_doc}
 ```
@@ -1629,7 +1625,7 @@ records = frozen_cfg(
 
 __pdoc__["records"] = Sub(
     """Sub-configuration with settings applied to `vectorbtpro.records.base.Records`.
-    
+
 ```python
 ${config_doc}
 ```
@@ -1724,7 +1720,6 @@ ${config_doc}
 _settings["logs"] = logs
 
 portfolio = frozen_cfg(
-    # Setup
     data=None,
     open=None,
     high=None,
@@ -1756,7 +1751,6 @@ portfolio = frozen_cfg(
         require_kwargs=flex_cfg(requirements="W"),
     ),
     template_context=flex_cfg(),
-    keep_inout_flex=True,
     from_ago=None,
     sim_start=None,
     sim_end=None,
@@ -1768,7 +1762,6 @@ portfolio = frozen_cfg(
     chunked=None,
     staticized=False,
     records=None,
-    # Orders
     size=np.inf,
     size_type="amount",
     direction="both",
@@ -1779,6 +1772,7 @@ portfolio = frozen_cfg(
     min_size=np.nan,
     max_size=np.nan,
     size_granularity=np.nan,
+    cash_limit=np.nan,
     leverage=1.0,
     leverage_mode="lazy",
     reject_prob=0.0,
@@ -1787,17 +1781,28 @@ portfolio = frozen_cfg(
     raise_reject=False,
     log=False,
     from_orders=flex_cfg(),
-    # Signals
     from_signals=flex_cfg(
         direction="longonly",
+        pre_sim_func_nb=None,
+        pre_sim_args=(),
+        pre_group_func_nb=None,
+        pre_group_args=(),
+        pre_segment_func_nb=None,
+        pre_segment_args=(),
         adjust_func_nb=None,
         adjust_args=(),
         signal_func_nb=None,
         signal_args=None,
-        post_signal_func_nb=None,
-        post_signal_args=(),
+        pre_order_segment_func_nb=None,
+        pre_order_segment_args=(),
+        post_order_func_nb=None,
+        post_order_args=(),
         post_segment_func_nb=None,
         post_segment_args=(),
+        post_group_func_nb=None,
+        post_group_args=(),
+        post_sim_func_nb=None,
+        post_sim_args=(),
         order_mode=False,
         accumulate=False,
         upon_long_conflict="ignore",
@@ -1832,10 +1837,8 @@ portfolio = frozen_cfg(
         delta_format="percent",
         time_delta_format="index",
     ),
-    # Holding
     hold_direction="longonly",
     close_at_end=False,
-    # Order function
     from_order_func=flex_cfg(
         segment_mask=True,
         call_pre_segment=False,
@@ -1867,7 +1870,6 @@ portfolio = frozen_cfg(
     from_def_order_func=flex_cfg(
         flexible=False,
     ),
-    # Portfolio
     freq=None,
     year_freq=None,
     use_in_outputs=True,
@@ -2534,7 +2536,7 @@ $context
                 ),
             ),
             ollama=flex_cfg(
-                model="dengcao/Qwen3-Embedding-0.6B",
+                model="qwen3-embedding:0.6b",
                 client_kwargs=flex_cfg(),
                 embed_kwargs=flex_cfg(),
             ),
@@ -2548,7 +2550,9 @@ $context
                 dump_engine="json",
             ),
             tool_request_template="**🛠️ Tool request [`$name`]**\n$payload",
-            tool_response_template=RepEval("f\"**{'✅' if success else '❌'} Tool response [`{name}`, {token_count} tokens]**\\n{payload}\""),
+            tool_response_template=RepEval(
+                "f\"**{'✅' if success else '❌'} Tool response [`{name}`, {token_count} tokens]**\\n{payload}\""
+            ),
             tool_display_format="minimal",
         ),
         completions_configs=flex_cfg(
@@ -2607,7 +2611,7 @@ $context
         text_splitter="segment",
         text_splitter_config=flex_cfg(
             chunk_template=r"""... (previous text omitted)
-            
+
 $chunk_text""",
         ),
         text_splitter_configs=flex_cfg(
@@ -2720,7 +2724,7 @@ $chunk_text""",
     ),
     assets=flex_cfg(
         vbt=flex_cfg(
-            cache_dir=RepEval("vbt.get_platform_dir('user_cache_dir') / 'knowledge' / 'vbt'"),
+            cache_dir=RepEval("Path(cache_dir) / 'vbt'"),
             release_dir=RepEval("(Path(cache_dir) / release_name) if release_name else cache_dir"),
             assets_dir=RepEval("Path(release_dir) / 'assets'"),
             markdown_dir=RepEval("Path(release_dir) / 'markdown'"),
@@ -2750,6 +2754,7 @@ $chunk_text""",
                 "block",
                 "thread",
                 "replies",
+                "timestamp",
                 "mentions",
                 "reactions",
             ],
@@ -3084,9 +3089,9 @@ class SettingsConfig(Config):
 
         try:
             return get_pathlike_key(self, key)
-        except (KeyError, IndexError, AttributeError) as e:
+        except (KeyError, IndexError, AttributeError):
             if default is MISSING:
-                raise e
+                raise
             return default
 
     def set(self, key: tp.PathLikeKey, value: tp.Any, default_config_type: tp.Type[Config] = flex_cfg) -> None:

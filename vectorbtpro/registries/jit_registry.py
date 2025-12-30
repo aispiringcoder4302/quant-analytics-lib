@@ -404,7 +404,7 @@ class JitableSetup(DefineMixin):
 
     jitter_kwargs: tp.KwargsLike = define.field(default=None)
     """Keyword arguments for configuring the jitter.
-    
+
     See `vectorbtpro.utils.jitting.resolve_jitter`."""
 
     tags: tp.SetLike = define.field(default=None)
@@ -651,6 +651,16 @@ class JITRegistry(Base):
         is decorated and returned instead of raising an error. If `return_missing_task` is True,
         `task_id_or_func` is returned when the task id is not found in `JITRegistry.jitable_setups`.
 
+        !!! note
+            The `disable` parameter is used only by `JITRegistry` and not by `vectorbtpro.utils.jitting`.
+
+        !!! note
+            If multiple jitted setups are registered for a single task id, the `jitter` parameter
+            must be explicitly provided.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.jitting`.
+
         Args:
             task_id_or_func (Union[Hashable, Callable]): Task identifier or a function.
 
@@ -668,16 +678,6 @@ class JITRegistry(Base):
         Returns:
             Union[Hashable, Callable]: Either the resolved jitted function or the original task
                 identifier/function based on the resolution process.
-
-        !!! note
-            The `disable` parameter is used only by `JITRegistry` and not by `vectorbtpro.utils.jitting`.
-
-        !!! note
-            If multiple jitted setups are registered for a single task id, the `jitter` parameter
-            must be explicitly provided.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.jitting`.
         """
         from vectorbtpro._settings import settings
 
@@ -846,6 +846,9 @@ def register_jitted(
     `py_func` may be overridden using `jitters.your_jitter.tasks.your_task.replace_py_func`
     in `vectorbtpro._settings.jitting`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
+
     Args:
         py_func (Optional[Callable]): Function to be decorated.
 
@@ -858,9 +861,6 @@ def register_jitted(
 
     Returns:
         Callable: Decorated function.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.jitting`.
     """
 
     def decorator(_py_func: tp.Callable) -> tp.Callable:

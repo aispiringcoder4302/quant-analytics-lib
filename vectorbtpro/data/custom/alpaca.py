@@ -35,14 +35,14 @@ AlpacaDataT = tp.TypeVar("AlpacaDataT", bound="AlpacaData")
 class AlpacaData(RemoteData):
     """Data class for fetching data from Alpaca.
 
-    See:
-        * https://github.com/alpacahq/alpaca-py for Alpaca API.
-        * `AlpacaData.fetch_symbol` for argument details.
-
     !!! info
         For default settings, see `custom.alpaca` in `vectorbtpro._settings.data`.
 
         Global settings can be provided per exchange id using the `exchanges` dictionary.
+
+    See:
+        * https://github.com/alpacahq/alpaca-py for Alpaca API.
+        * `AlpacaData.fetch_symbol` for argument details.
 
     Examples:
         Set up the API key globally (optional for crypto):
@@ -122,6 +122,10 @@ class AlpacaData(RemoteData):
         This method filters symbols using `vectorbtpro.data.custom.custom.CustomData.key_match`
         based on the provided pattern.
 
+        !!! note
+            If encountering an authorization error, verify that the `paper` flag in `client_config` is set
+            appropriately based on the account credentials used (paper trading or live).
+
         Args:
             pattern (Optional[str]): Pattern to filter symbols.
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
@@ -140,10 +144,6 @@ class AlpacaData(RemoteData):
 
         Returns:
             List[str]: List of symbol strings.
-
-        !!! note
-            If encountering an authorization error, verify that the `paper` flag in `client_config` is set
-            appropriately based on the account credentials used (paper trading or live).
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -332,9 +332,6 @@ class AlpacaData(RemoteData):
         from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
         if client_type is None:
-            # If client_type is not provided, determine it based on the symbol
-            # Crypto symbols contain "/", while stock symbols do not
-            # Options symbols must follow the regex pattern ^[A-Z]{1,5}\\d{6,7}[CP]\\d{8}$
             if "/" in symbol:
                 client_type = "crypto"
             elif re.match(r"^[A-Z]{1,5}\d{6,7}[CP]\d{8}$", symbol):

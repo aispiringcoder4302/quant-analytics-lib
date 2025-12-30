@@ -36,14 +36,14 @@ FinPyDataT = tp.TypeVar("FinPyDataT", bound="FinPyData")
 class FinPyData(RemoteData):
     """Data class for fetching financial data using the findatapy API.
 
-    See:
-        * https://github.com/cuemacro/findatapy for more information on findatapy.
-        * `FinPyData.fetch_symbol` for argument details.
-
     !!! info
         For default settings, see `custom.finpy` in `vectorbtpro._settings.data`.
 
         Global settings can be provided per exchange id using the `exchanges` dictionary.
+
+    See:
+        * https://github.com/cuemacro/findatapy for more information on findatapy.
+        * `FinPyData.fetch_symbol` for argument details.
 
     Examples:
         Pull data (keyword argument format):

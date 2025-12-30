@@ -48,11 +48,11 @@ HDFDataT = tp.TypeVar("HDFDataT", bound="HDFData")
 class HDFData(FileData):
     """Data class for fetching HDF data using PyTables.
 
-    See:
-        * `HDFData.fetch_key` for argument details.
-
     !!! info
         For default settings, see `custom.hdf` in `vectorbtpro._settings.data`.
+
+    See:
+        * `HDFData.fetch_key` for argument details.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.hdf")
@@ -61,14 +61,14 @@ class HDFData(FileData):
     def is_hdf_file(cls, path: tp.PathLike) -> bool:
         """Return whether the provided path is an HDF file.
 
+        !!! note
+            Checks for file suffixes `.hdf`, `.hdf5`, and `.h5`.
+
         Args:
             path (PathLike): File path to validate.
 
         Returns:
             bool: True if the path is an HDF file, False otherwise.
-
-        !!! note
-            Checks for file suffixes `.hdf`, `.hdf5`, and `.h5`.
         """
         if not isinstance(path, Path):
             path = Path(path)

@@ -29,12 +29,12 @@ __all__ = [
 class BentoData(RemoteData):
     """Data class for fetching data from Databento.
 
+    !!! info
+        For default settings, see `custom.bento` in `vectorbtpro._settings.data`.
+
     See:
         * https://github.com/databento/databento-python for the Databento Python client.
         * `BentoData.fetch_symbol` for argument details.
-
-    !!! info
-        For default settings, see `custom.bento` in `vectorbtpro._settings.data`.
 
     Examples:
         Set up the API key globally (optional):

@@ -131,15 +131,15 @@ class CachedAccessor(Base):
 def register_accessor(name: str, cls: tp.Type[DirNamesMixin]) -> tp.Callable:
     """Register a custom accessor.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.caching`.
+
     Args:
         name (str): Name to register the accessor under.
         cls (Type[DirNamesMixin]): Class extending `DirNamesMixin`.
 
     Returns:
         Callable: Decorator function to register the accessor.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.caching`.
     """
 
     def decorator(accessor: tp.Type[AccessorT]) -> tp.Type[AccessorT]:

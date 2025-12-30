@@ -369,6 +369,9 @@ class ZeroLengthError(ValueError):
 class Splitter(Analyzable):
     """Base class for splitting.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.splitter`.
+
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
 
@@ -380,9 +383,6 @@ class Splitter(Analyzable):
             Each element is a range defined as a slice, a sequence of indices, a mask,
             or a callable returning such.
         **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.splitter`.
     """
 
     def __init__(
@@ -1474,6 +1474,10 @@ class Splitter(Analyzable):
         (adjusted to accommodate the chosen range length) using `start_choice_func`.
         Optionally, `start_p_func` returns probability weights for the start selection.
 
+        !!! note
+            Both choice functions must accept two arguments: the iteration index and the array of
+            possible values.
+
         Args:
             index (IndexLike): Index from which ranges are generated.
             n (int): Number of random ranges to generate.
@@ -1514,10 +1518,6 @@ class Splitter(Analyzable):
 
         Returns:
             Splitter: New `Splitter` instance.
-
-        !!! note
-            Both choice functions must accept two arguments: the iteration index and the array of
-            possible values.
 
         Examples:
             Generate 20 random ranges with a length from [40, 100], and split each into 3/4:
@@ -3069,7 +3069,6 @@ class Splitter(Analyzable):
         else:
             index = dt.prepare_dt_index(index)
 
-        # Prepare source range
         range_meta = cls_or_self.get_ready_range(
             range_,
             allow_zero_len=allow_zero_len,
@@ -3091,12 +3090,10 @@ class Splitter(Analyzable):
             else:
                 range_format = "slice_or_any"
 
-        # Substitute template
         if isinstance(new_split, CustomTemplate):
             _template_context = merge_dicts(dict(index=index[range_]), template_context)
             new_split = substitute_templates(new_split, _template_context, eval_id="new_split")
 
-        # Split by gap
         if isinstance(new_split, str) and new_split.lower() == "by_gap":
             if isinstance(range_, np.ndarray) and np.issubdtype(range_.dtype, np.integer):
                 range_arr = range_
@@ -3105,7 +3102,6 @@ class Splitter(Analyzable):
             start_idxs, stop_idxs = nb.split_range_by_gap_nb(range_arr)
             new_split = list(map(lambda x: slice(x[0], x[1]), zip(start_idxs, stop_idxs)))
 
-        # Prepare target ranges
         if checks.is_number(new_split):
             if new_split < 0:
                 backwards = not backwards
@@ -3126,7 +3122,6 @@ class Splitter(Analyzable):
         elif not checks.is_iterable(new_split):
             new_split = (new_split,)
 
-        # Perform split
         new_ranges = []
         if backwards:
             new_split = new_split[::-1]
@@ -3136,7 +3131,6 @@ class Splitter(Analyzable):
             prev_start = 0
             prev_end = 0
         for new_range in new_split:
-            # Resolve new range
             new_range_meta = cls_or_self.get_ready_range(
                 new_range,
                 allow_relative=True,
@@ -3163,7 +3157,6 @@ class Splitter(Analyzable):
             else:
                 new_range_is_gap = False
 
-            # Update previous bounds
             if isinstance(new_range, slice):
                 prev_start = new_range.start
                 prev_end = new_range.stop
@@ -3171,7 +3164,6 @@ class Splitter(Analyzable):
                 prev_start = new_range_meta["start"]
                 prev_end = new_range_meta["stop"]
 
-            # Remap new range to index
             if new_range_is_gap:
                 continue
             if isinstance(range_, slice) and isinstance(new_range, slice):
@@ -3845,7 +3837,7 @@ class Splitter(Analyzable):
             template_context (KwargsLike): Additional context for template substitution.
             silence_warnings (bool): Flag to suppress warning messages.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
-            
+
                 See `vectorbtpro.base.indexes.combine_indexes`.
             stack_axis (int): Axis along which to stack slices (0 for rows, 1 for columns).
             stack_kwargs (KwargsLike): Keyword arguments for the stacking merge function.
@@ -4805,9 +4797,9 @@ class Splitter(Analyzable):
             if filter_results:
                 try:
                     results, keys = filter_out_no_results(results, keys=keys)
-                except NoResultsException as e:
+                except NoResultsException:
                     if raise_no_results:
-                        raise e
+                        raise
                     return NoResult
                 no_results_filtered = True
             else:
@@ -4982,9 +4974,9 @@ class Splitter(Analyzable):
                     if filter_results:
                         try:
                             _results, major_keys_wbounds = filter_out_no_results(_results, keys=major_keys_wbounds)
-                        except NoResultsException as e:
+                        except NoResultsException:
                             if raise_no_results:
-                                raise e
+                                raise
                             return NoResult
                     try:
                         return pd.Series(_results, index=major_keys_wbounds)
@@ -4998,9 +4990,9 @@ class Splitter(Analyzable):
                     if filter_results:
                         try:
                             _results, major_keys_wbounds = filter_out_no_results(_results, keys=minor_keys_wbounds)
-                        except NoResultsException as e:
+                        except NoResultsException:
                             if raise_no_results:
-                                raise e
+                                raise
                             return NoResult
                     try:
                         return pd.Series(_results, index=minor_keys_wbounds)
@@ -5082,9 +5074,9 @@ class Splitter(Analyzable):
         if filter_results:
             try:
                 results = filter_out_no_results(results)
-            except NoResultsException as e:
+            except NoResultsException:
                 if raise_no_results:
-                    raise e
+                    raise
                 return NoResult
         return results
 
@@ -5140,6 +5132,10 @@ class Splitter(Analyzable):
     ) -> SplitterT:
         """Divide each split into multiple sub-splits using a new splitting specification.
 
+        !!! note
+            Ensure that there is only one set before breaking up splits.
+            Merge multiple sets into one if necessary.
+
         Args:
             new_split (SplitLike): Specification for splitting ranges.
 
@@ -5154,10 +5150,6 @@ class Splitter(Analyzable):
 
         Returns:
             Splitter: New splitter instance with updated splits.
-
-        !!! note
-            Ensure that there is only one set before breaking up splits.
-            Merge multiple sets into one if necessary.
         """
         if self.n_sets > 1:
             raise ValueError("Cannot break up splits with more than one set. Merge sets first.")
@@ -5212,6 +5204,9 @@ class Splitter(Analyzable):
         This method applies `Splitter.split_range` to a specific column (or the only set)
         to generate new ranges.
 
+        !!! note
+            The `column` parameter must be provided when multiple sets exist.
+
         Args:
             new_split (SplitLike): Specification for splitting ranges.
 
@@ -5230,9 +5225,6 @@ class Splitter(Analyzable):
 
         Returns:
             Splitter: New splitter instance with the updated sets.
-
-        !!! note
-            The `column` parameter must be provided when multiple sets exist.
         """
         if self.n_sets == 0:
             raise ValueError("There are no sets to split")
@@ -5449,6 +5441,9 @@ class Splitter(Analyzable):
     ) -> tp.Tuple[tp.Any, tp.Any]:
         """Get the inclusive left and exclusive right bounds of a range.
 
+        !!! note
+            Even when mapped to the index, the right bound remains exclusive.
+
         Args:
             range_ (FixRangeLike): Range specification to process.
             index_bounds (bool): If True, map the bounds to the provided index.
@@ -5466,9 +5461,6 @@ class Splitter(Analyzable):
 
         Returns:
             Tuple[Any, Any]: Tuple with the calculated left and right bounds.
-
-        !!! note
-            Even when mapped to the index, the right bound remains exclusive.
         """
         if index is None:
             if isinstance(cls_or_self, type):
@@ -5973,6 +5965,9 @@ class Splitter(Analyzable):
 
         The returned object uses `Splitter.index` as the index and contains the splits as columns.
 
+        !!! warning
+            Boolean arrays for a high number of splits may consume substantial memory.
+
         Args:
             split_group_by (AnyGroupByLike): Grouping specification for defining splits.
 
@@ -5989,9 +5984,6 @@ class Splitter(Analyzable):
 
         Returns:
             SeriesFrame: Pandas Series or DataFrame representing the split mask.
-
-        !!! warning
-            Boolean arrays for a high number of splits may consume substantial memory.
         """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         split_labels = self.get_split_labels(split_group_by=split_group_by)
@@ -6279,6 +6271,14 @@ class Splitter(Analyzable):
     ) -> tp.Frame:
         """Get the overlap matrix between each pair of ranges.
 
+        See:
+            * `vectorbtpro.generic.splitting.nb.norm_split_overlap_matrix_nb` for `by="split"` and `normalize=True`.
+            * `vectorbtpro.generic.splitting.nb.split_overlap_matrix_nb` for `by="split"` and `normalize=False`.
+            * `vectorbtpro.generic.splitting.nb.norm_set_overlap_matrix_nb` for `by="set"` and `normalize=True`.
+            * `vectorbtpro.generic.splitting.nb.set_overlap_matrix_nb` for `by="set"` and `normalize=False`.
+            * `vectorbtpro.generic.splitting.nb.norm_range_overlap_matrix_nb` for `by="range"` and `normalize=True`.
+            * `vectorbtpro.generic.splitting.nb.range_overlap_matrix_nb` for `by="range"` and `normalize=False`.
+
         Args:
             by (str): Specifies which overlap matrix to compute; must be one of "split", "set", or "range".
             normalize (bool): Flag indicating whether to normalize overlaps relative to the
@@ -6301,14 +6301,6 @@ class Splitter(Analyzable):
 
         Returns:
             Frame: DataFrame representing the computed overlap matrix, or a scalar if the result is squeezed.
-
-        See:
-            * `vectorbtpro.generic.splitting.nb.norm_split_overlap_matrix_nb` for `by="split"` and `normalize=True`.
-            * `vectorbtpro.generic.splitting.nb.split_overlap_matrix_nb` for `by="split"` and `normalize=False`.
-            * `vectorbtpro.generic.splitting.nb.norm_set_overlap_matrix_nb` for `by="set"` and `normalize=True`.
-            * `vectorbtpro.generic.splitting.nb.set_overlap_matrix_nb` for `by="set"` and `normalize=False`.
-            * `vectorbtpro.generic.splitting.nb.norm_range_overlap_matrix_nb` for `by="range"` and `normalize=True`.
-            * `vectorbtpro.generic.splitting.nb.range_overlap_matrix_nb` for `by="range"` and `normalize=False`.
         """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         split_labels = self.get_split_labels(split_group_by=split_group_by)
@@ -6504,6 +6496,7 @@ class Splitter(Analyzable):
         trace_kwargs: tp.KwargsLikeSequence = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot splits as rows with sets represented by distinct colors.
@@ -6522,6 +6515,9 @@ class Splitter(Analyzable):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -6549,7 +6545,9 @@ class Splitter(Analyzable):
         import plotly.express as px
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
@@ -6604,6 +6602,7 @@ class Splitter(Analyzable):
         trace_kwargs: tp.KwargsLikeSequence = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
+        make_figure_kwargs: tp.KwargsLike = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
         """Plot index coverage as rows and sets as lines.
@@ -6627,6 +6626,9 @@ class Splitter(Analyzable):
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+                See `vectorbtpro.utils.figure.make_figure`.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -6663,7 +6665,9 @@ class Splitter(Analyzable):
         import plotly.express as px
 
         if fig is None:
-            fig = make_figure()
+            if make_figure_kwargs is None:
+                make_figure_kwargs = {}
+            fig = make_figure(**make_figure_kwargs)
         fig.update_layout(**layout_kwargs)
 
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)

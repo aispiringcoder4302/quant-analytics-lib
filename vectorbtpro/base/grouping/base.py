@@ -163,6 +163,9 @@ class Grouper(Configured):
     ) -> tp.GroupBy:
         """Convert the provided `group_by` specification into a Pandas Index.
 
+        !!! note
+            The index and the `group_by` mapper must have the same length.
+
         Args:
             index (Index): Original Pandas Index.
             group_by (GroupByLike): Grouping specification.
@@ -171,9 +174,6 @@ class Grouper(Configured):
         Returns:
             GroupBy: Resulting group-by mapping as a Pandas Index,
                 or the original `group_by` if it is None or False.
-
-        !!! note
-            The index and the `group_by` mapper must have the same length.
         """
         if group_by is None or group_by is False:
             return group_by
@@ -587,6 +587,9 @@ class Grouper(Configured):
     ) -> tp.GroupLens:
         """Return the lengths of each group computed from the current grouping.
 
+        See:
+            `vectorbtpro.base.grouping.nb.get_group_lens_nb`
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -601,9 +604,6 @@ class Grouper(Configured):
 
         Raises:
             ValueError: If the grouping is not monolithic and sorted.
-
-        See:
-            `vectorbtpro.base.grouping.nb.get_group_lens_nb`
         """
         group_by = self.resolve_group_by(group_by=group_by, **kwargs)
         if group_by is None or group_by is False:  # no grouping
@@ -647,6 +647,12 @@ class Grouper(Configured):
     ) -> tp.GroupMap:
         """Return the group mapping computed from the resolved grouping.
 
+        !!! note
+            If no grouping is applied, a default mapping is returned.
+
+        See:
+            `vectorbtpro.base.grouping.nb.get_group_map_nb`
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -658,12 +664,6 @@ class Grouper(Configured):
 
         Returns:
             GroupMap: Tuple containing the group mapping.
-
-        See:
-            `vectorbtpro.base.grouping.nb.get_group_map_nb`
-
-        !!! note
-            If no grouping is applied, a default mapping is returned.
         """
         group_by = self.resolve_group_by(group_by=group_by, **kwargs)
         if group_by is None or group_by is False:  # no grouping
@@ -716,6 +716,14 @@ class Grouper(Configured):
     ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
         """Select groups using provided indices while automatically choosing the selection method.
 
+        !!! note
+            If `Grouper.is_sorted` returns True, selection is performed using group lengths (faster).
+            Otherwise, selection is performed using a group map for greater flexibility.
+
+        See:
+            * `vectorbtpro.base.grouping.nb.group_lens_select_nb` if `Grouper.is_sorted` returns True.
+            * `vectorbtpro.base.grouping.nb.group_map_select_nb` if `Grouper.is_sorted` returns False.
+
         Args:
             group_idxs (Array1d): Array of group indices to be selected.
             jitted (JittedOption): Option to control JIT compilation.
@@ -727,14 +735,6 @@ class Grouper(Configured):
 
                 * New group indices after selection.
                 * New group array corresponding to the selected indices.
-
-        See:
-            * `vectorbtpro.base.grouping.nb.group_lens_select_nb` if `Grouper.is_sorted` returns True.
-            * `vectorbtpro.base.grouping.nb.group_map_select_nb` if `Grouper.is_sorted` returns False.
-
-        !!! note
-            If `Grouper.is_sorted` returns True, selection is performed using group lengths (faster).
-            Otherwise, selection is performed using a group map for greater flexibility.
         """
         from vectorbtpro.base.reshaping import to_1d_array
 

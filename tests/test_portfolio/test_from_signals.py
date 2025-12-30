@@ -1448,6 +1448,7 @@ class TestFromSignals:
                         np.nan,
                         np.nan,
                         np.nan,
+                        np.nan,
                         1.0,
                         0,
                         0.0,
@@ -1493,6 +1494,7 @@ class TestFromSignals:
                         0.0,
                         0.0,
                         0.0,
+                        np.nan,
                         np.nan,
                         np.nan,
                         np.nan,
@@ -6935,7 +6937,39 @@ class TestFromHolding:
 
     def test_ctx_helpers(self):
         @njit
-        def post_signal_func_nb(c):
+        def pre_sim_func_nb(c):
+            return (1,)
+
+        @njit
+        def pre_group_func_nb(c, x):
+            if x != 1:
+                raise ValueError
+            return (2,)
+
+        @njit
+        def pre_segment_func_nb(c, x):
+            if x != 2:
+                raise ValueError
+            return (3,)
+
+        @njit
+        def signal_func_nb(c, x, long_entries, short_entries):
+            if x != 3:
+                raise ValueError
+            long_entry = vbt.pf_nb.select_nb(c, long_entries)
+            short_entry = vbt.pf_nb.select_nb(c, short_entries)
+            return long_entry, False, short_entry, False
+
+        @njit
+        def pre_order_segment_func_nb(c, x):
+            if x != 3:
+                raise ValueError
+            return (4,)
+
+        @njit
+        def post_order_func_nb(c, x):
+            if x != 4:
+                raise ValueError
             _ = vbt.pf_nb.get_position_nb(c)
             _ = vbt.pf_nb.in_position_nb(c)
             _ = vbt.pf_nb.in_long_position_nb(c)
@@ -6954,15 +6988,20 @@ class TestFromHolding:
             _ = vbt.pf_nb.get_order_count_nb(c)
             _ = vbt.pf_nb.get_order_records_nb(c)
             _ = vbt.pf_nb.has_orders_nb(c)
+            _ = vbt.pf_nb.get_last_order_nb(c)
             _ = vbt.pf_nb.order_filled_nb(c)
             _ = vbt.pf_nb.order_opened_position_nb(c)
             _ = vbt.pf_nb.order_increased_position_nb(c)
             _ = vbt.pf_nb.order_decreased_position_nb(c)
             _ = vbt.pf_nb.order_closed_position_nb(c)
             _ = vbt.pf_nb.order_reversed_position_nb(c)
+            _ = vbt.pf_nb.get_limit_info_nb(c)
             _ = vbt.pf_nb.get_limit_target_price_nb(c)
+            _ = vbt.pf_nb.get_sl_info_nb(c)
             _ = vbt.pf_nb.get_sl_target_price_nb(c)
+            _ = vbt.pf_nb.get_tsl_info_nb(c)
             _ = vbt.pf_nb.get_tsl_target_price_nb(c)
+            _ = vbt.pf_nb.get_tp_info_nb(c)
             _ = vbt.pf_nb.get_tp_target_price_nb(c)
             _ = vbt.pf_nb.get_entry_trade_records_nb(c)
             _ = vbt.pf_nb.get_exit_trade_records_nb(c)
@@ -6974,19 +7013,10 @@ class TestFromHolding:
             _ = vbt.pf_nb.get_order_value_nb(c, np.inf)
             _ = vbt.pf_nb.get_order_result_nb(c, vbt.pf_nb.close_position_nb())
 
-        _ = vbt.PF.from_signals(
-            [1],
-            long_entries=[[True, False]],
-            short_entries=[[False, True]],
-            init_cash=[100, 200],
-            post_signal_func_nb=post_signal_func_nb,
-            sl_stop=0.1,
-            tsl_stop=0.2,
-            tp_stop=0.3,
-        )
-
         @njit
-        def post_segment_func_nb(c):
+        def post_segment_func_nb(c, x):
+            if x != 3:
+                raise ValueError
             for col in range(c.from_col, c.to_col):
                 _ = vbt.pf_nb.get_col_position_nb(c, col)
                 _ = vbt.pf_nb.col_in_position_nb(c, col)
@@ -7004,13 +7034,23 @@ class TestFromHolding:
                 _ = vbt.pf_nb.get_col_order_count_nb(c, col)
                 _ = vbt.pf_nb.get_col_order_records_nb(c, col)
                 _ = vbt.pf_nb.col_has_orders_nb(c, col)
+                _ = vbt.pf_nb.get_col_last_order_nb(c, col)
+                _ = vbt.pf_nb.get_col_limit_info_nb(c, col)
                 _ = vbt.pf_nb.get_col_limit_target_price_nb(c, col)
+                _ = vbt.pf_nb.get_col_sl_info_nb(c, col)
                 _ = vbt.pf_nb.get_col_sl_target_price_nb(c, col)
+                _ = vbt.pf_nb.get_col_tsl_info_nb(c, col)
                 _ = vbt.pf_nb.get_col_tsl_target_price_nb(c, col)
+                _ = vbt.pf_nb.get_col_tp_info_nb(c, col)
                 _ = vbt.pf_nb.get_col_tp_target_price_nb(c, col)
                 _ = vbt.pf_nb.get_col_entry_trade_records_nb(c, col)
                 _ = vbt.pf_nb.get_col_exit_trade_records_nb(c, col)
                 _ = vbt.pf_nb.get_col_position_records_nb(c, col)
+                _ = vbt.pf_nb.get_col_exec_state_nb(c, col, c.group)
+                _ = vbt.pf_nb.get_col_price_area_nb(c, col)
+                _ = vbt.pf_nb.get_col_order_size_nb(c, col, c.group, np.inf)
+                _ = vbt.pf_nb.get_col_order_value_nb(c, col, c.group, np.inf)
+                _ = vbt.pf_nb.get_col_order_result_nb(c, col, c.group, vbt.pf_nb.close_position_nb())
 
             _ = vbt.pf_nb.get_n_active_positions_nb(c)
             _ = vbt.pf_nb.get_n_active_positions_nb(c, all_groups=True)
@@ -7021,12 +7061,31 @@ class TestFromHolding:
             _ = vbt.pf_nb.stop_group_sim_nb(c, c.group)
             _ = vbt.pf_nb.stop_sim_nb(c)
 
+        @njit
+        def post_group_func_nb(c, x):
+            if x != 2:
+                raise ValueError
+
+        @njit
+        def post_sim_func_nb(c, x):
+            if x != 1:
+                raise ValueError
+
         _ = vbt.PF.from_signals(
             [1],
             long_entries=[[True, False]],
             short_entries=[[False, True]],
             init_cash=[100, 200],
+            pre_sim_func_nb=pre_sim_func_nb,
+            pre_group_func_nb=pre_group_func_nb,
+            pre_segment_func_nb=pre_segment_func_nb,
+            signal_func_nb=signal_func_nb,
+            signal_args=(vbt.Rep("long_entries"), vbt.Rep("short_entries")),
+            pre_order_segment_func_nb=pre_order_segment_func_nb,
+            post_order_func_nb=post_order_func_nb,
             post_segment_func_nb=post_segment_func_nb,
+            post_group_func_nb=post_group_func_nb,
+            post_sim_func_nb=post_sim_func_nb,
             group_by=True,
             sl_stop=0.1,
             tsl_stop=0.2,

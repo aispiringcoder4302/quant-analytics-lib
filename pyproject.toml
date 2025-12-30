@@ -4,14 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vectorbtpro"
-version = "2025.10.15"
+version = "2025.12.31"
 description = "Next-Generation Quantitative Analysis Tool"
 license = { file = "LICENSE" }
 authors = [{ name = "Oleg Polakow", email = "olegpolakow@vectorbt.pro" }]
 readme = "README.md"
 requires-python = "~=3.8"
 dependencies = [
-    "numpy>=1.20.0",
+    "numpy>=1.20; python_version<'3.12'",
+    "numpy>1.24.3; python_version>='3.12'",
     "pandas>=1.5.0",
     "numba>=0.53.1, <0.57.0; python_version<'3.10'",
     "numba>=0.56.0, <0.57.0; python_version>='3.10' and python_version<'3.11'",
@@ -113,11 +114,12 @@ plot-base = [
     "matplotlib>=3.2.0",
     "plotly>=5.0.0",
     "ipywidgets>=7.0.0",
-    "kaleido"
+    "kaleido",
+    "dash",
 ]
 plot = [
     "vectorbtpro[plot-base]",
-    "plotly-resampler"
+    "plotly-resampler",
 ]
 pfopt-base = [
     "PyPortfolioOpt>=1.5.1",
@@ -154,6 +156,7 @@ knwl-base = [
     "bm25s",
     "PyStemmer",
     "docstring_parser",
+    "networkx",
 ]
 knwl = [
     "vectorbtpro[knwl-base]",
@@ -173,7 +176,7 @@ knwl = [
 ]
 mcp-base = [
     "mcp",
-    "jupyter_client"
+    "ipykernel"
 ]
 mcp = [
     "vectorbtpro[mcp-base]"

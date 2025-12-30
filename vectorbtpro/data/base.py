@@ -27,8 +27,10 @@ from vectorbtpro.data.decorators import attach_symbol_dict_methods
 from vectorbtpro.generic import nb as generic_nb
 from vectorbtpro.generic.analyzable import Analyzable
 from vectorbtpro.generic.drawdowns import Drawdowns
-from vectorbtpro.ohlcv.nb import mirror_ohlc_nb
 from vectorbtpro.ohlcv.enums import PriceFeature
+from vectorbtpro.ohlcv.nb import mirror_ohlc_nb
+from vectorbtpro.registries.ch_registry import ch_reg
+from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.attr_ import get_dict_attr
@@ -43,8 +45,6 @@ from vectorbtpro.utils.path_ import check_mkdir
 from vectorbtpro.utils.pickling import pdict, RecState
 from vectorbtpro.utils.template import Rep, RepEval, CustomTemplate, substitute_templates
 from vectorbtpro.utils.warnings_ import warn
-from vectorbtpro.registries.ch_registry import ch_reg
-from vectorbtpro.registries.jit_registry import jit_reg
 
 if tp.TYPE_CHECKING:
     from sqlalchemy import Engine as EngineT
@@ -111,11 +111,11 @@ class BaseDataMixin(Base):
     def feature_wrapper(self) -> ArrayWrapper:
         """Column wrapper for feature data.
 
-        Returns:
-            ArrayWrapper: Column wrapper for feature data.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            ArrayWrapper: Column wrapper for feature data.
         """
         raise NotImplementedError
 
@@ -123,11 +123,11 @@ class BaseDataMixin(Base):
     def symbol_wrapper(self) -> ArrayWrapper:
         """Column wrapper for symbol data.
 
-        Returns:
-            ArrayWrapper: Column wrapper for symbol data.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            ArrayWrapper: Column wrapper for symbol data.
         """
         raise NotImplementedError
 
@@ -197,7 +197,6 @@ class BaseDataMixin(Base):
         Raises:
             ValueError: If multiple features match the specified key.
         """
-        # shortcut
         columns = self.feature_wrapper.columns
         if not columns.has_duplicates:
             if feature in columns:
@@ -230,7 +229,6 @@ class BaseDataMixin(Base):
         Raises:
             ValueError: If multiple symbols match the specified key.
         """
-        # shortcut
         columns = self.symbol_wrapper.columns
         if not columns.has_duplicates:
             if symbol in columns:
@@ -253,20 +251,23 @@ class BaseDataMixin(Base):
     def select_feature_idxs(self: BaseDataMixinT, idxs: tp.MaybeSequence[int], **kwargs) -> BaseDataMixinT:
         """Select one or more features by their index positions.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             idxs (MaybeSequence[int]): Index or indices of the features to select.
             **kwargs: Keyword arguments for feature selection.
 
         Returns:
             BaseDataMixin: New instance with the selected features.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def select_symbol_idxs(self: BaseDataMixinT, idxs: tp.MaybeSequence[int], **kwargs) -> BaseDataMixinT:
         """Select one or more symbols by their index positions.
+
+        !!! abstract
+            This method should be overridden in a subclass.
 
         Args:
             idxs (MaybeSequence[int]): Index or indices of the symbols to select.
@@ -274,9 +275,6 @@ class BaseDataMixin(Base):
 
         Returns:
             BaseDataMixin: New instance with the selected symbols.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -322,6 +320,9 @@ class BaseDataMixin(Base):
     ) -> tp.MaybeTuple[tp.SeriesFrame]:
         """Retrieve data for specified features and symbols.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             features (Optional[MaybeFeatures]): Feature identifier(s).
             symbols (Optional[MaybeSymbols]): Symbol identifier(s).
@@ -331,9 +332,6 @@ class BaseDataMixin(Base):
 
         Returns:
             MaybeTuple[SeriesFrame]: Retrieved data.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -765,6 +763,9 @@ class MetaData(type(Analyzable)):
 class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     """Class for downloading, updating, and managing data from a data source.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.data`.
+
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
 
@@ -795,9 +796,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
             See `Data.align_columns`.
         **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.data`.
     """
 
     _settings_path: tp.SettingsPath = dict(base="data")
@@ -886,7 +884,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         for k, v in attr_kwargs.items():
             setattr(self, "_" + k, v)
 
-        # Copy writeable attrs
         self._feature_config = type(self)._feature_config.copy()
 
     @property
@@ -1053,6 +1050,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.Optional[tp.MaybeIterable[tp.Hashable]]:
         """Determine level name(s) for data keys.
 
+        !!! note
+            If `level_name` is boolean `False`, no level names are applied.
+
         Args:
             keys (Optional[Keys]): List of keys; required for class method calls.
             level_name (Union[None, bool, MaybeIterable[Hashable]]): Specification for level name(s).
@@ -1065,9 +1065,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             Optional[MaybeIterable[Hashable]]: Level name(s) for the keys.
 
                 Returns a tuple when keys are multi-level.
-
-        !!! note
-            If `level_name` is boolean `False`, no level names are applied.
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(keys, arg_name="keys")
@@ -1338,7 +1335,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def modify_state(cls, rec_state: RecState) -> RecState:
-        # Ensure backward compatibility
         if "_column_config" in rec_state.attr_dct and "_feature_config" not in rec_state.attr_dct:
             new_attr_dct = dict(rec_state.attr_dct)
             new_attr_dct["_feature_config"] = new_attr_dct.pop("_column_config")
@@ -2462,6 +2458,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.SeriesFrame:
         """Prepare a timezone-aware index for a Pandas object.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
+
         Args:
             obj (SeriesFrame): Pandas Series or DataFrame.
             tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
@@ -2473,9 +2472,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             SeriesFrame: Object with a timezone-aware index.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.data`.
         """
         obj = obj.copy(deep=False)
         tz_localize = cls.resolve_base_setting(tz_localize, "tz_localize")
@@ -2508,6 +2504,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> dict:
         """Align data to share a common index.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
+
         Args:
             data (dict): Data dictionary.
             missing (Optional[str]): Specifies how to handle missing indices when aligning data.
@@ -2519,9 +2518,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             dict: Dictionary with all data reindexed to a common index.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.data`.
         """
         missing = cls.resolve_base_setting(missing, "missing_index")
         silence_warnings = cls.resolve_base_setting(silence_warnings, "silence_warnings")
@@ -2819,6 +2815,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> DataT:
         """Create a new `Data` instance from provided data.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
+
         Args:
             data (Union[dict, SeriesFrame]): Dictionary or DataFrame/Series used to construct the instance.
             columns_are_symbols (bool): Flag indicating whether the columns represent symbols.
@@ -2858,9 +2857,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             Data: New `Data` instance constructed from the provided data.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.data`.
         """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
@@ -3881,15 +3877,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         returned dictionary includes the keyword arguments `tz_localize`, `tz_convert`, or `freq`, they
         will be used to override global settings.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for fetching the feature.
 
         Returns:
             FeatureData: Fetched data and (optionally) a metadata dictionary, or None.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -3920,9 +3916,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if not silence_warnings:
                     warn(f"Feature {feature!r} returned None. Skipping.")
             return out
-        except Exception as e:
+        except Exception:
             if not skip_on_error:
-                raise e
+                raise
             if not silence_warnings:
                 warn(traceback.format_exc())
                 warn(f"Feature {feature!r} raised an exception. Skipping.")
@@ -3943,15 +3939,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         * `tz_convert`
         * `freq`
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for fetching the symbol.
 
         Returns:
             SymbolData: Fetched data and (optionally) a metadata dictionary, or None.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -3982,9 +3978,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if not silence_warnings:
                     warn(f"Symbol {symbol!r} returned None. Skipping.")
             return out
-        except Exception as e:
+        except Exception:
             if not skip_on_error:
-                raise e
+                raise
             if not silence_warnings:
                 warn(traceback.format_exc())
                 warn(f"Symbol {symbol!r} raised an exception. Skipping.")
@@ -4102,6 +4098,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Iteration over features or symbols is performed using `vectorbtpro.utils.execution.execute`
         to allow parallelized execution.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
+
         Args:
             keys (Union[None, dict, MaybeKeys]): Feature or symbol identifier(s).
 
@@ -4156,9 +4155,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             PullOutput: `Data` instance or a list of execution outputs if `return_raw` is True.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.data`.
         """
         keys_meta = cls.resolve_keys_meta(
             keys=keys,
@@ -4387,15 +4383,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.FeatureData:
         """Update a feature.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             feature (Feature): Feature identifier.
             **kwargs: Keyword arguments passed for feature update.
 
         Returns:
             FeatureData: Updated data and (optionally) a metadata dictionary, or None.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -4425,9 +4421,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if not silence_warnings:
                     warn(f"Feature {feature!r} returned None. Skipping.")
             return out
-        except Exception as e:
+        except Exception:
             if not skip_on_error:
-                raise e
+                raise
             if not silence_warnings:
                 warn(traceback.format_exc())
                 warn(f"Feature {feature!r} raised an exception. Skipping.")
@@ -4440,15 +4436,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.SymbolData:
         """Update a symbol.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments passed for symbol update.
 
         Returns:
             SymbolData: Updated data and (optionally) a metadata dictionary, or None.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -4478,9 +4474,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if not silence_warnings:
                     warn(f"Symbol {symbol!r} returned None. Skipping.")
             return out
-        except Exception as e:
+        except Exception:
             if not skip_on_error:
-                raise e
+                raise
             if not silence_warnings:
                 warn(traceback.format_exc())
                 warn(f"Symbol {symbol!r} raised an exception. Skipping.")
@@ -4501,6 +4497,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Fetch new data for each feature or symbol by calling the appropriate update function via
         `Data.update_feature` or `Data.update_symbol`.
 
+        !!! note
+            Returns a new `Data` instance instead of modifying the current data in place.
+
         Args:
             concat (bool): Whether to concatenate existing data with updated/new data.
             skip_on_error (Optional[bool]): Whether to skip updating a feature or symbol if an exception occurs.
@@ -4519,9 +4518,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             PullOutput: `Data` instance or a list of execution outputs if `return_raw` is True.
-
-        !!! note
-            Returns a new `Data` instance instead of modifying the current data in place.
         """
         skip_on_error = self.resolve_base_setting(skip_on_error, "skip_on_error")
         silence_warnings = self.resolve_base_setting(silence_warnings, "silence_warnings")
@@ -4619,7 +4615,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 new_data[k] = obj.iloc[0:0]
                 new_last_index[k] = self.last_index[k]
 
-        # Get the last index in the old data from where the new data should begin
         from_index = None
         for k, new_obj in new_data.items():
             if len(new_obj.index) > 0:
@@ -4636,7 +4631,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     warn(f"None of the symbols were updated")
             return self.copy()
 
-        # Concatenate the updated old data and the new data
         for k, new_obj in new_data.items():
             if len(new_obj.index) > 0:
                 to_index = new_obj.index[0]
@@ -4663,11 +4657,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 new_obj = new_obj[~new_obj.index.duplicated(keep="last")]
             new_data[k] = new_obj
 
-        # Align the index and columns in the new data
         new_data = self.align_index(new_data, missing=self.missing_index, silence_warnings=silence_warnings)
         new_data = self.align_columns(new_data, missing=self.missing_columns, silence_warnings=silence_warnings)
 
-        # Align the columns and data type in the old and new data
         for k, new_obj in new_data.items():
             obj = self.data[k]
             if isinstance(obj, pd.DataFrame) and isinstance(new_obj, pd.DataFrame):
@@ -4684,7 +4676,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             new_data[k] = new_obj
 
         if not concat:
-            # Do not concatenate with the old data
             for k, new_obj in new_data.items():
                 if isinstance(new_obj.index, pd.DatetimeIndex):
                     new_obj.index.freq = new_obj.index.inferred_freq
@@ -4696,7 +4687,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 last_index=self.dict_type(new_last_index),
             )
 
-        # Append the new data to the old data
         for k, new_obj in new_data.items():
             obj = self.data[k]
             obj = obj.loc[:from_index]
@@ -4746,6 +4736,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         is aligned using `Data.align_data`. If the output is not a Pandas object, it is broadcast to match
         the original data using `broadcast_kwargs`.
 
+        !!! note
+            The returned object retains the same type and dimensionality as the input.
+
+            * Number and names of columns remain unchanged.
+            * To remove columns, use indexing or `Data.select`.
+            * To add columns, use column stacking or `Data.merge`.
+            * Index may change freely.
+
         Args:
             transform_func (Callable): Function to apply to the data.
             *args: Positional arguments for `transform_func`.
@@ -4761,14 +4759,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             Data: New instance with the transformed data.
-
-        !!! note
-            The returned object retains the same type and dimensionality as the input.
-
-            * Number and names of columns remain unchanged.
-            * To remove columns, use indexing or `Data.select`.
-            * To add columns, use column stacking or `Data.merge`.
-            * Index may change freely.
         """
         if key_wrapper_kwargs is None:
             key_wrapper_kwargs = {}
@@ -4934,6 +4924,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> DataT:
         """Mirror OHLC features in the data.
 
+        See:
+            `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -4948,9 +4941,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             Data: New data instance with mirrored OHLC features.
-
-        See:
-            `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
         """
         if isinstance(ref_feature, str):
             ref_feature = map_enum_fields(ref_feature, PriceFeature)
@@ -5143,6 +5133,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         data: "Data",
         func_name: str,
         *args,
+        pass_func_name: bool = False,
         raise_errors: bool = False,
         silence_warnings: bool = False,
         **kwargs,
@@ -5157,6 +5148,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             data (Data): Data instance on which to execute the function.
             func_name (str): Name identifying the function to run.
             *args: Positional arguments for `Data.run`.
+            pass_func_name (bool): If True, passes `func_name` as a keyword argument to `Data.run`.
             raise_errors (bool): If True, raises any exceptions encountered.
             silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `Data.run`.
@@ -5165,6 +5157,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             Any: Result of executing `Data.run`, or `vectorbtpro.utils.execution.NoResult`
                 if execution fails without raising an error.
         """
+        if pass_func_name:
+            kwargs["func_name"] = func_name
         try:
             return data.run(*args, **kwargs)
         except Exception as e:
@@ -5175,7 +5169,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return NoResult
 
     @classmethod
-    def select_run_func_args(cls, i: int, func_name: str, args: tp.Args) -> tuple:
+    def select_run_func_args(cls, i: int, func_name: str, args: tp.Union[tp.Args, run_func_dict]) -> tuple:
         """Select positional arguments corresponding to a function index or name.
 
         Iterates over the provided arguments and, for items that are instances of `run_func_dict`,
@@ -5186,11 +5180,19 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             i (int): Index used to look up an argument.
             func_name (str): Name used to look up an argument.
-            args (Args): Tuple of positional arguments to search through.
+            args (Union[Args, run_func_dict]): Tuple of positional arguments to search through,
+                or a `run_func_dict` that maps function names or indices to tuples of argument values.
 
         Returns:
             tuple: Tuple containing the selected arguments corresponding to the given function index or name.
         """
+        if isinstance(args, run_func_dict):
+            if func_name in args:
+                return args[func_name]
+            if i in args:
+                return args[i]
+            if "_def" in args:
+                return args["_def"]
         _args = ()
         for v in args:
             if isinstance(v, run_func_dict):
@@ -5205,7 +5207,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return _args
 
     @classmethod
-    def select_run_func_kwargs(cls, i: int, func_name: str, kwargs: tp.Kwargs) -> dict:
+    def select_run_func_kwargs(cls, i: int, func_name: str, kwargs: tp.Union[tp.Kwargs, run_func_dict]) -> dict:
         """Select keyword arguments corresponding to a runnable function based on its index or name.
 
         Args:
@@ -5213,14 +5215,23 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             func_name (str): Name of the function to match during argument selection.
             kwargs (Kwargs): Dictionary where each value can be:
 
-                * `run_func_dict` mapping function names or indices to specific argument values.
+                * `run_func_dict` that maps function names or indices to specific argument values.
                 * `run_arg_dict` that updates arguments if its key matches the provided function name or index.
                 * Direct value if no special type is applicable.
+
+                Also, `kwargs` itself can be a `run_func_dict`.
 
         Returns:
             dict: Dictionary containing the keyword arguments selected based
                 on the provided index or function name.
         """
+        if isinstance(kwargs, run_func_dict):
+            if func_name in kwargs:
+                return kwargs[func_name]
+            if i in kwargs:
+                return kwargs[i]
+            if "_def" in kwargs:
+                return kwargs["_def"]
         _kwargs = {}
         for k, v in kwargs.items():
             if isinstance(v, run_func_dict):
@@ -5243,8 +5254,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         *args,
         on_features: tp.Optional[tp.MaybeFeatures] = None,
         on_symbols: tp.Optional[tp.MaybeSymbols] = None,
-        func_args: tp.ArgsLike = None,
-        func_kwargs: tp.KwargsLike = None,
+        func_name: tp.Union[None, str, run_func_dict] = None,
+        func_args: tp.Union[tp.ArgsLike, run_func_dict] = None,
+        func_kwargs: tp.Union[tp.KwargsLike, run_func_dict] = None,
+        indicator_kwargs: tp.Union[tp.KwargsLike, run_func_dict] = None,
+        name_numbering: tp.Optional[str] = None,
         magnet_kwargs: tp.KwargsLike = None,
         ignore_args: tp.Optional[tp.Sequence[str]] = None,
         rename_args: tp.DictLike = None,
@@ -5262,7 +5276,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         merge_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         return_keys: bool = False,
-        _func_name: tp.Optional[str] = None,
         **kwargs,
     ) -> tp.Any:
         """Run a function on data.
@@ -5286,14 +5299,37 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Set `unpack` to True, "dict", or "frame" to automatically post-process the result using the corresponding
         methods: `vectorbtpro.indicators.factory.IndicatorBase.unpack`, `to_dict`, or `to_frame`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.indexing`.
+
         Args:
             func (MaybeIterable[Union[Hashable, Callable]]): Function, location, indicator name,
                 or simulation method to run, or an iterable of such.
             *args: Positional arguments for the function.
             on_features (Optional[MaybeFeatures]): Features identifier(s) used to filter the data.
             on_symbols (Optional[MaybeSymbols]): Symbols identifier(s) used to filter the data.
-            func_args (ArgsLike): Extra positional arguments for the function.
-            func_kwargs (KwargsLike): Extra keyword arguments for the function.
+            func_name (Union[None, str, run_func_dict]): Name of the function.
+
+                Can be used to rename the function, such as when the same function is called multiple times.
+
+                Can be provided per function using `run_func_dict`.
+            func_args (Union[ArgsLike, run_func_dict]): Extra positional arguments for the function.
+
+                Can be provided per function using `run_func_dict`.
+            func_kwargs (Union[KwargsLike, run_func_dict]): Extra keyword arguments for the function.
+
+                Can be provided per function using `run_func_dict`.
+            indicator_kwargs (KwargsLike): Keyword arguments for the respective indicator constructor.
+
+                See `vectorbtpro.indicators.factory.IndicatorFactory.get_indicator`.
+                Can be provided per function using `run_func_dict`.
+            name_numbering (Optional[str]): Naming convention for duplicate types.
+
+                Available options are:
+
+                * 'none_based': First occurrence has no suffix, subsequent occurrences start from `_2`, `_3`, etc.
+                * 'zero_based': All occurrences are suffixed starting from `_0`, `_1`, `_2`, etc.
+                * 'one_based': All occurrences are suffixed starting from `_1`, `_2`, `_3`, etc.
             magnet_kwargs (KwargsLike): Keyword arguments injected only if they
                 match the function signature.
             ignore_args (Optional[Sequence[str]]): Names of arguments to ignore when
@@ -5329,7 +5365,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         from vectorbtpro.indicators.factory import IndicatorBase, IndicatorFactory
         from vectorbtpro.indicators.talib_ import talib_func
         from vectorbtpro.portfolio.base import Portfolio
+        from vectorbtpro._settings import settings
 
+        indexing_cfg = settings["indexing"]
+
+        if name_numbering is None:
+            name_numbering = indexing_cfg["name_numbering"]
         if magnet_kwargs is None:
             magnet_kwargs = {}
         if data_kwargs is None:
@@ -5345,41 +5386,111 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         if on_symbols is not None:
             _self = _self.select_symbols(on_symbols)
 
+        f_id_number = {}
         if checks.is_complex_iterable(func):
             tasks = []
             keys = []
             for i, f in enumerate(func):
                 _location = location
                 if callable(f):
-                    func_name = f.__name__
+                    true_name = f.__name__
                 elif isinstance(f, str):
                     if _location is not None:
-                        func_name = f.lower().strip()
-                        if func_name == "*":
-                            func_name = "all"
+                        matched_location = IndicatorFactory.match_location(_location)
+                        if matched_location is not None:
+                            _location = matched_location
+                        true_name = None
+                        if _location == "expr":
+                            _, true_name, _ = IndicatorFactory.parse_expr_name(f)
+                        if true_name is None:
+                            true_name = f
+                            true_name_parsed = False
+                        else:
+                            true_name_parsed = True
+                        true_name = true_name.lower().strip()
+                        if true_name == "*":
+                            true_name = "all"
                         if prepend_location is True:
-                            func_name = _location + "_" + func_name
+                            if not true_name_parsed and _location == "expr":
+                                true_name = _location + ":" + true_name
+                            else:
+                                true_name = _location + "_" + true_name
                     else:
                         _location, f = IndicatorFactory.split_indicator_name(f)
                         if f is None:
                             raise ValueError("Sequence of locations is not supported")
-                        func_name = f.lower().strip()
-                        if func_name == "*":
-                            func_name = "all"
+                        true_name = None
+                        if _location is not None and _location == "expr":
+                            _, true_name, _ = IndicatorFactory.parse_expr_name(f)
+                        if true_name is None:
+                            true_name = f
+                            true_name_parsed = False
+                        else:
+                            true_name_parsed = True
+                        true_name = true_name.lower().strip()
+                        if true_name == "*":
+                            true_name = "all"
                         if _location is not None:
                             if prepend_location in (None, True):
-                                func_name = _location + "_" + func_name
+                                if not true_name_parsed and _location == "expr":
+                                    true_name = _location + ":" + true_name
+                                else:
+                                    true_name = _location + "_" + true_name
                 else:
-                    func_name = f
-                new_args = _self.select_run_func_args(i, func_name, args)
-                new_args = (_self, func_name, f, *new_args)
-                new_kwargs = _self.select_run_func_kwargs(i, func_name, kwargs)
+                    true_name = f
+                if true_name not in f_id_number:
+                    f_id_number[true_name] = {}
+                if id(f) not in f_id_number[true_name]:
+                    f_id_number[true_name][id(f)] = len(f_id_number[true_name])
+                if name_numbering.lower() == "none_based":
+                    if f_id_number[true_name][id(f)] == 0:
+                        out_name = true_name
+                    else:
+                        out_name = "%s_%d" % (true_name, f_id_number[true_name][id(f)] + 1)
+                elif name_numbering.lower() == "zero_based":
+                    if f_id_number[true_name][id(f)] == 0:
+                        out_name = "%s_0" % true_name
+                    else:
+                        out_name = "%s_%d" % (true_name, f_id_number[true_name][id(f)])
+                elif name_numbering.lower() == "one_based":
+                    if f_id_number[true_name][id(f)] == 0:
+                        out_name = "%s_1" % true_name
+                    else:
+                        out_name = "%s_%d" % (true_name, f_id_number[true_name][id(f)] + 1)
+                else:
+                    raise ValueError(f"Invalid name_numbering: {name_numbering!r}")
+                if func_name is not None:
+                    if isinstance(func_name, run_func_dict):
+                        if true_name in func_name:
+                            out_name = func_name[true_name]
+                        elif i in func_name:
+                            out_name = func_name[i]
+                        elif "_def" in func_name:
+                            out_name = func_name["_def"]
+                    else:
+                        out_name = func_name
+                new_args = _self.select_run_func_args(i, out_name, args)
+                new_args = (_self, out_name, f, *new_args)
+                new_kwargs = _self.select_run_func_kwargs(i, out_name, kwargs)
+                if func_args is not None:
+                    new_func_args = _self.select_run_func_args(i, out_name, func_args)
+                else:
+                    new_func_args = ()
+                if func_kwargs is not None:
+                    new_func_kwargs = _self.select_run_func_kwargs(i, out_name, func_kwargs)
+                else:
+                    new_func_kwargs = {}
+                if indicator_kwargs is not None:
+                    new_indicator_kwargs = _self.select_run_func_kwargs(i, out_name, indicator_kwargs)
+                else:
+                    new_indicator_kwargs = {}
                 if concat and _location == "talib_func":
                     new_kwargs["unpack_to"] = "frame"
                 new_kwargs = {
                     **dict(
-                        func_args=func_args,
-                        func_kwargs=func_kwargs,
+                        func_args=new_func_args,
+                        func_kwargs=new_func_kwargs,
+                        indicator_kwargs=new_indicator_kwargs,
                         magnet_kwargs=magnet_kwargs,
                         ignore_args=ignore_args,
                         rename_args=rename_args,
@@ -5395,22 +5506,21 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                         merge_kwargs=merge_kwargs,
                         template_context=template_context,
                         return_keys=return_keys,
-                        _func_name=func_name,
                     ),
                     **new_kwargs,
                 }
 
-                tasks.append(Task(self.try_run, *new_args, **new_kwargs))
-                keys.append(str(func_name))
+                tasks.append(Task(self.try_run, *new_args, pass_func_name=True, **new_kwargs))
+                keys.append(str(out_name))
 
             keys = pd.Index(keys, name="run_func")
             results = execute(tasks, size=len(keys), keys=keys, **execute_kwargs)
             if filter_results:
                 try:
                     results, keys = filter_out_no_results(results, keys=keys)
-                except NoResultsException as e:
+                except NoResultsException:
                     if raise_no_results:
-                        raise e
+                        raise
                     return NoResult
                 no_results_filtered = True
             else:
@@ -5440,6 +5550,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             return results
 
         if isinstance(func, str):
+            if func_name is not None:
+                if not isinstance(func_name, str):
+                    raise TypeError("func_name must be a string when func is a string")
+                out_name = func_name
+            else:
+                out_name = None
             func_name = func.lower().strip()
             if func_name.startswith("from_") and getattr(Portfolio, func_name):
                 func = getattr(Portfolio, func_name)
@@ -5452,7 +5568,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     raise ValueError("Portfolio cannot be unpacked")
                 return pf
             if location is None:
-                location, func_name = IndicatorFactory.split_indicator_name(func_name)
+                location, func = IndicatorFactory.split_indicator_name(func)
+                if func is None:
+                    func_name = None
+                else:
+                    func_name = func.lower().strip()
             if location is not None and (func_name is None or func_name == "all" or func_name == "*"):
                 matched_location = IndicatorFactory.match_location(location)
                 if matched_location is not None:
@@ -5472,6 +5592,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     *args,
                     func_args=func_args,
                     func_kwargs=func_kwargs,
+                    indicator_kwargs=indicator_kwargs,
                     magnet_kwargs=magnet_kwargs,
                     ignore_args=ignore_args,
                     rename_args=rename_args,
@@ -5495,10 +5616,20 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     location = matched_location
                 if location == "talib_func":
                     func = talib_func(func_name)
+                elif location == "expr":
+                    if indicator_kwargs is None:
+                        indicator_kwargs = {}
+                    func = IndicatorFactory.get_indicator(func, location=location, **indicator_kwargs)
                 else:
-                    func = IndicatorFactory.get_indicator(func_name, location=location)
+                    if indicator_kwargs is None:
+                        indicator_kwargs = {}
+                    func = IndicatorFactory.get_indicator(func_name, location=location, **indicator_kwargs)
             else:
-                func = IndicatorFactory.get_indicator(func_name)
+                if indicator_kwargs is None:
+                    indicator_kwargs = {}
+                func = IndicatorFactory.get_indicator(func_name, **indicator_kwargs)
+            if out_name is not None:
+                func_name = out_name
         if isinstance(func, type) and issubclass(func, IndicatorBase):
             func = func.run
 
@@ -5541,12 +5672,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         for k, v in magnet_kwargs.items():
             if k in func_arg_names:
                 kwargs[k] = v
-        new_args, new_kwargs = extend_args(func, args, kwargs, **with_kwargs)
         if func_args is None:
             func_args = ()
         if func_kwargs is None:
             func_kwargs = {}
-        out = func(*new_args, *func_args, **new_kwargs, **func_kwargs)
+        new_args = args + func_args
+        new_kwargs = {**kwargs, **func_kwargs}
+        new_args, new_kwargs = extend_args(func, new_args, new_kwargs, **with_kwargs)
+        out = func(*new_args, **new_kwargs)
         if isinstance(unpack, bool):
             if unpack:
                 if isinstance(out, IndicatorBase):
@@ -5555,10 +5688,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             if isinstance(out, IndicatorBase):
                 out = out.to_dict()
             else:
-                if _func_name is None:
+                if func_name is None:
                     feature_name = func.__name__
+                elif isinstance(func_name, str):
+                    feature_name = func_name
                 else:
-                    feature_name = _func_name
+                    raise TypeError("func_name must be a string when unpacking to dict")
                 out = {feature_name: out}
         elif isinstance(unpack, str) and unpack.lower() == "frame":
             if isinstance(out, IndicatorBase):
@@ -5569,10 +5704,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             if isinstance(out, IndicatorBase):
                 out = feature_dict(out.to_dict())
             else:
-                if _func_name is None:
+                if func_name is None:
                     feature_name = func.__name__
+                elif isinstance(func_name, str):
+                    feature_name = func_name
                 else:
-                    feature_name = _func_name
+                    raise TypeError("func_name must be a string when unpacking to Data")
                 out = feature_dict({feature_name: out})
             out = Data.from_data(out, **data_kwargs)
         else:

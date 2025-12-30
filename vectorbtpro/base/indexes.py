@@ -91,32 +91,75 @@ def index_from_values(
     values: tp.Sequence,
     single_value: bool = False,
     name: tp.Optional[tp.Hashable] = None,
+    name_numbering: tp.Optional[str] = None,
 ) -> tp.Index:
     """Create a new Pandas Index from a sequence of values.
 
     Processes each element in the sequence to generate corresponding index labels.
     When the `single_value` flag is True, only the first value is used and repeated for all entries.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.indexing`.
+
     Args:
         values (Sequence): Iterable of values to generate index entries.
         single_value (bool): If True, uses only the first value from `values` for index creation,
             repeating it for all entries.
         name (Optional[Hashable]): Name to assign to the index.
+        name_numbering (Optional[str]): Naming convention for duplicate types.
+
+            Available options are:
+
+            * 'none_based': First occurrence has no suffix, subsequent occurrences start from `_2`, `_3`, etc.
+            * 'zero_based': All occurrences are suffixed starting from `_0`, `_1`, `_2`, etc.
+            * 'one_based': All occurrences are suffixed starting from `_1`, `_2`, `_3`, etc.
 
     Returns:
         Index: Pandas Index with labels generated from the provided values.
     """
-    scalar_types = (int, float, complex, str, bool, datetime, timedelta, np.generic)
+    from vectorbtpro._settings import settings
+
+    indexing_cfg = settings["indexing"]
+
     type_id_number = {}
-    value_names = []
+    new_values = []
     if len(values) == 1:
         single_value = True
+    if name_numbering is None:
+        name_numbering = indexing_cfg["name_numbering"]
+
+    def _process_type_name(type_name):
+        if single_value:
+            new_values.append(type_name)
+        else:
+            if type_name not in type_id_number:
+                type_id_number[type_name] = {}
+            if id(v) not in type_id_number[type_name]:
+                type_id_number[type_name][id(v)] = len(type_id_number[type_name])
+            if name_numbering.lower() == "none_based":
+                if type_id_number[type_name][id(v)] == 0:
+                    new_values.append(type_name)
+                else:
+                    new_values.append("%s_%d" % (type_name, type_id_number[type_name][id(v)] + 1))
+            elif name_numbering.lower() == "zero_based":
+                if type_id_number[type_name][id(v)] == 0:
+                    new_values.append("%s_0" % type_name)
+                else:
+                    new_values.append("%s_%d" % (type_name, type_id_number[type_name][id(v)]))
+            elif name_numbering.lower() == "one_based":
+                if type_id_number[type_name][id(v)] == 0:
+                    new_values.append("%s_1" % type_name)
+                else:
+                    new_values.append("%s_%d" % (type_name, type_id_number[type_name][id(v)] + 1))
+            else:
+                raise ValueError(f"Invalid name_numbering: {name_numbering!r}")
+
     for i in range(len(values)):
         if i > 0 and single_value:
             break
         v = values[i]
-        if v is None or isinstance(v, scalar_types):
-            value_names.append(v)
+        if v is None or checks.is_hashable(v):
+            new_values.append(v)
         elif isinstance(v, np.ndarray):
             all_same = False
             if np.issubdtype(v.dtype, np.floating):
@@ -128,33 +171,21 @@ def index_from_values(
                 if np.equal(v, v.item(0)).all():
                     all_same = True
             if all_same:
-                value_names.append(v.item(0))
+                new_values.append(v.item(0))
             else:
-                if single_value:
-                    value_names.append("array")
-                else:
-                    if "array" not in type_id_number:
-                        type_id_number["array"] = {}
-                    if id(v) not in type_id_number["array"]:
-                        type_id_number["array"][id(v)] = len(type_id_number["array"])
-                    value_names.append("array_%d" % (type_id_number["array"][id(v)]))
+                _process_type_name("array")
         else:
-            type_name = str(type(v).__name__)
-            if single_value:
-                value_names.append("%s" % type_name)
-            else:
-                if type_name not in type_id_number:
-                    type_id_number[type_name] = {}
-                if id(v) not in type_id_number[type_name]:
-                    type_id_number[type_name][id(v)] = len(type_id_number[type_name])
-                value_names.append("%s_%d" % (type_name, type_id_number[type_name][id(v)]))
+            _process_type_name(str(type(v).__name__))
     if single_value and len(values) > 1:
-        value_names *= len(values)
-    return pd.Index(value_names, name=name)
+        new_values *= len(values)
+    return pd.Index(new_values, name=name, tupleize_cols=False)
 
 
 def repeat_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] = None) -> tp.Index:
     """Repeat each element in the provided index n times.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
 
     Args:
         index (IndexLike): Input index to be repeated.
@@ -163,9 +194,6 @@ def repeat_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] =
 
     Returns:
         Index: New index with each element repeated n times.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -185,6 +213,9 @@ def repeat_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] =
 def tile_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] = None) -> tp.Index:
     """Tile the entire index by repeating its sequence n times.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
+
     Args:
         index (IndexLike): Input index to be tiled.
         n (int): Number of times to tile the index.
@@ -194,9 +225,6 @@ def tile_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] = N
         Index: Tiled index.
 
             If the input is a MultiIndex, the resulting index is a MultiIndex with tiled levels.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -223,6 +251,9 @@ def clean_index(
 ) -> tp.Index:
     """Clean the provided index by removing duplicate or redundant levels based on configuration.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
+
     Args:
         index (IndexLike): Index to be cleaned.
         drop_duplicates (Optional[bool]): If True, remove duplicate levels.
@@ -231,9 +262,6 @@ def clean_index(
 
     Returns:
         Index: Cleaned index.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -742,15 +770,15 @@ def drop_duplicate_levels(index: tp.Index, keep: tp.Optional[str] = None) -> tp.
 
     If level names are identical, the duplicate level is removed based on the specified retention strategy.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
+
     Args:
         index (Index): Index from which duplicate levels are removed.
         keep (Optional[str]): Indicates which duplicate to retain; valid options are "first" or "last".
 
     Returns:
         Index: Index with duplicate levels dropped.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -1029,11 +1057,9 @@ def cross_index_with(
                     raise ValueError(f"Candidate block level {name1!r} in both indexes has different values")
 
     if len(levels1) == 0:
-        # Regular index product
         indices1 = np.repeat(np.arange(len(index1)), len(index2))
         indices2 = np.tile(np.arange(len(index2)), len(index1))
     else:
-        # Block index product
         index_levels1 = select_levels(index1, levels1)
         index_levels2 = select_levels(index2, levels2)
 
@@ -1219,6 +1245,9 @@ class IndexApplier(Base):
     def apply_to_index(self: IndexApplierT, apply_func: tp.Callable, *args, **kwargs) -> IndexApplierT:
         """Apply the specified function to the instance's index and return a new instance.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             apply_func (Callable): Callable to apply to the instance's index.
             *args: Positional arguments for `apply_func`.
@@ -1226,9 +1255,6 @@ class IndexApplier(Base):
 
         Returns:
             IndexApplier: New instance with the updated index.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 

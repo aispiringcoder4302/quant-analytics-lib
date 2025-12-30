@@ -38,15 +38,15 @@ SQLDataT = tp.TypeVar("SQLDataT", bound="SQLData")
 class SQLData(DBData):
     """Data class for fetching data from a database using SQLAlchemy.
 
-    See:
-        * https://www.sqlalchemy.org/ for the SQLAlchemy API.
-        * https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for the Pandas read method.
-        * `SQLData.pull` and `SQLData.fetch_key` for argument details.
-
     !!! info
         For default settings, see `custom.sql` in `vectorbtpro._settings.data`.
 
         Global settings can be provided per engine name using the `engines` dictionary.
+
+    See:
+        * https://www.sqlalchemy.org/ for the SQLAlchemy API.
+        * https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for the Pandas read method.
+        * `SQLData.pull` and `SQLData.fetch_key` for argument details.
 
     Examples:
         Set up the engine settings globally (optional):
@@ -208,6 +208,9 @@ class SQLData(DBData):
     ) -> tp.Union[EngineT, dict]:
         """Resolve and return the database engine.
 
+        !!! note
+            Engine URLs can be provided as engine names, but not vice versa.
+
         Args:
             engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
 
@@ -222,9 +225,6 @@ class SQLData(DBData):
 
         Returns:
             Union[Engine, dict]: Resolved engine, or a metadata dictionary if `return_meta` is True.
-
-        !!! note
-            Engine URLs can be provided as engine names, but not vice versa.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

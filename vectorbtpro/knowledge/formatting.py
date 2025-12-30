@@ -10,17 +10,16 @@
 
 """Module providing content formatting classes."""
 
+import inspect
 import io
 import re
-import inspect
-import time
 import sys
+import time
 from pathlib import Path
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import Configured, flat_merge_dicts
-from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.path_ import check_mkdir
 from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
 
@@ -54,6 +53,9 @@ FENCE_RE = re.compile(
 class ToMarkdown(Configured):
     """Class for converting text to Markdown.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge` and its sub-configuration `formatting`.
+
     Args:
         remove_code_title (Optional[bool]): Whether to remove the `title` attribute from a code block
             and display it above the block.
@@ -65,9 +67,6 @@ class ToMarkdown(Configured):
         think_close_tag (Optional[str]): Closing tag for the think block.
         think_separator (Optional[str]): Separator for think/non-think blocks.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.knowledge` and its sub-configuration `formatting`.
     """
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
@@ -288,6 +287,9 @@ def to_markdown(text: str, **kwargs) -> str:
 class ToHTML(Configured):
     """Class for converting Markdown text to HTML.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge` and its sub-configuration `formatting`.
+
     Args:
         resolve_extensions (Optional[bool]): Whether to resolve Markdown extensions,
             favoring `pymdownx` extensions when available.
@@ -295,9 +297,6 @@ class ToHTML(Configured):
             `span` tags into hyperlinks.
         frontmatter_to_code (Optional[bool]): Whether to convert frontmatter (YAML) blocks to code blocks.
         **markdown_kwargs: Keyword arguments for Markdown conversion.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.knowledge` and its sub-configuration `formatting`.
     """
 
     _expected_keys_mode: tp.ExpectedKeysMode = "disable"
@@ -483,6 +482,9 @@ class FormatHTML(Configured):
     via Pygments if enabled, and allows injection of additional CSS rules, extra HTML elements
     in the `<head>`, and JavaScript or inline scripts in the `<body>`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge` and its sub-configuration `formatting`.
+
     Args:
         html_template (Optional[CustomTemplateLike]): Template for HTML formatting,
             as a string, function, or custom template.
@@ -506,9 +508,6 @@ class FormatHTML(Configured):
         pygments_kwargs (KwargsLike): Keyword arguments for `pygments.formatters.HtmlFormatter`.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.knowledge` and its sub-configuration `formatting`.
     """
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
@@ -719,6 +718,10 @@ def format_html(**kwargs) -> str:
 class ContentFormatter(Configured):
     """Class for formatting content.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge` and
+        its sub-configurations `formatting` and `formatting.formatter_config`.
+
     Args:
         output_to (Optional[Union[str, TextIO]]): Destination for output, which may be a file path or stream.
         flush_output (Optional[bool]): Whether to flush the output immediately after writing.
@@ -730,10 +733,6 @@ class ContentFormatter(Configured):
         think_close_tag (Optional[str]): Closing tag for the think block.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.knowledge` and
-        its sub-configurations `formatting` and `formatting.formatter_config`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
@@ -1162,12 +1161,12 @@ class PlainFormatter(ContentFormatter):
 class IPythonFormatter(ContentFormatter):
     """Class for formatting plain content in IPython.
 
+    !!! info
+        For default settings, see `formatting.formatter_configs.ipython` in `vectorbtpro._settings.knowledge`.
+
     Args:
         *args: Positional arguments for `ContentFormatter`.
         **kwargs: Keyword arguments for `ContentFormatter`.
-
-    !!! info
-        For default settings, see `formatting.formatter_configs.ipython` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name = "ipython"
@@ -1214,13 +1213,13 @@ class IPythonFormatter(ContentFormatter):
 class IPythonMarkdownFormatter(IPythonFormatter):
     """Class for formatting Markdown content in IPython.
 
+    !!! info
+        For default settings, see `formatting.formatter_configs.ipython_markdown` in `vectorbtpro._settings.knowledge`.
+
     Args:
         *args: Positional arguments for `IPythonFormatter`.
         to_markdown_kwargs (KwargsLike): Keyword arguments for `to_markdown`.
         **kwargs: Keyword arguments for `IPythonFormatter`.
-
-    !!! info
-        For default settings, see `formatting.formatter_configs.ipython_markdown` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name = "ipython_markdown"
@@ -1263,14 +1262,14 @@ class IPythonMarkdownFormatter(IPythonFormatter):
 class IPythonHTMLFormatter(IPythonFormatter):
     """Class for formatting HTML content in IPython.
 
+    !!! info
+        For default settings, see `formatting.formatter_configs.ipython_html` in `vectorbtpro._settings.knowledge`.
+
     Args:
         *args: Positional arguments for `IPythonFormatter`.
         to_markdown_kwargs (KwargsLike): Keyword arguments for `to_markdown`.
         to_html_kwargs (KwargsLike): Keyword arguments for `to_html`.
         **kwargs: Keyword arguments for `IPythonFormatter`.
-
-    !!! info
-        For default settings, see `formatting.formatter_configs.ipython_html` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name = "ipython_html"
@@ -1335,6 +1334,9 @@ class IPythonHTMLFormatter(IPythonFormatter):
 class HTMLFileFormatter(ContentFormatter):
     """Class for formatting static HTML files.
 
+    !!! info
+        For default settings, see `formatting.formatter_configs.html` in `vectorbtpro._settings.knowledge`.
+
     Args:
         *args: Positional arguments for `ContentFormatter`.
         page_title (str): Title of the HTML page.
@@ -1351,9 +1353,6 @@ class HTMLFileFormatter(ContentFormatter):
         to_html_kwargs (KwargsLike): Keyword arguments for `to_html`.
         format_html_kwargs (KwargsLike): Keyword arguments for `format_html`.
         **kwargs: Keyword arguments for `ContentFormatter`.
-
-    !!! info
-        For default settings, see `formatting.formatter_configs.html` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name = "html"
@@ -1422,6 +1421,19 @@ class HTMLFileFormatter(ContentFormatter):
             cache_dir = self.get_setting("cache_dir", default=None)
             if cache_dir is not None:
                 if isinstance(cache_dir, CustomTemplate):
+                    try:
+                        if "cache_dir" in cache_dir.get_context_vars():
+                            from vectorbtpro._settings import settings
+
+                            _cache_dir = settings["knowledge"]["cache_dir"]
+                            if isinstance(_cache_dir, CustomTemplate):
+                                _cache_dir = _cache_dir.substitute(template_context, eval_id="cache_dir")
+                            template_context = flat_merge_dicts(
+                                dict(cache_dir=_cache_dir),
+                                template_context,
+                            )
+                    except NotImplementedError:
+                        pass
                     cache_dir = cache_dir.substitute(template_context, eval_id="cache_dir")
                 template_context = flat_merge_dicts(dict(cache_dir=cache_dir), template_context)
             release_dir = self.get_setting("release_dir", default=None)
@@ -1603,6 +1615,7 @@ class HTMLFileFormatter(ContentFormatter):
             self._file_handle = open(str(file_path.resolve()), "w", encoding="utf-8")
         else:
             import tempfile
+            from vectorbtpro.utils.refs import get_caller_qualname
 
             self._file_handle = tempfile.NamedTemporaryFile(
                 "w",
@@ -1635,6 +1648,9 @@ class HTMLFileFormatter(ContentFormatter):
 def resolve_formatter(formatter: tp.ContentFormatterLike) -> tp.MaybeType[ContentFormatter]:
     """Resolve a subclass or instance of `ContentFormatter`.
 
+    !!! info
+        For default settings, see `formatting` in `vectorbtpro._settings.knowledge`.
+
     Args:
         formatter (ContentFormatterLike): Identifier, subclass, or instance of `ContentFormatter`.
 
@@ -1649,9 +1665,6 @@ def resolve_formatter(formatter: tp.ContentFormatterLike) -> tp.MaybeType[Conten
 
     Returns:
         ContentFormatter: Resolved formatter.
-
-    !!! info
-        For default settings, see `formatting` in `vectorbtpro._settings.knowledge`.
     """
     if formatter is None:
         from vectorbtpro._settings import settings

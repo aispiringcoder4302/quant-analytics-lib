@@ -17,12 +17,12 @@ from vectorbtpro.base.reshaping import to_1d_array_nb, to_2d_array_nb
 from vectorbtpro.generic.enums import BarZone
 from vectorbtpro.portfolio import chunking as portfolio_ch
 from vectorbtpro.portfolio.nb.core import *
-from vectorbtpro.portfolio.nb.from_order_func import no_post_func_nb
+from vectorbtpro.portfolio.nb.from_order_func import no_pre_func_nb, no_post_func_nb
 from vectorbtpro.registries.ch_registry import register_chunkable
 from vectorbtpro.returns.nb import get_return_nb
 from vectorbtpro.signals.enums import StopType
 from vectorbtpro.utils import chunking as ch
-from vectorbtpro.utils.array_ import insert_argsort_nb
+from vectorbtpro.utils.array_ import insert_argsort_nb, insert_lex_argsort_nb
 from vectorbtpro.utils.math_ import is_less_nb
 from vectorbtpro.utils.template import RepFunc
 
@@ -156,17 +156,12 @@ def resolve_signal_conflict_nb(
             and the second indicates the adjusted exit signal.
     """
     if is_entry and is_exit:
-        # Conflict
         if conflict_mode == ConflictMode.Entry:
-            # Ignore exit signal
             is_exit = False
         elif conflict_mode == ConflictMode.Exit:
-            # Ignore entry signal
             is_entry = False
         elif conflict_mode == ConflictMode.Adjacent:
-            # Take the signal adjacent to the position we are in
             if position_now == 0:
-                # Cannot decide -> ignore
                 is_entry = False
                 is_exit = False
             else:
@@ -178,10 +173,8 @@ def resolve_signal_conflict_nb(
                 else:
                     is_exit = False
         elif conflict_mode == ConflictMode.Opposite:
-            # Take the signal opposite to the position we are in
             if position_now == 0:
                 if direction == Direction.Both:
-                    # Cannot decide -> ignore
                     is_entry = False
                     is_exit = False
                 else:
@@ -394,14 +387,11 @@ def signal_to_size_nb(
     abs_position_now = abs(position_now)
 
     if position_now > 0:
-        # We're in a long position
         if is_short_entry:
             _check_size_type(size_type)
             if accumulate == AccumulationMode.Both or accumulate == AccumulationMode.RemoveOnly:
-                # Decrease the position
                 order_size = -size
             else:
-                # Reverse the position
                 if not np.isnan(size):
                     if size_type == SizeType.Percent:
                         order_size = -size
@@ -415,28 +405,22 @@ def signal_to_size_nb(
         elif is_long_exit:
             direction = Direction.LongOnly
             if accumulate == AccumulationMode.Both or accumulate == AccumulationMode.RemoveOnly:
-                # Decrease the position
                 _check_size_type(size_type)
                 order_size = -size
             else:
-                # Close the position
                 order_size = -abs_position_now
                 size_type = SizeType.Amount
         elif is_long_entry:
             _check_size_type(size_type)
             direction = Direction.LongOnly
             if accumulate == AccumulationMode.Both or accumulate == AccumulationMode.AddOnly:
-                # Increase the position
                 order_size = size
     elif position_now < 0:
-        # We're in a short position
         if is_long_entry:
             _check_size_type(size_type)
             if accumulate == AccumulationMode.Both or accumulate == AccumulationMode.RemoveOnly:
-                # Decrease the position
                 order_size = size
             else:
-                # Reverse the position
                 if not np.isnan(size):
                     if size_type == SizeType.Percent:
                         order_size = size
@@ -450,26 +434,21 @@ def signal_to_size_nb(
         elif is_short_exit:
             direction = Direction.ShortOnly
             if accumulate == AccumulationMode.Both or accumulate == AccumulationMode.RemoveOnly:
-                # Decrease the position
                 _check_size_type(size_type)
                 order_size = size
             else:
-                # Close the position
                 order_size = abs_position_now
                 size_type = SizeType.Amount
         elif is_short_entry:
             _check_size_type(size_type)
             direction = Direction.ShortOnly
             if accumulate == AccumulationMode.Both or accumulate == AccumulationMode.AddOnly:
-                # Increase the position
                 order_size = -size
     else:
         _check_size_type(size_type)
         if is_long_entry:
-            # Open long position
             order_size = size
         elif is_short_entry:
-            # Open short position
             order_size = -size
 
     if direction == Direction.ShortOnly:
@@ -541,6 +520,7 @@ def prepare_fs_records_nb(
         min_size=base_ch.flex_array_gl_slicer,
         max_size=base_ch.flex_array_gl_slicer,
         size_granularity=base_ch.flex_array_gl_slicer,
+        cash_limit=base_ch.flex_array_gl_slicer,
         leverage=base_ch.flex_array_gl_slicer,
         leverage_mode=base_ch.flex_array_gl_slicer,
         reject_prob=base_ch.flex_array_gl_slicer,
@@ -597,6 +577,7 @@ def from_basic_signals_nb(
     min_size: tp.FlexArray2dLike = np.nan,
     max_size: tp.FlexArray2dLike = np.nan,
     size_granularity: tp.FlexArray2dLike = np.nan,
+    cash_limit: tp.FlexArray2dLike = np.nan,
     leverage: tp.FlexArray2dLike = 1.0,
     leverage_mode: tp.FlexArray2dLike = LeverageMode.Lazy,
     reject_prob: tp.FlexArray2dLike = 0.0,
@@ -627,6 +608,9 @@ def from_basic_signals_nb(
     """Simulate basic signals without limit or stop orders.
 
     Iterate in column-major order using flexible broadcasting.
+
+    !!! tip
+        This function is parallelizable.
 
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
@@ -730,6 +714,11 @@ def from_basic_signals_nb(
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size_granularity`.
+        cash_limit (FlexArray2dLike): Max own cash the order is allowed to use.
+
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.cash_limit`.
         leverage (FlexArray2dLike): Leverage factor.
 
             Provided as a scalar, or per row, column, or element.
@@ -834,9 +823,6 @@ def from_basic_signals_nb(
 
     Returns:
         SimulationOutput: Simulation output containing order records, log records, and portfolio results.
-
-    !!! tip
-        This function is parallelizable.
     """
     check_group_lens_nb(group_lens, target_shape[1])
     cash_sharing = is_grouped_nb(group_lens)
@@ -864,6 +850,7 @@ def from_basic_signals_nb(
     min_size_ = to_2d_array_nb(np.asarray(min_size))
     max_size_ = to_2d_array_nb(np.asarray(max_size))
     size_granularity_ = to_2d_array_nb(np.asarray(size_granularity))
+    cash_limit_ = to_2d_array_nb(np.asarray(cash_limit))
     leverage_ = to_2d_array_nb(np.asarray(leverage))
     leverage_mode_ = to_2d_array_nb(np.asarray(leverage_mode))
     reject_prob_ = to_2d_array_nb(np.asarray(reject_prob))
@@ -954,10 +941,11 @@ def from_basic_signals_nb(
     )
 
     last_signal = np.empty(target_shape[1], dtype=int_)
-    main_info = np.empty(target_shape[1], dtype=main_info_dt)
+    order_info = np.empty(target_shape[1], dtype=order_info_dt)
 
     temp_call_seq = np.empty(target_shape[1], dtype=int_)
-    temp_sort_by = np.empty(target_shape[1], dtype=float_)
+    temp_order_value = np.empty(target_shape[1], dtype=float_)
+    temp_bar_zone = np.empty(target_shape[1], dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -977,7 +965,6 @@ def from_basic_signals_nb(
         _sim_end = sim_end_[group]
         for i in range(_sim_start, _sim_end):
 
-            # Add cash
             _cash_deposits = flex_select_nb(cash_deposits_, i, group)
             if _cash_deposits < 0:
                 _cash_deposits = max(_cash_deposits, -last_cash[group])
@@ -990,12 +977,10 @@ def from_basic_signals_nb(
             for ci in range(group_len):
                 col = from_col + ci
 
-                # Update valuation price using current open
                 _open = flex_select_nb(open_, i, col)
                 if not np.isnan(_open) or not ffill_val_price:
                     last_val_price[col] = _open
 
-                # Resolve valuation price
                 _val_price = flex_select_nb(val_price_, i, col)
                 if np.isinf(_val_price):
                     if _val_price > 0:
@@ -1015,7 +1000,6 @@ def from_basic_signals_nb(
                 if not np.isnan(_val_price) or not ffill_val_price:
                     last_val_price[col] = _val_price
 
-            # Update value and return
             group_value = last_cash[group]
             for col in range(from_col, to_col):
                 if last_position[col] != 0:
@@ -1026,7 +1010,6 @@ def from_basic_signals_nb(
                 output_value=last_value[group] - _cash_deposits,
             )
 
-            # Get signals
             skip = skip_empty
             for ci in range(group_len):
                 col = from_col + ci
@@ -1046,7 +1029,6 @@ def from_basic_signals_nb(
                     is_short_entry = flex_select_nb(short_entries_, _i, col)
                     is_short_exit = flex_select_nb(short_exits_, _i, col)
 
-                # Pack signals into a single integer
                 last_signal[col] = (
                     (is_long_entry << 4) | (is_long_exit << 3) | (is_short_entry << 2) | (is_short_exit << 1)
                 )
@@ -1054,31 +1036,26 @@ def from_basic_signals_nb(
                     skip = False
 
             if not skip:
-                # Get size and value of each order
                 for ci in range(group_len):
                     col = from_col + ci
 
-                    # Set defaults
-                    main_info["bar_zone"][col] = -1
-                    main_info["signal_idx"][col] = -1
-                    main_info["creation_idx"][col] = -1
-                    main_info["idx"][col] = i
-                    main_info["val_price"][col] = np.nan
-                    main_info["price"][col] = np.nan
-                    main_info["size"][col] = np.nan
-                    main_info["size_type"][col] = -1
-                    main_info["direction"][col] = -1
-                    main_info["type"][col] = OrderType.Market
-                    main_info["stop_type"][col] = -1
-                    temp_sort_by[col] = 0.0
+                    order_info["bar_zone"][col] = BarZone.Close
+                    order_info["signal_idx"][col] = i
+                    order_info["creation_idx"][col] = i
+                    order_info["idx"][col] = i
+                    order_info["val_price"][col] = last_val_price[col]
+                    order_info["size"][col] = np.nan
+                    order_info["price"][col] = np.nan
+                    order_info["size_type"][col] = -1
+                    order_info["direction"][col] = -1
+                    order_info["type"][col] = OrderType.Market
+                    order_info["stop_type"][col] = -1
 
-                    # Unpack a single integer into signals
                     is_long_entry = (last_signal[col] >> 4) & 1
                     is_long_exit = (last_signal[col] >> 3) & 1
                     is_short_entry = (last_signal[col] >> 2) & 1
                     is_short_exit = (last_signal[col] >> 1) & 1
 
-                    # Resolve the current bar
                     _i = i - abs(flex_select_nb(from_ago_, i, col))
                     _open = flex_select_nb(open_, i, col)
                     _high = flex_select_nb(high_, i, col)
@@ -1091,11 +1068,9 @@ def from_basic_signals_nb(
                         close=_close,
                     )
 
-                    # Process user signal
                     if _i >= 0:
                         _accumulate = flex_select_nb(accumulate_, _i, col)
                         if is_long_entry or is_short_entry:
-                            # Resolve any single-direction conflicts
                             _upon_long_conflict = flex_select_nb(upon_long_conflict_, _i, col)
                             is_long_entry, is_long_exit = resolve_signal_conflict_nb(
                                 position_now=last_position[col],
@@ -1113,7 +1088,6 @@ def from_basic_signals_nb(
                                 conflict_mode=_upon_short_conflict,
                             )
 
-                            # Resolve any multi-direction conflicts
                             _upon_dir_conflict = flex_select_nb(upon_dir_conflict_, _i, col)
                             is_long_entry, is_short_entry = resolve_dir_conflict_nb(
                                 position_now=last_position[col],
@@ -1122,7 +1096,6 @@ def from_basic_signals_nb(
                                 upon_dir_conflict=_upon_dir_conflict,
                             )
 
-                            # Resolve an opposite entry
                             _upon_opposite_entry = flex_select_nb(upon_opposite_entry_, _i, col)
                             (
                                 is_long_entry,
@@ -1140,10 +1113,8 @@ def from_basic_signals_nb(
                                 accumulate=_accumulate,
                             )
 
-                        # Resolve the price
                         _price = flex_select_nb(price_, _i, col)
 
-                        # Convert both signals to size (direction-aware), size type, and direction
                         _size, _size_type, _direction = signal_to_size_nb(
                             position_now=last_position[col],
                             val_price_now=last_val_price[col],
@@ -1157,22 +1128,21 @@ def from_basic_signals_nb(
                             accumulate=_accumulate,
                         )
 
-                        # Execute user signal
                         if np.isinf(_price):
                             if _price > 0:
-                                main_info["bar_zone"][col] = BarZone.Close
+                                order_info["bar_zone"][col] = BarZone.Close
                             else:
-                                main_info["bar_zone"][col] = BarZone.Open
+                                order_info["bar_zone"][col] = BarZone.Open
                         else:
-                            main_info["bar_zone"][col] = BarZone.Middle
-                        main_info["signal_idx"][col] = _i
-                        main_info["creation_idx"][col] = i
-                        main_info["idx"][col] = _i
-                        main_info["val_price"][col] = last_val_price[col]
-                        main_info["price"][col] = _price
-                        main_info["size"][col] = _size
-                        main_info["size_type"][col] = _size_type
-                        main_info["direction"][col] = _direction
+                            order_info["bar_zone"][col] = BarZone.Middle
+                        order_info["signal_idx"][col] = _i
+                        order_info["creation_idx"][col] = i
+                        order_info["idx"][col] = _i
+                        order_info["val_price"][col] = last_val_price[col]
+                        order_info["size"][col] = _size
+                        order_info["price"][col] = _price
+                        order_info["size_type"][col] = _size_type
+                        order_info["direction"][col] = _direction
 
                 skip = skip_empty
                 if skip:
@@ -1180,32 +1150,28 @@ def from_basic_signals_nb(
                         if flex_select_nb(log_, i, col):
                             skip = False
                             break
-                        if not np.isnan(main_info["size"][col]):
+                        if not np.isnan(order_info["size"][col]):
                             skip = False
                             break
 
                 if not skip:
-                    # Check bar zone and update valuation price
                     bar_zone = -1
                     same_bar_zone = True
-                    same_timing = True
                     for ci in range(group_len):
                         col = from_col + ci
-                        if np.isnan(main_info["size"][col]):
+                        temp_order_value[col] = 0.0
+                        temp_bar_zone[col] = -1
+                        if np.isnan(order_info["size"][col]):
                             continue
                         if bar_zone == -1:
-                            bar_zone = main_info["bar_zone"][col]
-                        if main_info["bar_zone"][col] != bar_zone:
+                            bar_zone = order_info["bar_zone"][col]
+                        if order_info["bar_zone"][col] != bar_zone:
                             same_bar_zone = False
-                            same_timing = False
-                        if main_info["bar_zone"][col] == BarZone.Middle:
-                            same_timing = False
-                        _val_price = main_info["val_price"][col]
+                        _val_price = order_info["val_price"][col]
                         if not np.isnan(_val_price) or not ffill_val_price:
                             last_val_price[col] = _val_price
 
                     if cash_sharing:
-                        # Dynamically sort by order value -> selling comes first to release funds early
                         if call_seq is None:
                             for ci in range(group_len):
                                 temp_call_seq[ci] = ci
@@ -1213,16 +1179,12 @@ def from_basic_signals_nb(
                         else:
                             call_seq_now = call_seq[i, from_col:to_col]
                         if auto_call_seq:
-                            # Sort by order value
-                            if not same_timing:
-                                raise ValueError("Cannot sort orders by value if they are executed at different times")
                             for ci in range(group_len):
                                 if call_seq_now[ci] != ci:
                                     raise ValueError("Call sequence must follow CallSeqType.Default")
                                 col = from_col + ci
-                                if np.isnan(main_info["size"][col]):
+                                if np.isnan(order_info["size"][col]):
                                     continue
-                                # Approximate order value
                                 exec_state = ExecState(
                                     cash=last_cash[group] if cash_sharing else last_cash[col],
                                     position=last_position[col],
@@ -1232,24 +1194,31 @@ def from_basic_signals_nb(
                                     val_price=last_val_price[col],
                                     value=last_value[group] if cash_sharing else last_value[col],
                                 )
-                                temp_sort_by[ci] = approx_order_value_nb(
+                                temp_order_value[ci] = approx_order_value_nb(
                                     exec_state=exec_state,
-                                    size=main_info["size"][col],
-                                    size_type=main_info["size_type"][col],
-                                    direction=main_info["direction"][col],
+                                    size=order_info["size"][col],
+                                    size_type=order_info["size_type"][col],
+                                    direction=order_info["direction"][col],
                                 )
-                            insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
+                                temp_bar_zone[ci] = order_info["bar_zone"][col]
+                            if same_bar_zone:
+                                insert_argsort_nb(temp_order_value[:group_len], call_seq_now)
+                            else:
+                                insert_lex_argsort_nb(
+                                    temp_bar_zone[:group_len],
+                                    temp_order_value[:group_len],
+                                    call_seq_now,
+                                )
                         else:
                             if not same_bar_zone:
-                                # Sort by bar zone
                                 for ci in range(group_len):
                                     if call_seq_now[ci] != ci:
                                         raise ValueError("Call sequence must follow CallSeqType.Default")
                                     col = from_col + ci
-                                    if np.isnan(main_info["size"][col]):
+                                    if np.isnan(order_info["size"][col]):
                                         continue
-                                    temp_sort_by[ci] = main_info["bar_zone"][col]
-                                insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
+                                    temp_bar_zone[ci] = order_info["bar_zone"][col]
+                                insert_argsort_nb(temp_bar_zone[:group_len], call_seq_now)
 
                     for k in range(group_len):
                         if cash_sharing:
@@ -1259,10 +1228,9 @@ def from_basic_signals_nb(
                         else:
                             ci = k
                         col = from_col + ci
-                        if skip_empty and np.isnan(main_info["size"][col]):  # shortcut
+                        if skip_empty and np.isnan(order_info["size"][col]):  # shortcut
                             continue
 
-                        # Get current values per column
                         position_now = last_position[col]
                         debt_now = last_debt[col]
                         locked_cash_now = last_locked_cash[col]
@@ -1272,16 +1240,15 @@ def from_basic_signals_nb(
                         value_now = last_value[group]
                         return_now = last_return[group]
 
-                        # Generate the next order
-                        _i = main_info["idx"][col]
-                        if main_info["type"][col] == OrderType.Limit:
+                        _i = order_info["idx"][col]
+                        if order_info["type"][col] == OrderType.Limit:
                             _slippage = 0.0
                         else:
                             _slippage = float(flex_select_nb(slippage_, _i, col))
                         _min_size = flex_select_nb(min_size_, _i, col)
                         _max_size = flex_select_nb(max_size_, _i, col)
                         _size_type = flex_select_nb(size_type_, _i, col)
-                        if _size_type != main_info["size_type"][col]:
+                        if _size_type != order_info["size_type"][col]:
                             if not np.isnan(_min_size):
                                 _min_size, _ = resolve_size_nb(
                                     size=_min_size,
@@ -1289,7 +1256,7 @@ def from_basic_signals_nb(
                                     position=position_now,
                                     val_price=val_price_now,
                                     value=value_now,
-                                    target_size_type=main_info["size_type"][col],
+                                    target_size_type=order_info["size_type"][col],
                                     as_requirement=True,
                                 )
                             if not np.isnan(_max_size):
@@ -1299,20 +1266,21 @@ def from_basic_signals_nb(
                                     position=position_now,
                                     val_price=val_price_now,
                                     value=value_now,
-                                    target_size_type=main_info["size_type"][col],
+                                    target_size_type=order_info["size_type"][col],
                                     as_requirement=True,
                                 )
                         order = order_nb(
-                            size=main_info["size"][col],
-                            price=main_info["price"][col],
-                            size_type=main_info["size_type"][col],
-                            direction=main_info["direction"][col],
+                            size=order_info["size"][col],
+                            price=order_info["price"][col],
+                            size_type=order_info["size_type"][col],
+                            direction=order_info["direction"][col],
                             fees=flex_select_nb(fees_, _i, col),
                             fixed_fees=flex_select_nb(fixed_fees_, _i, col),
                             slippage=_slippage,
                             min_size=_min_size,
                             max_size=_max_size,
                             size_granularity=flex_select_nb(size_granularity_, _i, col),
+                            cash_limit=flex_select_nb(cash_limit_, _i, col),
                             leverage=flex_select_nb(leverage_, _i, col),
                             leverage_mode=flex_select_nb(leverage_mode_, _i, col),
                             reject_prob=flex_select_nb(reject_prob_, _i, col),
@@ -1322,7 +1290,6 @@ def from_basic_signals_nb(
                             log=flex_select_nb(log_, _i, col),
                         )
 
-                        # Process the order
                         price_area = PriceArea(
                             open=flex_select_nb(open_, i, col),
                             high=flex_select_nb(high_, i, col),
@@ -1352,14 +1319,12 @@ def from_basic_signals_nb(
                             log_counts=log_counts,
                         )
 
-                        # Append more order information
                         if order_result.status == OrderStatus.Filled and order_counts[col] >= 1:
-                            order_records["signal_idx"][order_counts[col] - 1, col] = main_info["signal_idx"][col]
-                            order_records["creation_idx"][order_counts[col] - 1, col] = main_info["creation_idx"][col]
-                            order_records["type"][order_counts[col] - 1, col] = main_info["type"][col]
-                            order_records["stop_type"][order_counts[col] - 1, col] = main_info["stop_type"][col]
+                            order_records["signal_idx"][order_counts[col] - 1, col] = order_info["signal_idx"][col]
+                            order_records["creation_idx"][order_counts[col] - 1, col] = order_info["creation_idx"][col]
+                            order_records["type"][order_counts[col] - 1, col] = order_info["type"][col]
+                            order_records["stop_type"][order_counts[col] - 1, col] = order_info["stop_type"][col]
 
-                        # Update execution state
                         cash_now = new_exec_state.cash
                         position_now = new_exec_state.position
                         debt_now = new_exec_state.debt
@@ -1368,7 +1333,6 @@ def from_basic_signals_nb(
                         val_price_now = new_exec_state.val_price
                         value_now = new_exec_state.value
 
-                        # Now becomes last
                         last_position[col] = position_now
                         last_debt[col] = debt_now
                         last_locked_cash[col] = locked_cash_now
@@ -1380,7 +1344,6 @@ def from_basic_signals_nb(
                         last_return[group] = return_now
 
             for col in range(from_col, to_col):
-                # Update valuation price using current close
                 _close = flex_select_nb(close_, i, col)
                 if not np.isnan(_close) or not ffill_val_price:
                     last_val_price[col] = _close
@@ -1399,7 +1362,6 @@ def from_basic_signals_nb(
                     cash[i, group] = last_cash[group]
                     free_cash[i, group] = last_free_cash[group]
 
-            # Update value and return
             group_value = last_cash[group]
             for col in range(from_col, to_col):
                 if last_position[col] != 0:
@@ -1466,6 +1428,7 @@ def from_basic_signals_nb(
         min_size=base_ch.flex_array_gl_slicer,
         max_size=base_ch.flex_array_gl_slicer,
         size_granularity=base_ch.flex_array_gl_slicer,
+        cash_limit=base_ch.flex_array_gl_slicer,
         leverage=base_ch.flex_array_gl_slicer,
         leverage_mode=base_ch.flex_array_gl_slicer,
         reject_prob=base_ch.flex_array_gl_slicer,
@@ -1551,6 +1514,7 @@ def from_signals_nb(
     min_size: tp.FlexArray2dLike = np.nan,
     max_size: tp.FlexArray2dLike = np.nan,
     size_granularity: tp.FlexArray2dLike = np.nan,
+    cash_limit: tp.FlexArray2dLike = np.nan,
     leverage: tp.FlexArray2dLike = 1.0,
     leverage_mode: tp.FlexArray2dLike = LeverageMode.Lazy,
     reject_prob: tp.FlexArray2dLike = 0.0,
@@ -1606,6 +1570,9 @@ def from_signals_nb(
     max_log_records: tp.Optional[int] = 0,
 ) -> SimulationOutput:
     """Simulate signals with limit and/or stop orders.
+
+    !!! tip
+        This function is parallelizable.
 
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
@@ -1715,6 +1682,11 @@ def from_signals_nb(
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size_granularity`.
+        cash_limit (FlexArray2dLike): Max own cash the order is allowed to use.
+
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.cash_limit`.
         leverage (FlexArray2dLike): Leverage factor.
 
             Provided as a scalar, or per row, column, or element.
@@ -1963,9 +1935,6 @@ def from_signals_nb(
 
     Returns:
         SimulationOutput: Simulation output containing order records, log records, and portfolio results.
-
-    !!! tip
-        This function is parallelizable.
     """
     check_group_lens_nb(group_lens, target_shape[1])
     cash_sharing = is_grouped_nb(group_lens)
@@ -1993,6 +1962,7 @@ def from_signals_nb(
     min_size_ = to_2d_array_nb(np.asarray(min_size))
     max_size_ = to_2d_array_nb(np.asarray(max_size))
     size_granularity_ = to_2d_array_nb(np.asarray(size_granularity))
+    cash_limit_ = to_2d_array_nb(np.asarray(cash_limit))
     leverage_ = to_2d_array_nb(np.asarray(leverage))
     leverage_mode_ = to_2d_array_nb(np.asarray(leverage_mode))
     reject_prob_ = to_2d_array_nb(np.asarray(reject_prob))
@@ -2117,8 +2087,8 @@ def from_signals_nb(
     last_limit_info["signal_idx"][:] = -1
     last_limit_info["creation_idx"][:] = -1
     last_limit_info["init_idx"][:] = -1
-    last_limit_info["init_price"][:] = np.nan
     last_limit_info["init_size"][:] = np.nan
+    last_limit_info["init_price"][:] = np.nan
     last_limit_info["init_size_type"][:] = -1
     last_limit_info["init_direction"][:] = -1
     last_limit_info["init_stop_type"][:] = -1
@@ -2136,8 +2106,8 @@ def from_signals_nb(
         last_sl_info["init_price"][:] = np.nan
         last_sl_info["init_position"][:] = np.nan
         last_sl_info["stop"][:] = np.nan
-        last_sl_info["exit_price"][:] = -1
         last_sl_info["exit_size"][:] = np.nan
+        last_sl_info["exit_price"][:] = -1
         last_sl_info["exit_size_type"][:] = -1
         last_sl_info["exit_type"][:] = -1
         last_sl_info["order_type"][:] = -1
@@ -2155,8 +2125,8 @@ def from_signals_nb(
         last_tsl_info["peak_price"][:] = np.nan
         last_tsl_info["stop"][:] = np.nan
         last_tsl_info["th"][:] = np.nan
-        last_tsl_info["exit_price"][:] = -1
         last_tsl_info["exit_size"][:] = np.nan
+        last_tsl_info["exit_price"][:] = -1
         last_tsl_info["exit_size_type"][:] = -1
         last_tsl_info["exit_type"][:] = -1
         last_tsl_info["order_type"][:] = -1
@@ -2171,8 +2141,8 @@ def from_signals_nb(
         last_tp_info["init_price"][:] = np.nan
         last_tp_info["init_position"][:] = np.nan
         last_tp_info["stop"][:] = np.nan
-        last_tp_info["exit_price"][:] = -1
         last_tp_info["exit_size"][:] = np.nan
+        last_tp_info["exit_price"][:] = -1
         last_tp_info["exit_size_type"][:] = -1
         last_tp_info["exit_type"][:] = -1
         last_tp_info["order_type"][:] = -1
@@ -2186,8 +2156,8 @@ def from_signals_nb(
         last_td_info["init_idx"][:] = -1
         last_td_info["init_position"][:] = np.nan
         last_td_info["stop"][:] = -1
-        last_td_info["exit_price"][:] = -1
         last_td_info["exit_size"][:] = np.nan
+        last_td_info["exit_price"][:] = -1
         last_td_info["exit_size_type"][:] = -1
         last_td_info["exit_type"][:] = -1
         last_td_info["order_type"][:] = -1
@@ -2202,8 +2172,8 @@ def from_signals_nb(
         last_dt_info["init_idx"][:] = -1
         last_dt_info["init_position"][:] = np.nan
         last_dt_info["stop"][:] = -1
-        last_dt_info["exit_price"][:] = -1
         last_dt_info["exit_size"][:] = np.nan
+        last_dt_info["exit_price"][:] = -1
         last_dt_info["exit_size_type"][:] = -1
         last_dt_info["exit_type"][:] = -1
         last_dt_info["order_type"][:] = -1
@@ -2221,10 +2191,11 @@ def from_signals_nb(
         last_dt_info = np.empty(0, dtype=time_info_dt)
 
     last_signal = np.empty(target_shape[1], dtype=int_)
-    main_info = np.empty(target_shape[1], dtype=main_info_dt)
+    order_info = np.empty(target_shape[1], dtype=order_info_dt)
 
     temp_call_seq = np.empty(target_shape[1], dtype=int_)
-    temp_sort_by = np.empty(target_shape[1], dtype=float_)
+    temp_order_value = np.empty(target_shape[1], dtype=float_)
+    temp_bar_zone = np.empty(target_shape[1], dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -2244,7 +2215,6 @@ def from_signals_nb(
         _sim_end = sim_end_[group]
         for i in range(_sim_start, _sim_end):
 
-            # Add cash
             _cash_deposits = flex_select_nb(cash_deposits_, i, group)
             if _cash_deposits < 0:
                 _cash_deposits = max(_cash_deposits, -last_cash[group])
@@ -2257,12 +2227,10 @@ def from_signals_nb(
             for ci in range(group_len):
                 col = from_col + ci
 
-                # Update valuation price using current open
                 _open = flex_select_nb(open_, i, col)
                 if not np.isnan(_open) or not ffill_val_price:
                     last_val_price[col] = _open
 
-            # Update value and return
             group_value = last_cash[group]
             for col in range(from_col, to_col):
                 if last_position[col] != 0:
@@ -2273,7 +2241,6 @@ def from_signals_nb(
                 output_value=last_value[group] - _cash_deposits,
             )
 
-            # Get signals
             skip = skip_empty
             for ci in range(group_len):
                 col = from_col + ci
@@ -2325,7 +2292,6 @@ def from_signals_nb(
                         stop=last_dt_info["stop"][col],
                     )
 
-                # Pack signals into a single integer
                 last_signal[col] = (
                     (is_long_entry << 10)
                     | (is_long_exit << 9)
@@ -2342,25 +2308,21 @@ def from_signals_nb(
                     skip = False
 
             if not skip:
-                # Get size and value of each order
                 for ci in range(group_len):
                     col = from_col + ci
 
-                    # Set defaults
-                    main_info["bar_zone"][col] = -1
-                    main_info["signal_idx"][col] = -1
-                    main_info["creation_idx"][col] = -1
-                    main_info["idx"][col] = i
-                    main_info["val_price"][col] = np.nan
-                    main_info["price"][col] = np.nan
-                    main_info["size"][col] = np.nan
-                    main_info["size_type"][col] = -1
-                    main_info["direction"][col] = -1
-                    main_info["type"][col] = -1
-                    main_info["stop_type"][col] = -1
-                    temp_sort_by[col] = 0.0
+                    order_info["bar_zone"][col] = BarZone.Close
+                    order_info["signal_idx"][col] = i
+                    order_info["creation_idx"][col] = i
+                    order_info["idx"][col] = i
+                    order_info["val_price"][col] = last_val_price[col]
+                    order_info["size"][col] = np.nan
+                    order_info["price"][col] = np.nan
+                    order_info["size_type"][col] = -1
+                    order_info["direction"][col] = -1
+                    order_info["type"][col] = OrderType.Market
+                    order_info["stop_type"][col] = -1
 
-                    # Unpack a single integer into signals
                     is_long_entry = (last_signal[col] >> 10) & 1
                     is_long_exit = (last_signal[col] >> 9) & 1
                     is_short_entry = (last_signal[col] >> 8) & 1
@@ -2378,7 +2340,6 @@ def from_signals_nb(
                         sl_stop_signal or tsl_stop_signal or tp_stop_signal or td_stop_signal or dt_stop_signal
                     )
 
-                    # Set initial info
                     exec_limit_set = False
                     exec_limit_set_on_open = False
                     exec_limit_set_on_close = False
@@ -2422,21 +2383,18 @@ def from_signals_nb(
                     exec_user_make_limit = False
                     exec_user_bar_zone = -1
 
-                    # Resolve the current bar
                     _i = i - abs(flex_select_nb(from_ago_, i, col))
                     _open = flex_select_nb(open_, i, col)
                     _high = flex_select_nb(high_, i, col)
                     _low = flex_select_nb(low_, i, col)
                     _close = flex_select_nb(close_, i, col)
 
-                    # Process the limit signal
                     if any_limit_signal:
-                        # Check whether the limit price was hit
                         _signal_i = last_limit_info["signal_idx"][col]
                         _creation_i = last_limit_info["creation_idx"][col]
                         _init_i = last_limit_info["init_idx"][col]
-                        _price = last_limit_info["init_price"][col]
                         _size = last_limit_info["init_size"][col]
+                        _price = last_limit_info["init_price"][col]
                         _size_type = last_limit_info["init_size_type"][col]
                         _direction = last_limit_info["init_direction"][col]
                         _stop_type = last_limit_info["init_stop_type"][col]
@@ -2478,7 +2436,6 @@ def from_signals_nb(
                         )
                         limit_hit = np.isfinite(limit_price)
 
-                        # Resolve the price
                         limit_price = resolve_limit_order_price_nb(
                             limit_price=limit_price,
                             close=_close,
@@ -2486,14 +2443,13 @@ def from_signals_nb(
                         )
 
                         if limit_expired_on_open or (not limit_hit_on_open and limit_expired):
-                            # Expired limit signal
                             any_limit_signal = False
 
                             last_limit_info["signal_idx"][col] = -1
                             last_limit_info["creation_idx"][col] = -1
                             last_limit_info["init_idx"][col] = -1
-                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size"][col] = np.nan
+                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size_type"][col] = -1
                             last_limit_info["init_direction"][col] = -1
                             last_limit_info["delta"][col] = np.nan
@@ -2504,9 +2460,7 @@ def from_signals_nb(
                             last_limit_info["reverse"][col] = False
                             last_limit_info["order_price"][col] = np.nan
                         else:
-                            # Save info
                             if limit_hit:
-                                # Executable limit signal
                                 exec_limit_set = True
                                 exec_limit_set_on_open = limit_hit_on_open
                                 exec_limit_set_on_close = limit_hit_on_close or _order_price == LimitOrderPrice.Close
@@ -2525,12 +2479,9 @@ def from_signals_nb(
                                 exec_limit_direction = _direction
                                 exec_limit_stop_type = _stop_type
 
-                    # Process the stop signal
                     if any_stop_signal:
-                        # Check SL
                         sl_stop_price, sl_stop_hit_on_open, sl_stop_hit_on_close = np.nan, False, False
                         if sl_stop_signal:
-                            # Check against high and low
                             sl_stop_price, sl_stop_hit_on_open, sl_stop_hit_on_close = check_stop_hit_nb(
                                 open=_open,
                                 high=_high,
@@ -2545,10 +2496,8 @@ def from_signals_nb(
                             )
                         sl_stop_hit = np.isfinite(sl_stop_price)
 
-                        # Check TSL and TTP
                         tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit_on_close = np.nan, False, False
                         if tsl_stop_signal:
-                            # Update peak price using open
                             if last_position[col] > 0:
                                 if _open > last_tsl_info["peak_price"][col]:
                                     if last_tsl_info["delta_format"][col] == DeltaFormat.Target:
@@ -2565,7 +2514,6 @@ def from_signals_nb(
                                         )
                                     last_tsl_info["peak_idx"][col] = i
                                     last_tsl_info["peak_price"][col] = _open
-                            # Check threshold against previous bars and open
                             if np.isnan(last_tsl_info["th"][col]):
                                 th_hit = True
                             else:
@@ -2589,7 +2537,6 @@ def from_signals_nb(
                                     hit_below=True,
                                     hard_stop=last_tsl_info["exit_price"][col] == StopExitPrice.HardStop,
                                 )
-                            # Update peak price using full bar
                             res_high, res_low = resolve_hl_nb(
                                 open=_open,
                                 high=_high,
@@ -2613,7 +2560,6 @@ def from_signals_nb(
                                     last_tsl_info["peak_idx"][col] = i
                                     last_tsl_info["peak_price"][col] = res_low
                             if not np.isfinite(tsl_stop_price):
-                                # Check threshold against full bar
                                 if not th_hit:
                                     if np.isnan(last_tsl_info["th"][col]):
                                         th_hit = True
@@ -2626,7 +2572,6 @@ def from_signals_nb(
                                             delta_format=last_tsl_info["delta_format"][col],
                                         )
                                 if th_hit:
-                                    # Check stop against close
                                     tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit_on_close = check_stop_hit_nb(
                                         open=_open,
                                         high=_high,
@@ -2642,7 +2587,6 @@ def from_signals_nb(
                                     )
                         tsl_stop_hit = np.isfinite(tsl_stop_price)
 
-                        # Check TP
                         tp_stop_price, tp_stop_hit_on_open, tp_stop_hit_on_close = np.nan, False, False
                         if tp_stop_signal:
                             tp_stop_price, tp_stop_hit_on_open, tp_stop_hit_on_close = check_stop_hit_nb(
@@ -2659,7 +2603,6 @@ def from_signals_nb(
                             )
                         tp_stop_hit = np.isfinite(tp_stop_price)
 
-                        # Check TD
                         td_stop_price, td_stop_hit, td_stop_hit_on_open = np.nan, False, False
                         if td_stop_signal:
                             td_stop_hit, td_stop_hit_on_open = check_td_stop_hit_nb(
@@ -2678,7 +2621,6 @@ def from_signals_nb(
                                 td_stop_price = _close
                         td_stop_hit_on_close = td_stop_hit and not td_stop_hit_on_open
 
-                        # Check DT
                         dt_stop_price, dt_stop_hit, dt_stop_hit_on_open = np.nan, False, False
                         if dt_stop_signal:
                             dt_stop_hit, dt_stop_hit_on_open = check_dt_stop_hit_nb(
@@ -2696,7 +2638,6 @@ def from_signals_nb(
                                 dt_stop_price = _close
                         dt_stop_hit_on_close = dt_stop_hit and not dt_stop_hit_on_open
 
-                        # Resolve the stop signal
                         sl_hit = False
                         tsl_hit = False
                         tp_hit = False
@@ -2730,8 +2671,8 @@ def from_signals_nb(
                             stop_hit_on_close = sl_stop_hit_on_close
                             _stop_type = StopType.SL
                             _init_i = last_sl_info["init_idx"][col]
-                            _stop_exit_price = last_sl_info["exit_price"][col]
                             _stop_exit_size = last_sl_info["exit_size"][col]
+                            _stop_exit_price = last_sl_info["exit_price"][col]
                             _stop_exit_size_type = last_sl_info["exit_size_type"][col]
                             _stop_exit_type = last_sl_info["exit_type"][col]
                             _stop_order_type = last_sl_info["order_type"][col]
@@ -2764,8 +2705,8 @@ def from_signals_nb(
                             else:
                                 _stop_type = StopType.TTP
                             _init_i = last_tsl_info["init_idx"][col]
-                            _stop_exit_price = last_tsl_info["exit_price"][col]
                             _stop_exit_size = last_tsl_info["exit_size"][col]
+                            _stop_exit_price = last_tsl_info["exit_price"][col]
                             _stop_exit_size_type = last_tsl_info["exit_size_type"][col]
                             _stop_exit_type = last_tsl_info["exit_type"][col]
                             _stop_order_type = last_tsl_info["order_type"][col]
@@ -2795,8 +2736,8 @@ def from_signals_nb(
                             stop_hit_on_close = tp_stop_hit_on_close
                             _stop_type = StopType.TP
                             _init_i = last_tp_info["init_idx"][col]
-                            _stop_exit_price = last_tp_info["exit_price"][col]
                             _stop_exit_size = last_tp_info["exit_size"][col]
+                            _stop_exit_price = last_tp_info["exit_price"][col]
                             _stop_exit_size_type = last_tp_info["exit_size_type"][col]
                             _stop_exit_type = last_tp_info["exit_type"][col]
                             _stop_order_type = last_tp_info["order_type"][col]
@@ -2826,8 +2767,8 @@ def from_signals_nb(
                             stop_hit_on_close = td_stop_hit_on_close
                             _stop_type = StopType.TD
                             _init_i = last_td_info["init_idx"][col]
-                            _stop_exit_price = last_td_info["exit_price"][col]
                             _stop_exit_size = last_td_info["exit_size"][col]
+                            _stop_exit_price = last_td_info["exit_price"][col]
                             _stop_exit_size_type = last_td_info["exit_size_type"][col]
                             _stop_exit_type = last_td_info["exit_type"][col]
                             _stop_order_type = last_td_info["order_type"][col]
@@ -2857,8 +2798,8 @@ def from_signals_nb(
                             stop_hit_on_close = dt_stop_hit_on_close
                             _stop_type = StopType.DT
                             _init_i = last_dt_info["init_idx"][col]
-                            _stop_exit_price = last_dt_info["exit_price"][col]
                             _stop_exit_size = last_dt_info["exit_size"][col]
+                            _stop_exit_price = last_dt_info["exit_price"][col]
                             _stop_exit_size_type = last_dt_info["exit_size_type"][col]
                             _stop_exit_type = last_dt_info["exit_type"][col]
                             _stop_order_type = last_dt_info["order_type"][col]
@@ -2888,8 +2829,6 @@ def from_signals_nb(
                             stop_hit_on_close = False
 
                         if stop_hit:
-                            # Stop price was hit
-                            # Resolve the final stop signal
                             _accumulate = flex_select_nb(accumulate_, i, col)
                             _size = flex_select_nb(size_, i, col)
                             _size_type = flex_select_nb(size_type_, i, col)
@@ -2913,14 +2852,12 @@ def from_signals_nb(
                                 accumulate=_accumulate,
                             )
 
-                            # Resolve the price
                             _price = resolve_stop_exit_price_nb(
                                 stop_price=stop_price,
                                 close=_close,
                                 stop_exit_price=_stop_exit_price,
                             )
 
-                            # Convert both signals to size (direction-aware), size type, and direction
                             _size, _size_type, _direction = signal_to_size_nb(
                                 position_now=last_position[col],
                                 val_price_now=_price,
@@ -2935,13 +2872,10 @@ def from_signals_nb(
                             )
 
                             if not np.isnan(_size):
-                                # Executable stop signal
                                 can_execute = True
                                 if _stop_order_type == OrderType.Limit:
-                                    # Use close to check whether the limit price was hit
                                     _limit_delay = flex_select_nb(limit_delay_, i, col)
                                     if stop_hit_on_close or _stop_exit_price == StopExitPrice.Close or _limit_delay:
-                                        # Cannot place a limit order at the close price and execute right away
                                         can_execute = False
                                     if can_execute:
                                         limit_price, limit_hit_on_open, limit_hit_on_close = check_limit_hit_nb(
@@ -2963,7 +2897,6 @@ def from_signals_nb(
                                             stop_hit_on_open = limit_hit_on_open
                                             stop_hit_on_close = limit_hit_on_close
 
-                                # Save info
                                 exec_stop_set = True
                                 exec_stop_set_on_open = stop_hit_on_open
                                 exec_stop_set_on_close = stop_hit_on_close or _stop_exit_price == StopExitPrice.Close
@@ -2984,7 +2917,6 @@ def from_signals_nb(
                                 exec_stop_delta_format = _delta_format
                                 exec_stop_make_limit = not can_execute
 
-                    # Process user signal
                     if any_user_signal:
                         if _i < 0:
                             _price = np.nan
@@ -2994,7 +2926,6 @@ def from_signals_nb(
                         else:
                             _accumulate = flex_select_nb(accumulate_, _i, col)
                             if is_long_entry or is_short_entry:
-                                # Resolve any single-direction conflicts
                                 _upon_long_conflict = flex_select_nb(upon_long_conflict_, _i, col)
                                 is_long_entry, is_long_exit = resolve_signal_conflict_nb(
                                     position_now=last_position[col],
@@ -3012,7 +2943,6 @@ def from_signals_nb(
                                     conflict_mode=_upon_short_conflict,
                                 )
 
-                                # Resolve any multi-direction conflicts
                                 _upon_dir_conflict = flex_select_nb(upon_dir_conflict_, _i, col)
                                 is_long_entry, is_short_entry = resolve_dir_conflict_nb(
                                     position_now=last_position[col],
@@ -3021,7 +2951,6 @@ def from_signals_nb(
                                     upon_dir_conflict=_upon_dir_conflict,
                                 )
 
-                                # Resolve an opposite entry
                                 _upon_opposite_entry = flex_select_nb(upon_opposite_entry_, _i, col)
                                 (
                                     is_long_entry,
@@ -3039,10 +2968,8 @@ def from_signals_nb(
                                     accumulate=_accumulate,
                                 )
 
-                            # Resolve the price
                             _price = flex_select_nb(price_, _i, col)
 
-                            # Convert both signals to size (direction-aware), size type, and direction
                             _val_price = flex_select_nb(val_price_, i, col)
                             if np.isinf(_val_price) and _val_price > 0:
                                 if np.isinf(_price) and _price > 0:
@@ -3072,15 +2999,12 @@ def from_signals_nb(
                             else:
                                 user_on_open = True
                         if not np.isnan(_size):
-                            # Executable user signal
                             can_execute = True
                             _order_type = flex_select_nb(order_type_, _i, col)
                             if _order_type == OrderType.Limit:
-                                # Use close to check whether the limit price was hit
                                 _limit_delay = flex_select_nb(limit_delay_, i, col)
                                 can_use_ohlc = False
                                 if user_on_close:
-                                    # Cannot place a limit order at the close price and execute right away
                                     _price = _close
                                     can_execute = False
                                 elif user_on_open and not _limit_delay:
@@ -3112,7 +3036,6 @@ def from_signals_nb(
                                         user_on_open = limit_hit_on_open
                                         user_on_close = limit_hit_on_close
 
-                            # Save info
                             exec_user_set = True
                             exec_user_val_price = _val_price
                             exec_user_price = _price
@@ -3129,10 +3052,7 @@ def from_signals_nb(
                         or exec_user_set
                         or ((any_limit_signal or any_stop_signal) and any_user_signal)
                     ):
-                        # Choose the main executable signal
-                        # Priority: limit -> stop -> user
 
-                        # Check whether the main signal comes on open
                         keep_limit = True
                         keep_stop = True
                         execute_limit = False
@@ -3179,7 +3099,6 @@ def from_signals_nb(
                             if execute_user:
                                 exec_user_bar_zone = BarZone.Open
                         if not execute_limit and not execute_stop and not execute_user:
-                            # Check whether the main signal comes in the middle of the bar
                             if exec_limit_set and not exec_limit_set_on_open and keep_limit:
                                 keep_limit = False
                                 keep_stop = False
@@ -3217,7 +3136,6 @@ def from_signals_nb(
                                 if execute_user:
                                     exec_user_bar_zone = BarZone.Middle
                             if not execute_limit and not execute_stop and not execute_user:
-                                # Check whether the main signal comes on close
                                 if exec_stop_set_on_close and keep_stop:
                                     keep_limit = False
                                     keep_stop = _ladder
@@ -3248,29 +3166,26 @@ def from_signals_nb(
                                     if execute_user:
                                         exec_user_bar_zone = BarZone.Close
 
-                        # Process the limit signal
                         if execute_limit:
-                            # Execute the signal
-                            main_info["bar_zone"][col] = exec_limit_bar_zone
-                            main_info["signal_idx"][col] = exec_limit_signal_i
-                            main_info["creation_idx"][col] = exec_limit_creation_i
-                            main_info["idx"][col] = exec_limit_init_i
-                            main_info["val_price"][col] = exec_limit_val_price
-                            main_info["price"][col] = exec_limit_price
-                            main_info["size"][col] = exec_limit_size
-                            main_info["size_type"][col] = exec_limit_size_type
-                            main_info["direction"][col] = exec_limit_direction
-                            main_info["type"][col] = OrderType.Limit
-                            main_info["stop_type"][col] = exec_limit_stop_type
+                            order_info["bar_zone"][col] = exec_limit_bar_zone
+                            order_info["signal_idx"][col] = exec_limit_signal_i
+                            order_info["creation_idx"][col] = exec_limit_creation_i
+                            order_info["idx"][col] = exec_limit_init_i
+                            order_info["val_price"][col] = exec_limit_val_price
+                            order_info["size"][col] = exec_limit_size
+                            order_info["price"][col] = exec_limit_price
+                            order_info["size_type"][col] = exec_limit_size_type
+                            order_info["direction"][col] = exec_limit_direction
+                            order_info["type"][col] = OrderType.Limit
+                            order_info["stop_type"][col] = exec_limit_stop_type
                         if execute_limit or (any_limit_signal and not keep_limit):
-                            # Clear the pending info
                             any_limit_signal = False
 
                             last_limit_info["signal_idx"][col] = -1
                             last_limit_info["creation_idx"][col] = -1
                             last_limit_info["init_idx"][col] = -1
-                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size"][col] = np.nan
+                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size_type"][col] = -1
                             last_limit_info["init_direction"][col] = -1
                             last_limit_info["init_stop_type"][col] = -1
@@ -3282,9 +3197,7 @@ def from_signals_nb(
                             last_limit_info["reverse"][col] = False
                             last_limit_info["order_price"][col] = np.nan
 
-                        # Process the stop signal
                         if execute_stop:
-                            # Execute the signal
                             if exec_stop_make_limit:
                                 if any_limit_signal:
                                     raise ValueError("Only one active limit signal is allowed at a time")
@@ -3296,8 +3209,8 @@ def from_signals_nb(
                                 last_limit_info["signal_idx"][col] = exec_stop_init_i
                                 last_limit_info["creation_idx"][col] = i
                                 last_limit_info["init_idx"][col] = i
-                                last_limit_info["init_price"][col] = exec_stop_price
                                 last_limit_info["init_size"][col] = exec_stop_size
+                                last_limit_info["init_price"][col] = exec_stop_price
                                 last_limit_info["init_size_type"][col] = exec_stop_size_type
                                 last_limit_info["init_direction"][col] = exec_stop_direction
                                 last_limit_info["init_stop_type"][col] = exec_stop_stop_type
@@ -3309,28 +3222,27 @@ def from_signals_nb(
                                 last_limit_info["reverse"][col] = False
                                 last_limit_info["order_price"][col] = _limit_order_price
                             else:
-                                main_info["bar_zone"][col] = exec_stop_bar_zone
-                                main_info["signal_idx"][col] = exec_stop_init_i
-                                main_info["creation_idx"][col] = i
-                                main_info["idx"][col] = i
-                                main_info["val_price"][col] = exec_stop_val_price
-                                main_info["price"][col] = exec_stop_price
-                                main_info["size"][col] = exec_stop_size
-                                main_info["size_type"][col] = exec_stop_size_type
-                                main_info["direction"][col] = exec_stop_direction
-                                main_info["type"][col] = exec_stop_type
-                                main_info["stop_type"][col] = exec_stop_stop_type
+                                order_info["bar_zone"][col] = exec_stop_bar_zone
+                                order_info["signal_idx"][col] = exec_stop_init_i
+                                order_info["creation_idx"][col] = i
+                                order_info["idx"][col] = i
+                                order_info["val_price"][col] = exec_stop_val_price
+                                order_info["size"][col] = exec_stop_size
+                                order_info["price"][col] = exec_stop_price
+                                order_info["size_type"][col] = exec_stop_size_type
+                                order_info["direction"][col] = exec_stop_direction
+                                order_info["type"][col] = exec_stop_type
+                                order_info["stop_type"][col] = exec_stop_stop_type
 
                         if any_stop_signal and not keep_stop:
-                            # Clear the pending info
                             any_stop_signal = False
 
                             last_sl_info["init_idx"][col] = -1
                             last_sl_info["init_price"][col] = np.nan
                             last_sl_info["init_position"][col] = np.nan
                             last_sl_info["stop"][col] = np.nan
-                            last_sl_info["exit_price"][col] = -1
                             last_sl_info["exit_size"][col] = np.nan
+                            last_sl_info["exit_price"][col] = -1
                             last_sl_info["exit_size_type"][col] = -1
                             last_sl_info["exit_type"][col] = -1
                             last_sl_info["order_type"][col] = -1
@@ -3347,8 +3259,8 @@ def from_signals_nb(
                             last_tsl_info["peak_price"][col] = np.nan
                             last_tsl_info["stop"][col] = np.nan
                             last_tsl_info["th"][col] = np.nan
-                            last_tsl_info["exit_price"][col] = -1
                             last_tsl_info["exit_size"][col] = np.nan
+                            last_tsl_info["exit_price"][col] = -1
                             last_tsl_info["exit_size_type"][col] = -1
                             last_tsl_info["exit_type"][col] = -1
                             last_tsl_info["order_type"][col] = -1
@@ -3362,8 +3274,8 @@ def from_signals_nb(
                             last_tp_info["init_price"][col] = np.nan
                             last_tp_info["init_position"][col] = np.nan
                             last_tp_info["stop"][col] = np.nan
-                            last_tp_info["exit_price"][col] = -1
                             last_tp_info["exit_size"][col] = np.nan
+                            last_tp_info["exit_price"][col] = -1
                             last_tp_info["exit_size_type"][col] = -1
                             last_tp_info["exit_type"][col] = -1
                             last_tp_info["order_type"][col] = -1
@@ -3376,8 +3288,8 @@ def from_signals_nb(
                             last_td_info["init_idx"][col] = -1
                             last_td_info["init_position"][col] = np.nan
                             last_td_info["stop"][col] = -1
-                            last_td_info["exit_price"][col] = -1
                             last_td_info["exit_size"][col] = np.nan
+                            last_td_info["exit_price"][col] = -1
                             last_td_info["exit_size_type"][col] = -1
                             last_td_info["exit_type"][col] = -1
                             last_td_info["order_type"][col] = -1
@@ -3391,8 +3303,8 @@ def from_signals_nb(
                             last_dt_info["init_idx"][col] = -1
                             last_dt_info["init_position"][col] = np.nan
                             last_dt_info["stop"][col] = -1
-                            last_dt_info["exit_price"][col] = -1
                             last_dt_info["exit_size"][col] = np.nan
+                            last_dt_info["exit_price"][col] = -1
                             last_dt_info["exit_size_type"][col] = -1
                             last_dt_info["exit_type"][col] = -1
                             last_dt_info["order_type"][col] = -1
@@ -3403,9 +3315,7 @@ def from_signals_nb(
                             last_dt_info["step"][col] = -1
                             last_dt_info["step_idx"][col] = -1
 
-                        # Process the user signal
                         if execute_user:
-                            # Execute the signal
                             if _i >= 0:
                                 if exec_user_make_limit:
                                     if any_limit_signal:
@@ -3421,8 +3331,8 @@ def from_signals_nb(
                                     last_limit_info["signal_idx"][col] = _i
                                     last_limit_info["creation_idx"][col] = i
                                     last_limit_info["init_idx"][col] = _i
-                                    last_limit_info["init_price"][col] = exec_user_price
                                     last_limit_info["init_size"][col] = exec_user_size
+                                    last_limit_info["init_price"][col] = exec_user_price
                                     last_limit_info["init_size_type"][col] = exec_user_size_type
                                     last_limit_info["init_direction"][col] = exec_user_direction
                                     last_limit_info["init_stop_type"][col] = -1
@@ -3434,17 +3344,17 @@ def from_signals_nb(
                                     last_limit_info["reverse"][col] = _limit_reverse
                                     last_limit_info["order_price"][col] = _limit_order_price
                                 else:
-                                    main_info["bar_zone"][col] = exec_user_bar_zone
-                                    main_info["signal_idx"][col] = _i
-                                    main_info["creation_idx"][col] = i
-                                    main_info["idx"][col] = _i
-                                    main_info["val_price"][col] = exec_user_val_price
-                                    main_info["price"][col] = exec_user_price
-                                    main_info["size"][col] = exec_user_size
-                                    main_info["size_type"][col] = exec_user_size_type
-                                    main_info["direction"][col] = exec_user_direction
-                                    main_info["type"][col] = exec_user_type
-                                    main_info["stop_type"][col] = exec_user_stop_type
+                                    order_info["bar_zone"][col] = exec_user_bar_zone
+                                    order_info["signal_idx"][col] = _i
+                                    order_info["creation_idx"][col] = i
+                                    order_info["idx"][col] = _i
+                                    order_info["val_price"][col] = exec_user_val_price
+                                    order_info["size"][col] = exec_user_size
+                                    order_info["price"][col] = exec_user_price
+                                    order_info["size_type"][col] = exec_user_size_type
+                                    order_info["direction"][col] = exec_user_direction
+                                    order_info["type"][col] = exec_user_type
+                                    order_info["stop_type"][col] = exec_user_stop_type
 
                 skip = skip_empty
                 if skip:
@@ -3452,32 +3362,28 @@ def from_signals_nb(
                         if flex_select_nb(log_, i, col):
                             skip = False
                             break
-                        if not np.isnan(main_info["size"][col]):
+                        if not np.isnan(order_info["size"][col]):
                             skip = False
                             break
 
                 if not skip:
-                    # Check bar zone and update valuation price
                     bar_zone = -1
                     same_bar_zone = True
-                    same_timing = True
                     for ci in range(group_len):
                         col = from_col + ci
-                        if np.isnan(main_info["size"][col]):
+                        temp_order_value[col] = 0.0
+                        temp_bar_zone[col] = -1
+                        if np.isnan(order_info["size"][col]):
                             continue
                         if bar_zone == -1:
-                            bar_zone = main_info["bar_zone"][col]
-                        if main_info["bar_zone"][col] != bar_zone:
+                            bar_zone = order_info["bar_zone"][col]
+                        if order_info["bar_zone"][col] != bar_zone:
                             same_bar_zone = False
-                            same_timing = False
-                        if main_info["bar_zone"][col] == BarZone.Middle:
-                            same_timing = False
-                        _val_price = main_info["val_price"][col]
+                        _val_price = order_info["val_price"][col]
                         if not np.isnan(_val_price) or not ffill_val_price:
                             last_val_price[col] = _val_price
 
                     if cash_sharing:
-                        # Dynamically sort by order value -> selling comes first to release funds early
                         if call_seq is None:
                             for ci in range(group_len):
                                 temp_call_seq[ci] = ci
@@ -3485,16 +3391,12 @@ def from_signals_nb(
                         else:
                             call_seq_now = call_seq[i, from_col:to_col]
                         if auto_call_seq:
-                            # Sort by order value
-                            if not same_timing:
-                                raise ValueError("Cannot sort orders by value if they are executed at different times")
                             for ci in range(group_len):
                                 if call_seq_now[ci] != ci:
                                     raise ValueError("Call sequence must follow CallSeqType.Default")
                                 col = from_col + ci
-                                if np.isnan(main_info["size"][col]):
+                                if np.isnan(order_info["size"][col]):
                                     continue
-                                # Approximate order value
                                 exec_state = ExecState(
                                     cash=last_cash[group] if cash_sharing else last_cash[col],
                                     position=last_position[col],
@@ -3504,24 +3406,31 @@ def from_signals_nb(
                                     val_price=last_val_price[col],
                                     value=last_value[group] if cash_sharing else last_value[col],
                                 )
-                                temp_sort_by[ci] = approx_order_value_nb(
+                                temp_order_value[ci] = approx_order_value_nb(
                                     exec_state=exec_state,
-                                    size=main_info["size"][col],
-                                    size_type=main_info["size_type"][col],
-                                    direction=main_info["direction"][col],
+                                    size=order_info["size"][col],
+                                    size_type=order_info["size_type"][col],
+                                    direction=order_info["direction"][col],
                                 )
-                            insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
+                                temp_bar_zone[ci] = order_info["bar_zone"][col]
+                            if same_bar_zone:
+                                insert_argsort_nb(temp_order_value[:group_len], call_seq_now)
+                            else:
+                                insert_lex_argsort_nb(
+                                    temp_bar_zone[:group_len],
+                                    temp_order_value[:group_len],
+                                    call_seq_now,
+                                )
                         else:
                             if not same_bar_zone:
-                                # Sort by bar zone
                                 for ci in range(group_len):
                                     if call_seq_now[ci] != ci:
                                         raise ValueError("Call sequence must follow CallSeqType.Default")
                                     col = from_col + ci
-                                    if np.isnan(main_info["size"][col]):
+                                    if np.isnan(order_info["size"][col]):
                                         continue
-                                    temp_sort_by[ci] = main_info["bar_zone"][col]
-                                insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
+                                    temp_bar_zone[ci] = order_info["bar_zone"][col]
+                                insert_argsort_nb(temp_bar_zone[:group_len], call_seq_now)
 
                     for k in range(group_len):
                         if cash_sharing:
@@ -3531,10 +3440,9 @@ def from_signals_nb(
                         else:
                             ci = k
                         col = from_col + ci
-                        if skip_empty and np.isnan(main_info["size"][col]):  # shortcut
+                        if skip_empty and np.isnan(order_info["size"][col]):  # shortcut
                             continue
 
-                        # Get current values per column
                         position_now = last_position[col]
                         debt_now = last_debt[col]
                         locked_cash_now = last_locked_cash[col]
@@ -3544,16 +3452,15 @@ def from_signals_nb(
                         value_now = last_value[group]
                         return_now = last_return[group]
 
-                        # Generate the next order
-                        _i = main_info["idx"][col]
-                        if main_info["type"][col] == OrderType.Limit:
+                        _i = order_info["idx"][col]
+                        if order_info["type"][col] == OrderType.Limit:
                             _slippage = 0.0
                         else:
                             _slippage = float(flex_select_nb(slippage_, _i, col))
                         _min_size = flex_select_nb(min_size_, _i, col)
                         _max_size = flex_select_nb(max_size_, _i, col)
                         _size_type = flex_select_nb(size_type_, _i, col)
-                        if _size_type != main_info["size_type"][col]:
+                        if _size_type != order_info["size_type"][col]:
                             if not np.isnan(_min_size):
                                 _min_size, _ = resolve_size_nb(
                                     size=_min_size,
@@ -3561,7 +3468,7 @@ def from_signals_nb(
                                     position=position_now,
                                     val_price=val_price_now,
                                     value=value_now,
-                                    target_size_type=main_info["size_type"][col],
+                                    target_size_type=order_info["size_type"][col],
                                     as_requirement=True,
                                 )
                             if not np.isnan(_max_size):
@@ -3571,20 +3478,21 @@ def from_signals_nb(
                                     position=position_now,
                                     val_price=val_price_now,
                                     value=value_now,
-                                    target_size_type=main_info["size_type"][col],
+                                    target_size_type=order_info["size_type"][col],
                                     as_requirement=True,
                                 )
                         order = order_nb(
-                            size=main_info["size"][col],
-                            price=main_info["price"][col],
-                            size_type=main_info["size_type"][col],
-                            direction=main_info["direction"][col],
+                            size=order_info["size"][col],
+                            price=order_info["price"][col],
+                            size_type=order_info["size_type"][col],
+                            direction=order_info["direction"][col],
                             fees=flex_select_nb(fees_, _i, col),
                             fixed_fees=flex_select_nb(fixed_fees_, _i, col),
                             slippage=_slippage,
                             min_size=_min_size,
                             max_size=_max_size,
                             size_granularity=flex_select_nb(size_granularity_, _i, col),
+                            cash_limit=flex_select_nb(cash_limit_, _i, col),
                             leverage=flex_select_nb(leverage_, _i, col),
                             leverage_mode=flex_select_nb(leverage_mode_, _i, col),
                             reject_prob=flex_select_nb(reject_prob_, _i, col),
@@ -3594,7 +3502,6 @@ def from_signals_nb(
                             log=flex_select_nb(log_, _i, col),
                         )
 
-                        # Process the order
                         price_area = PriceArea(
                             open=flex_select_nb(open_, i, col),
                             high=flex_select_nb(high_, i, col),
@@ -3624,14 +3531,12 @@ def from_signals_nb(
                             log_counts=log_counts,
                         )
 
-                        # Append more order information
                         if order_result.status == OrderStatus.Filled and order_counts[col] >= 1:
-                            order_records["signal_idx"][order_counts[col] - 1, col] = main_info["signal_idx"][col]
-                            order_records["creation_idx"][order_counts[col] - 1, col] = main_info["creation_idx"][col]
-                            order_records["type"][order_counts[col] - 1, col] = main_info["type"][col]
-                            order_records["stop_type"][order_counts[col] - 1, col] = main_info["stop_type"][col]
+                            order_records["signal_idx"][order_counts[col] - 1, col] = order_info["signal_idx"][col]
+                            order_records["creation_idx"][order_counts[col] - 1, col] = order_info["creation_idx"][col]
+                            order_records["type"][order_counts[col] - 1, col] = order_info["type"][col]
+                            order_records["stop_type"][order_counts[col] - 1, col] = order_info["stop_type"][col]
 
-                        # Update execution state
                         cash_now = new_exec_state.cash
                         position_now = new_exec_state.position
                         debt_now = new_exec_state.debt
@@ -3641,15 +3546,13 @@ def from_signals_nb(
                         value_now = new_exec_state.value
 
                         if use_stops:
-                            # Update stop price
                             if position_now == 0:
-                                # Not in position anymore -> clear stops (irrespective of order success)
                                 last_sl_info["init_idx"][col] = -1
                                 last_sl_info["init_price"][col] = np.nan
                                 last_sl_info["init_position"][col] = np.nan
                                 last_sl_info["stop"][col] = np.nan
-                                last_sl_info["exit_price"][col] = -1
                                 last_sl_info["exit_size"][col] = np.nan
+                                last_sl_info["exit_price"][col] = -1
                                 last_sl_info["exit_size_type"][col] = -1
                                 last_sl_info["exit_type"][col] = -1
                                 last_sl_info["order_type"][col] = -1
@@ -3666,8 +3569,8 @@ def from_signals_nb(
                                 last_tsl_info["peak_price"][col] = np.nan
                                 last_tsl_info["stop"][col] = np.nan
                                 last_tsl_info["th"][col] = np.nan
-                                last_tsl_info["exit_price"][col] = -1
                                 last_tsl_info["exit_size"][col] = np.nan
+                                last_tsl_info["exit_price"][col] = -1
                                 last_tsl_info["exit_size_type"][col] = -1
                                 last_tsl_info["exit_type"][col] = -1
                                 last_tsl_info["order_type"][col] = -1
@@ -3681,8 +3584,8 @@ def from_signals_nb(
                                 last_tp_info["init_price"][col] = np.nan
                                 last_tp_info["init_position"][col] = np.nan
                                 last_tp_info["stop"][col] = np.nan
-                                last_tp_info["exit_price"][col] = -1
                                 last_tp_info["exit_size"][col] = np.nan
+                                last_tp_info["exit_price"][col] = -1
                                 last_tp_info["exit_size_type"][col] = -1
                                 last_tp_info["exit_type"][col] = -1
                                 last_tp_info["order_type"][col] = -1
@@ -3695,8 +3598,8 @@ def from_signals_nb(
                                 last_td_info["init_idx"][col] = -1
                                 last_td_info["init_position"][col] = np.nan
                                 last_td_info["stop"][col] = -1
-                                last_td_info["exit_price"][col] = -1
                                 last_td_info["exit_size"][col] = np.nan
+                                last_td_info["exit_price"][col] = -1
                                 last_td_info["exit_size_type"][col] = -1
                                 last_td_info["exit_type"][col] = -1
                                 last_td_info["order_type"][col] = -1
@@ -3710,8 +3613,8 @@ def from_signals_nb(
                                 last_dt_info["init_idx"][col] = -1
                                 last_dt_info["init_position"][col] = np.nan
                                 last_dt_info["stop"][col] = -1
-                                last_dt_info["exit_price"][col] = -1
                                 last_dt_info["exit_size"][col] = np.nan
+                                last_dt_info["exit_price"][col] = -1
                                 last_dt_info["exit_size_type"][col] = -1
                                 last_dt_info["exit_type"][col] = -1
                                 last_dt_info["order_type"][col] = -1
@@ -3722,7 +3625,7 @@ def from_signals_nb(
                                 last_dt_info["step"][col] = -1
                                 last_dt_info["step_idx"][col] = -1
                             else:
-                                if main_info["stop_type"][col] == StopType.SL:
+                                if order_info["stop_type"][col] == StopType.SL:
                                     if last_sl_info["ladder"][col]:
                                         step = last_sl_info["step"][col] + 1
                                         last_sl_info["exit_size"][col] = np.nan
@@ -3741,8 +3644,8 @@ def from_signals_nb(
                                             last_sl_info["step"][col] = step
                                             last_sl_info["step_idx"][col] = i
                                 elif (
-                                    main_info["stop_type"][col] == StopType.TSL
-                                    or main_info["stop_type"][col] == StopType.TTP
+                                    order_info["stop_type"][col] == StopType.TSL
+                                    or order_info["stop_type"][col] == StopType.TTP
                                 ):
                                     if last_tsl_info["ladder"][col]:
                                         step = last_tsl_info["step"][col] + 1
@@ -3763,7 +3666,7 @@ def from_signals_nb(
                                             last_tsl_info["stop"][col] = np.nan
                                             last_tsl_info["step"][col] = step
                                             last_tsl_info["step_idx"][col] = i
-                                elif main_info["stop_type"][col] == StopType.TP:
+                                elif order_info["stop_type"][col] == StopType.TP:
                                     if last_tp_info["ladder"][col]:
                                         step = last_tp_info["step"][col] + 1
                                         last_tp_info["step"][col] = step
@@ -3783,7 +3686,7 @@ def from_signals_nb(
                                             last_tp_info["stop"][col] = np.nan
                                             last_tp_info["step"][col] = step
                                             last_tp_info["step_idx"][col] = i
-                                elif main_info["stop_type"][col] == StopType.TD:
+                                elif order_info["stop_type"][col] == StopType.TD:
                                     if last_td_info["ladder"][col]:
                                         step = last_td_info["step"][col] + 1
                                         last_td_info["step"][col] = step
@@ -3803,7 +3706,7 @@ def from_signals_nb(
                                             last_td_info["stop"][col] = -1
                                             last_td_info["step"][col] = step
                                             last_td_info["step_idx"][col] = i
-                                elif main_info["stop_type"][col] == StopType.DT:
+                                elif order_info["stop_type"][col] == StopType.DT:
                                     if last_dt_info["ladder"][col]:
                                         step = last_dt_info["step"][col] + 1
                                         last_dt_info["step"][col] = step
@@ -3825,8 +3728,7 @@ def from_signals_nb(
                                             last_dt_info["step_idx"][col] = i
 
                             if order_result.status == OrderStatus.Filled and position_now != 0:
-                                # Order filled and in position -> possibly set stops
-                                _price = main_info["price"][col]
+                                _price = order_info["price"][col]
                                 _stop_entry_price = flex_select_nb(stop_entry_price_, i, col)
                                 if _stop_entry_price < 0:
                                     if _stop_entry_price == StopEntryPrice.ValPrice:
@@ -3877,13 +3779,12 @@ def from_signals_nb(
 
                                 tsl_updated = False
                                 if exec_state.position == 0 or np.sign(position_now) != np.sign(exec_state.position):
-                                    # Position opened/reversed -> set stops
                                     last_sl_info["init_idx"][col] = i
                                     last_sl_info["init_price"][col] = new_init_price
                                     last_sl_info["init_position"][col] = position_now
                                     last_sl_info["stop"][col] = _sl_stop
-                                    last_sl_info["exit_price"][col] = _stop_exit_price
                                     last_sl_info["exit_size"][col] = np.nan
+                                    last_sl_info["exit_price"][col] = _stop_exit_price
                                     last_sl_info["exit_size_type"][col] = -1
                                     last_sl_info["exit_type"][col] = _stop_exit_type
                                     last_sl_info["order_type"][col] = _stop_order_type
@@ -3901,8 +3802,8 @@ def from_signals_nb(
                                     last_tsl_info["peak_price"][col] = new_init_price
                                     last_tsl_info["stop"][col] = _tsl_stop
                                     last_tsl_info["th"][col] = _tsl_th
-                                    last_tsl_info["exit_price"][col] = _stop_exit_price
                                     last_tsl_info["exit_size"][col] = np.nan
+                                    last_tsl_info["exit_price"][col] = _stop_exit_price
                                     last_tsl_info["exit_size_type"][col] = -1
                                     last_tsl_info["exit_type"][col] = _stop_exit_type
                                     last_tsl_info["order_type"][col] = _stop_order_type
@@ -3916,8 +3817,8 @@ def from_signals_nb(
                                     last_tp_info["init_price"][col] = new_init_price
                                     last_tp_info["init_position"][col] = position_now
                                     last_tp_info["stop"][col] = _tp_stop
-                                    last_tp_info["exit_price"][col] = _stop_exit_price
                                     last_tp_info["exit_size"][col] = np.nan
+                                    last_tp_info["exit_price"][col] = _stop_exit_price
                                     last_tp_info["exit_size_type"][col] = -1
                                     last_tp_info["exit_type"][col] = _stop_exit_type
                                     last_tp_info["order_type"][col] = _stop_order_type
@@ -3930,8 +3831,8 @@ def from_signals_nb(
                                     last_td_info["init_idx"][col] = i
                                     last_td_info["init_position"][col] = position_now
                                     last_td_info["stop"][col] = _td_stop
-                                    last_td_info["exit_price"][col] = _stop_exit_price
                                     last_td_info["exit_size"][col] = np.nan
+                                    last_td_info["exit_price"][col] = _stop_exit_price
                                     last_td_info["exit_size_type"][col] = -1
                                     last_td_info["exit_type"][col] = _stop_exit_type
                                     last_td_info["order_type"][col] = _stop_order_type
@@ -3945,8 +3846,8 @@ def from_signals_nb(
                                     last_dt_info["init_idx"][col] = i
                                     last_dt_info["init_position"][col] = position_now
                                     last_dt_info["stop"][col] = _dt_stop
-                                    last_dt_info["exit_price"][col] = _stop_exit_price
                                     last_dt_info["exit_size"][col] = np.nan
+                                    last_dt_info["exit_price"][col] = _stop_exit_price
                                     last_dt_info["exit_size_type"][col] = -1
                                     last_dt_info["exit_type"][col] = _stop_exit_type
                                     last_dt_info["order_type"][col] = _stop_order_type
@@ -3958,15 +3859,14 @@ def from_signals_nb(
                                     last_dt_info["step_idx"][col] = i
 
                                 elif abs(position_now) > abs(exec_state.position):
-                                    # Position increased -> keep/override stops
                                     _upon_stop_update = flex_select_nb(upon_stop_update_, i, col)
                                     if should_update_stop_nb(new_stop=_sl_stop, upon_stop_update=_upon_stop_update):
                                         last_sl_info["init_idx"][col] = i
                                         last_sl_info["init_price"][col] = new_init_price
                                         last_sl_info["init_position"][col] = position_now
                                         last_sl_info["stop"][col] = _sl_stop
-                                        last_sl_info["exit_price"][col] = _stop_exit_price
                                         last_sl_info["exit_size"][col] = np.nan
+                                        last_sl_info["exit_price"][col] = _stop_exit_price
                                         last_sl_info["exit_size_type"][col] = -1
                                         last_sl_info["exit_type"][col] = _stop_exit_type
                                         last_sl_info["order_type"][col] = _stop_order_type
@@ -3984,8 +3884,8 @@ def from_signals_nb(
                                         last_tsl_info["peak_price"][col] = new_init_price
                                         last_tsl_info["stop"][col] = _tsl_stop
                                         last_tsl_info["th"][col] = _tsl_th
-                                        last_tsl_info["exit_price"][col] = _stop_exit_price
                                         last_tsl_info["exit_size"][col] = np.nan
+                                        last_tsl_info["exit_price"][col] = _stop_exit_price
                                         last_tsl_info["exit_size_type"][col] = -1
                                         last_tsl_info["exit_type"][col] = _stop_exit_type
                                         last_tsl_info["order_type"][col] = _stop_order_type
@@ -3999,8 +3899,8 @@ def from_signals_nb(
                                         last_tp_info["init_price"][col] = new_init_price
                                         last_tp_info["init_position"][col] = position_now
                                         last_tp_info["stop"][col] = _tp_stop
-                                        last_tp_info["exit_price"][col] = _stop_exit_price
                                         last_tp_info["exit_size"][col] = np.nan
+                                        last_tp_info["exit_price"][col] = _stop_exit_price
                                         last_tp_info["exit_size_type"][col] = -1
                                         last_tp_info["exit_type"][col] = _stop_exit_type
                                         last_tp_info["order_type"][col] = _stop_order_type
@@ -4015,8 +3915,8 @@ def from_signals_nb(
                                         last_td_info["init_idx"][col] = i
                                         last_td_info["init_position"][col] = position_now
                                         last_td_info["stop"][col] = _td_stop
-                                        last_td_info["exit_price"][col] = _stop_exit_price
                                         last_td_info["exit_size"][col] = np.nan
+                                        last_td_info["exit_price"][col] = _stop_exit_price
                                         last_td_info["exit_size_type"][col] = -1
                                         last_td_info["exit_type"][col] = _stop_exit_type
                                         last_td_info["order_type"][col] = _stop_order_type
@@ -4032,8 +3932,8 @@ def from_signals_nb(
                                         last_dt_info["init_idx"][col] = i
                                         last_dt_info["init_position"][col] = position_now
                                         last_dt_info["stop"][col] = _dt_stop
-                                        last_dt_info["exit_price"][col] = _stop_exit_price
                                         last_dt_info["exit_size"][col] = np.nan
+                                        last_dt_info["exit_price"][col] = _stop_exit_price
                                         last_dt_info["exit_size_type"][col] = -1
                                         last_dt_info["exit_type"][col] = _stop_exit_type
                                         last_dt_info["order_type"][col] = _stop_order_type
@@ -4045,7 +3945,6 @@ def from_signals_nb(
                                         last_dt_info["step_idx"][col] = i
 
                                 if tsl_updated:
-                                    # Update high/low price
                                     if can_use_ohlc:
                                         _open = flex_select_nb(open_, i, col)
                                         _high = flex_select_nb(high_, i, col)
@@ -4082,7 +3981,6 @@ def from_signals_nb(
                                                 last_tsl_info["peak_idx"][col] = i
                                                 last_tsl_info["peak_price"][col] = _low
 
-                        # Now becomes last
                         last_position[col] = position_now
                         last_debt[col] = debt_now
                         last_locked_cash[col] = locked_cash_now
@@ -4094,7 +3992,6 @@ def from_signals_nb(
                         last_return[group] = return_now
 
             for col in range(from_col, to_col):
-                # Update valuation price using current close
                 _close = flex_select_nb(close_, i, col)
                 if not np.isnan(_close) or not ffill_val_price:
                     last_val_price[col] = _close
@@ -4113,7 +4010,6 @@ def from_signals_nb(
                     cash[i, group] = last_cash[group]
                     free_cash[i, group] = last_free_cash[group]
 
-            # Update value and return
             group_value = last_cash[group]
             for col in range(from_col, to_col):
                 if last_position[col] != 0:
@@ -4216,11 +4112,11 @@ def init_FSInOutputs_nb(
 
 
 @register_jitted
-def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, bool]:
+def no_signal_func_nb(c: FSSignalContext, *args) -> tp.Tuple[bool, bool, bool, bool]:
     """Placeholder `signal_func_nb` that returns no signal.
 
     Args:
-        c (SignalContext): Signal context.
+        c (FSSignalContext): Signal context.
         *args: Additional positional arguments.
 
     Returns:
@@ -4234,17 +4130,91 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
     return False, False, False, False
 
 
+# % <block pre_sim_func_nb>
+# % <skip? skip_func(out_lines, "pre_sim_func_nb")>
+# % <uncomment>
+# @register_jitted
+# def pre_sim_func_nb(
+#     c: FSSimulationContext,
+#     *args,
+# ) -> tp.Args:
+#     """Custom simulation pre-processing function.
+#
+#     Args:
+#         c (FSSimulationContext): Simulation context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         Args: Forwarded positional arguments.
+#     """
+#     return args
+#
+#
+# % </uncomment>
+# % </skip>
+# % </block>
+
+# % <block pre_group_func_nb>
+# % <skip? skip_func(out_lines, "pre_group_func_nb")>
+# % <uncomment>
+# @register_jitted
+# def pre_group_func_nb(
+#     c: FSGroupContext,
+#     *args,
+# ) -> tp.Args:
+#     """Custom group pre-processing function.
+#
+#     Args:
+#         c (FSGroupContext): Group context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         Args: Forwarded positional arguments.
+#     """
+#     return args
+#
+#
+# % </uncomment>
+# % </skip>
+# % </block>
+
+# % <block pre_segment_func_nb>
+# % <skip? skip_func(out_lines, "pre_segment_func_nb")>
+# % <uncomment>
+# @register_jitted
+# def pre_segment_func_nb(
+#     c: FSSegmentContext,
+#     *args,
+# ) -> tp.Args:
+#     """Custom segment pre-processing function.
+#
+#     Args:
+#         c (FSSegmentContext): Segment context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         Args: Forwarded positional arguments.
+#     """
+#     return args
+#
+#
+# % </uncomment>
+# % </skip>
+# % </block>
+
 # % <block signal_func_nb>
 # % <skip? skip_func(out_lines, "signal_func_nb")>
 # % <uncomment>
 # @register_jitted
 # def signal_func_nb(
-#     c: SignalContext,
+#     c: FSSignalContext,
+#     *args,
 # ) -> tp.Tuple[bool, bool, bool, bool]:
 #     """Custom signal processing function.
 #
 #     Args:
-#         c (SignalContext): Signal context.
+#         c (FSSignalContext): Signal context.
+#         *args: Additional positional arguments.
 #
 #     Returns:
 #         Tuple[bool, bool, bool, bool]: Tuple containing booleans representing:
@@ -4261,17 +4231,43 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
 # % </skip>
 # % </block>
 
-# % <block post_signal_func_nb>
-# % <skip? skip_func(out_lines, "post_signal_func_nb")>
+# % <block pre_order_segment_func_nb>
+# % <skip? skip_func(out_lines, "pre_order_segment_func_nb")>
 # % <uncomment>
 # @register_jitted
-# def post_signal_func_nb(
-#     c: PostSignalContext,
+# def pre_order_segment_func_nb(
+#     c: FSPreOrderSegmentContext,
+#     *args,
+# ) -> tp.Args:
+#     """Custom order segment pre-processing function.
+#
+#     Args:
+#         c (FSPreOrderSegmentContext): Pre-order segment context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         Args: Forwarded positional arguments.
+#     """
+#     return args
+#
+#
+# % </uncomment>
+# % </skip>
+# % </block>
+
+# % <block post_order_func_nb>
+# % <skip? skip_func(out_lines, "post_order_func_nb")>
+# % <uncomment>
+# @register_jitted
+# def post_order_func_nb(
+#     c: FSPostOrderContext,
+#     *args,
 # ) -> None:
 #     """Custom signal post-processing function.
 #
 #     Args:
-#         c (PostSignalContext): Post-signal context.
+#         c (FSPostOrderContext): Post-order context.
+#         *args: Additional positional arguments.
 #
 #     Returns:
 #         None
@@ -4288,12 +4284,62 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
 # % <uncomment>
 # @register_jitted
 # def post_segment_func_nb(
-#     c: SignalSegmentContext,
+#     c: FSSegmentContext,
+#     *args,
 # ) -> None:
 #     """Custom segment post-processing function.
 #
 #     Args:
-#         c (SignalSegmentContext): Signal segment context.
+#         c (FSSegmentContext): Segment context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         None
+#     """
+#     return None
+#
+#
+# % </uncomment>
+# % </skip>
+# % </block>
+
+# % <block post_group_func_nb>
+# % <skip? skip_func(out_lines, "post_group_func_nb")>
+# % <uncomment>
+# @register_jitted
+# def post_group_func_nb(
+#     c: FSGroupContext,
+#     *args,
+# ) -> None:
+#     """Custom group post-processing function.
+#
+#     Args:
+#         c (FSGroupContext): Group context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         None
+#     """
+#     return None
+#
+#
+# % </uncomment>
+# % </skip>
+# % </block>
+
+# % <block post_sim_func_nb>
+# % <skip? skip_func(out_lines, "post_sim_func_nb")>
+# % <uncomment>
+# @register_jitted
+# def post_sim_func_nb(
+#     c: FSSimulationContext,
+#     *args,
+# ) -> None:
+#     """Custom simulation post-processing function.
+#
+#     Args:
+#         c (FSSimulationContext): Simulation context.
+#         *args: Additional positional arguments.
 #
 #     Returns:
 #         None
@@ -4314,12 +4360,24 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
 #
 #
 # % </uncomment>
+# %? blocks[pre_sim_func_nb_block]
+# % blocks["pre_sim_func_nb"]
+# %? blocks[pre_group_func_nb_block]
+# % blocks["pre_group_func_nb"]
+# %? blocks[pre_segment_func_nb_block]
+# % blocks["pre_segment_func_nb"]
 # %? blocks[signal_func_nb_block]
 # % blocks["signal_func_nb"]
-# %? blocks[post_signal_func_nb_block]
-# % blocks["post_signal_func_nb"]
+# %? blocks[pre_order_segment_func_nb_block]
+# % blocks["pre_order_segment_func_nb"]
+# %? blocks[post_order_func_nb_block]
+# % blocks["post_order_func_nb"]
 # %? blocks[post_segment_func_nb_block]
 # % blocks["post_segment_func_nb"]
+# %? blocks[post_group_func_nb_block]
+# % blocks["post_group_func_nb"]
+# %? blocks[post_sim_func_nb_block]
+# % blocks["post_sim_func_nb"]
 @register_chunkable(
     size=ch.ArraySizer(arg_query="group_lens", axis=0),
     arg_take_spec=dict(
@@ -4338,12 +4396,24 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
         cash_deposits=RepFunc(portfolio_ch.get_cash_deposits_slicer),
         cash_earnings=base_ch.flex_array_gl_slicer,
         cash_dividends=base_ch.flex_array_gl_slicer,
+        pre_sim_func_nb=None,  # % None
+        pre_sim_args=ch.ArgsTaker(),
+        pre_group_func_nb=None,  # % None
+        pre_group_args=ch.ArgsTaker(),
+        pre_segment_func_nb=None,  # % None
+        pre_segment_args=ch.ArgsTaker(),
         signal_func_nb=None,  # % None
         signal_args=ch.ArgsTaker(),
-        post_signal_func_nb=None,  # % None
-        post_signal_args=ch.ArgsTaker(),
+        pre_order_segment_func_nb=None,  # % None
+        pre_order_segment_args=ch.ArgsTaker(),
+        post_order_func_nb=None,  # % None
+        post_order_args=ch.ArgsTaker(),
         post_segment_func_nb=None,  # % None
         post_segment_args=ch.ArgsTaker(),
+        post_group_func_nb=None,  # % None
+        post_group_args=ch.ArgsTaker(),
+        post_sim_func_nb=None,  # % None
+        post_sim_args=ch.ArgsTaker(),
         size=base_ch.flex_array_gl_slicer,
         price=base_ch.flex_array_gl_slicer,
         size_type=base_ch.flex_array_gl_slicer,
@@ -4353,6 +4423,7 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
         min_size=base_ch.flex_array_gl_slicer,
         max_size=base_ch.flex_array_gl_slicer,
         size_granularity=base_ch.flex_array_gl_slicer,
+        cash_limit=base_ch.flex_array_gl_slicer,
         leverage=base_ch.flex_array_gl_slicer,
         leverage_mode=base_ch.flex_array_gl_slicer,
         reject_prob=base_ch.flex_array_gl_slicer,
@@ -4430,12 +4501,24 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     cash_deposits: tp.FlexArray2dLike = 0.0,
     cash_earnings: tp.FlexArray2dLike = 0.0,
     cash_dividends: tp.FlexArray2dLike = 0.0,
-    signal_func_nb: tp.SignalFunc = no_signal_func_nb,  # % None
+    pre_sim_func_nb: tp.FSPreSimFunc = no_pre_func_nb,  # % None
+    pre_sim_args: tp.Args = (),
+    pre_group_func_nb: tp.FSPreGroupFunc = no_pre_func_nb,  # % None
+    pre_group_args: tp.Args = (),
+    pre_segment_func_nb: tp.FSPreSegmentFunc = no_pre_func_nb,  # % None
+    pre_segment_args: tp.Args = (),
+    signal_func_nb: tp.FSSignalFunc = no_signal_func_nb,  # % None
     signal_args: tp.ArgsLike = (),
-    post_signal_func_nb: tp.PostSignalFunc = no_post_func_nb,  # % None
-    post_signal_args: tp.ArgsLike = (),
-    post_segment_func_nb: tp.PostSignalSegmentFunc = no_post_func_nb,  # % None
+    pre_order_segment_func_nb: tp.FSPreOrderSegmentFunc = no_pre_func_nb,  # % None
+    pre_order_segment_args: tp.Args = (),
+    post_order_func_nb: tp.FSPostOrderFunc = no_post_func_nb,  # % None
+    post_order_args: tp.ArgsLike = (),
+    post_segment_func_nb: tp.FSPostSegmentFunc = no_post_func_nb,  # % None
     post_segment_args: tp.ArgsLike = (),
+    post_group_func_nb: tp.FSPostGroupFunc = no_post_func_nb,  # % None
+    post_group_args: tp.ArgsLike = (),
+    post_sim_func_nb: tp.FSPostSimFunc = no_post_func_nb,  # % None
+    post_sim_args: tp.ArgsLike = (),
     size: tp.FlexArray2dLike = np.inf,
     price: tp.FlexArray2dLike = np.inf,
     size_type: tp.FlexArray2dLike = SizeType.Amount,
@@ -4445,6 +4528,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     min_size: tp.FlexArray2dLike = np.nan,
     max_size: tp.FlexArray2dLike = np.nan,
     size_granularity: tp.FlexArray2dLike = np.nan,
+    cash_limit: tp.FlexArray2dLike = np.nan,
     leverage: tp.FlexArray2dLike = 1.0,
     leverage_mode: tp.FlexArray2dLike = LeverageMode.Lazy,
     reject_prob: tp.FlexArray2dLike = 0.0,
@@ -4505,6 +4589,9 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     is called to generate trading signals based on current market data. Additionally, custom post-signal
     and post-segment functions can process order executions and update segment-level statistics.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
@@ -4547,21 +4634,56 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         cash_dividends (FlexArray2dLike): Cash dividends or interest at the end of each bar.
 
             Provided as a scalar, or per row, column, or element.
-        signal_func_nb (SignalFunc): Callback function to be called to generate signals.
+        pre_sim_func_nb (FSPreSimFunc): Callback function to be called before the simulation.
 
-            Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*signal_args`,
-            and returns four signals: long entry, long exit, short entry, and short exit.
-        signal_args (ArgsLike): Positional arguments for `signal_func_nb`
-        post_signal_func_nb (PostSignalFunc): Callback function to be called after processing an order.
+            Accepts `vectorbtpro.portfolio.enums.FSSimulationContext` and `*pre_sim_args`,
+            and returns a tuple that is passed to `pre_group_func_nb` and `post_sim_func_nb`.
+        pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
+        pre_group_func_nb (FSPreGroupFunc): Callback function to be called before processing a group.
 
-            Accepts `vectorbtpro.portfolio.enums.PostSignalContext` and `*post_signal_args`,
-            and returns nothing.
-        post_signal_args (ArgsLike): Positional arguments for `post_signal_func_nb`
-        post_segment_func_nb (PostSignalSegmentFunc): Callback function to be called after processing a segment.
+            Accepts `vectorbtpro.portfolio.enums.FSGroupContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*pre_group_args`, and returns a tuple that is passed to
+            `pre_segment_func_nb` and `post_group_func_nb`.
+        pre_group_args (Args): Positional arguments for `pre_group_func_nb`.
+        pre_segment_func_nb (FSPreSegmentFunc): Callback function to be called before processing a segment.
 
-            Accepts `vectorbtpro.portfolio.enums.SignalSegmentContext` and `*post_segment_args`,
-            and returns nothing.
+            Accepts `vectorbtpro.portfolio.enums.FSSegmentContext` and `*pre_segment_args`,
+            and returns a tuple that is passed to `signal_func_nb`, `pre_order_segment_func_nb`,
+            and `post_segment_func_nb`.
+        pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
+        signal_func_nb (FSSignalFunc): Callback function to be called to generate signals.
+
+            Accepts `vectorbtpro.portfolio.enums.FSSignalContext`, the unpacked output from
+            `pre_segment_func_nb`, and `*signal_args`, and returns four signals:
+            long entry, long exit, short entry, and short exit.
+        signal_args (ArgsLike): Positional arguments for `signal_func_nb`.
+        pre_order_segment_func_nb (FSPreOrderSegmentFunc): Callback function to be called before
+            processing an order segment.
+
+            Accepts `vectorbtpro.portfolio.enums.FSPreOrderSegmentContext`, the unpacked output from
+            `pre_segment_func_nb`, and `*pre_order_segment_args`, and returns a tuple that is passed
+            to `post_order_func_nb`.
+        pre_order_segment_args (Args): Positional arguments for `pre_order_segment_func_nb`.
+        post_order_func_nb (FSPostOrderFunc): Callback function to be called after processing an order.
+
+            Accepts `vectorbtpro.portfolio.enums.FSPostOrderContext`, the unpacked output from
+            `pre_order_segment_func_nb`, and `*post_order_args`, and returns nothing.
+        post_order_args (ArgsLike): Positional arguments for `post_order_func_nb`.
+        post_segment_func_nb (FSPostSegmentFunc): Callback function to be called after processing a segment.
+
+            Accepts `vectorbtpro.portfolio.enums.FSSegmentContext`, the unpacked output from
+            `pre_segment_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (ArgsLike): Positional arguments for `post_segment_func_nb`.
+        post_group_func_nb (FSPostGroupFunc): Callback function to be called after processing a group.
+
+            Accepts `vectorbtpro.portfolio.enums.FSGroupContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*post_group_args`, and returns nothing.
+        post_group_args (Args): Positional arguments for `post_group_func_nb`.
+        post_sim_func_nb (FSPostSimFunc): Callback function to be called after the simulation.
+
+            Accepts `vectorbtpro.portfolio.enums.FSSimulationContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*post_sim_args`, and returns nothing.
+        post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
         size (FlexArray2dLike): Order size.
 
             Provided as a scalar, or per row, column, or element.
@@ -4616,6 +4738,11 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size_granularity`.
+        cash_limit (FlexArray2dLike): Max own cash the order is allowed to use.
+
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.cash_limit`.
         leverage (FlexArray2dLike): Leverage factor.
 
             Provided as a scalar, or per row, column, or element.
@@ -4861,9 +4988,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
     Returns:
         SimulationOutput: Simulation output containing order records, log records, and portfolio results.
-
-    !!! tip
-        This function is parallelizable.
     """
     check_group_lens_nb(group_lens, target_shape[1])
 
@@ -4886,6 +5010,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     min_size_ = to_2d_array_nb(np.asarray(min_size))
     max_size_ = to_2d_array_nb(np.asarray(max_size))
     size_granularity_ = to_2d_array_nb(np.asarray(size_granularity))
+    cash_limit_ = to_2d_array_nb(np.asarray(cash_limit))
     leverage_ = to_2d_array_nb(np.asarray(leverage))
     leverage_mode_ = to_2d_array_nb(np.asarray(leverage_mode))
     reject_prob_ = to_2d_array_nb(np.asarray(reject_prob))
@@ -4987,8 +5112,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     last_limit_info["signal_idx"][:] = -1
     last_limit_info["creation_idx"][:] = -1
     last_limit_info["init_idx"][:] = -1
-    last_limit_info["init_price"][:] = np.nan
     last_limit_info["init_size"][:] = np.nan
+    last_limit_info["init_price"][:] = np.nan
     last_limit_info["init_size_type"][:] = -1
     last_limit_info["init_direction"][:] = -1
     last_limit_info["init_stop_type"][:] = -1
@@ -5006,8 +5131,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         last_sl_info["init_price"][:] = np.nan
         last_sl_info["init_position"][:] = np.nan
         last_sl_info["stop"][:] = np.nan
-        last_sl_info["exit_price"][:] = -1
         last_sl_info["exit_size"][:] = np.nan
+        last_sl_info["exit_price"][:] = -1
         last_sl_info["exit_size_type"][:] = -1
         last_sl_info["exit_type"][:] = -1
         last_sl_info["order_type"][:] = -1
@@ -5025,8 +5150,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         last_tsl_info["peak_price"][:] = np.nan
         last_tsl_info["stop"][:] = np.nan
         last_tsl_info["th"][:] = np.nan
-        last_tsl_info["exit_price"][:] = -1
         last_tsl_info["exit_size"][:] = np.nan
+        last_tsl_info["exit_price"][:] = -1
         last_tsl_info["exit_size_type"][:] = -1
         last_tsl_info["exit_type"][:] = -1
         last_tsl_info["order_type"][:] = -1
@@ -5041,8 +5166,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         last_tp_info["init_price"][:] = np.nan
         last_tp_info["init_position"][:] = np.nan
         last_tp_info["stop"][:] = np.nan
-        last_tp_info["exit_price"][:] = -1
         last_tp_info["exit_size"][:] = np.nan
+        last_tp_info["exit_price"][:] = -1
         last_tp_info["exit_size_type"][:] = -1
         last_tp_info["exit_type"][:] = -1
         last_tp_info["order_type"][:] = -1
@@ -5056,8 +5181,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         last_td_info["init_idx"][:] = -1
         last_td_info["init_position"][:] = np.nan
         last_td_info["stop"][:] = -1
-        last_td_info["exit_price"][:] = -1
         last_td_info["exit_size"][:] = np.nan
+        last_td_info["exit_price"][:] = -1
         last_td_info["exit_size_type"][:] = -1
         last_td_info["exit_type"][:] = -1
         last_td_info["order_type"][:] = -1
@@ -5072,8 +5197,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         last_dt_info["init_idx"][:] = -1
         last_dt_info["init_position"][:] = np.nan
         last_dt_info["stop"][:] = -1
-        last_dt_info["exit_price"][:] = -1
         last_dt_info["exit_size"][:] = np.nan
+        last_dt_info["exit_price"][:] = -1
         last_dt_info["exit_size_type"][:] = -1
         last_dt_info["exit_type"][:] = -1
         last_dt_info["order_type"][:] = -1
@@ -5091,10 +5216,11 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         last_dt_info = np.empty(0, dtype=time_info_dt)
 
     last_signal = np.empty(target_shape[1], dtype=int_)
-    main_info = np.empty(target_shape[1], dtype=main_info_dt)
+    order_info = np.empty(target_shape[1], dtype=order_info_dt)
 
     temp_call_seq = np.empty(target_shape[1], dtype=int_)
-    temp_sort_by = np.empty(target_shape[1], dtype=float_)
+    temp_order_value = np.empty(target_shape[1], dtype=float_)
+    temp_bar_zone = np.empty(target_shape[1], dtype=int_)
 
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -5105,16 +5231,181 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         sim_end=sim_end,
     )
 
+    pre_sim_ctx = FSSimulationContext(
+        target_shape=target_shape,
+        group_lens=group_lens,
+        cash_sharing=cash_sharing,
+        index=index,
+        freq=freq,
+        open=open_,
+        high=high_,
+        low=low_,
+        close=close_,
+        init_cash=init_cash_,
+        init_position=init_position_,
+        init_price=init_price_,
+        order_records=order_records,
+        order_counts=order_counts,
+        log_records=log_records,
+        log_counts=log_counts,
+        track_cash_deposits=track_cash_deposits,
+        cash_deposits_out=cash_deposits_out,
+        track_cash_earnings=track_cash_earnings,
+        cash_earnings_out=cash_earnings_out,
+        in_outputs=in_outputs,
+        last_cash=last_cash,
+        last_position=last_position,
+        last_debt=last_debt,
+        last_locked_cash=last_locked_cash,
+        last_free_cash=last_free_cash,
+        last_val_price=last_val_price,
+        last_value=last_value,
+        last_return=last_return,
+        last_pos_info=last_pos_info,
+        last_limit_info=last_limit_info,
+        last_sl_info=last_sl_info,
+        last_tsl_info=last_tsl_info,
+        last_tp_info=last_tp_info,
+        last_td_info=last_td_info,
+        last_dt_info=last_dt_info,
+        sim_start=sim_start_,
+        sim_end=sim_end_,
+    )
+    pre_sim_out = pre_sim_func_nb(pre_sim_ctx, *pre_sim_args)
+
     for group in prange(len(group_lens)):
         from_col = group_start_idxs[group]
         to_col = group_end_idxs[group]
         group_len = to_col - from_col
 
+        pre_group_ctx = FSGroupContext(
+            target_shape=target_shape,
+            group_lens=group_lens,
+            cash_sharing=cash_sharing,
+            index=index,
+            freq=freq,
+            open=open_,
+            high=high_,
+            low=low_,
+            close=close_,
+            init_cash=init_cash_,
+            init_position=init_position_,
+            init_price=init_price_,
+            order_records=order_records,
+            order_counts=order_counts,
+            log_records=log_records,
+            log_counts=log_counts,
+            track_cash_deposits=track_cash_deposits,
+            cash_deposits_out=cash_deposits_out,
+            track_cash_earnings=track_cash_earnings,
+            cash_earnings_out=cash_earnings_out,
+            in_outputs=in_outputs,
+            last_cash=last_cash,
+            last_position=last_position,
+            last_debt=last_debt,
+            last_locked_cash=last_locked_cash,
+            last_free_cash=last_free_cash,
+            last_val_price=last_val_price,
+            last_value=last_value,
+            last_return=last_return,
+            last_pos_info=last_pos_info,
+            last_limit_info=last_limit_info,
+            last_sl_info=last_sl_info,
+            last_tsl_info=last_tsl_info,
+            last_tp_info=last_tp_info,
+            last_td_info=last_td_info,
+            last_dt_info=last_dt_info,
+            sim_start=sim_start_,
+            sim_end=sim_end_,
+            group=group,
+            group_len=group_len,
+            from_col=from_col,
+            to_col=to_col,
+        )
+        pre_group_out = pre_group_func_nb(pre_group_ctx, *pre_sim_out, *pre_group_args)
+
         _sim_start = sim_start_[group]
         _sim_end = sim_end_[group]
         for i in range(_sim_start, _sim_end):
 
-            # Add cash
+            for ci in range(group_len):
+                col = from_col + ci
+                _open = flex_select_nb(open_, i, col)
+                if not np.isnan(_open) or not ffill_val_price:
+                    last_val_price[col] = _open
+
+            if cash_sharing:
+                group_value = last_cash[group]
+                for col in range(from_col, to_col):
+                    if last_position[col] != 0:
+                        group_value += last_position[col] * last_val_price[col]
+                last_value[group] = group_value
+                last_return[group] = get_return_nb(
+                    input_value=prev_close_value[group],
+                    output_value=last_value[group],
+                )
+            else:
+                for col in range(from_col, to_col):
+                    group_value = last_cash[col]
+                    if last_position[col] != 0:
+                        group_value += last_position[col] * last_val_price[col]
+                    last_value[col] = group_value
+                    last_return[col] = get_return_nb(
+                        input_value=prev_close_value[col],
+                        output_value=last_value[col],
+                    )
+
+            if fill_pos_info:
+                for col in range(from_col, to_col):
+                    update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
+
+            pre_segment_ctx = FSSegmentContext(
+                target_shape=target_shape,
+                group_lens=group_lens,
+                cash_sharing=cash_sharing,
+                index=index,
+                freq=freq,
+                open=open_,
+                high=high_,
+                low=low_,
+                close=close_,
+                init_cash=init_cash_,
+                init_position=init_position_,
+                init_price=init_price_,
+                order_records=order_records,
+                order_counts=order_counts,
+                log_records=log_records,
+                log_counts=log_counts,
+                track_cash_deposits=track_cash_deposits,
+                cash_deposits_out=cash_deposits_out,
+                track_cash_earnings=track_cash_earnings,
+                cash_earnings_out=cash_earnings_out,
+                in_outputs=in_outputs,
+                last_cash=last_cash,
+                last_position=last_position,
+                last_debt=last_debt,
+                last_locked_cash=last_locked_cash,
+                last_free_cash=last_free_cash,
+                last_val_price=last_val_price,
+                last_value=last_value,
+                last_return=last_return,
+                last_pos_info=last_pos_info,
+                last_limit_info=last_limit_info,
+                last_sl_info=last_sl_info,
+                last_tsl_info=last_tsl_info,
+                last_tp_info=last_tp_info,
+                last_td_info=last_td_info,
+                last_dt_info=last_dt_info,
+                sim_start=sim_start_,
+                sim_end=sim_end_,
+                group=group,
+                group_len=group_len,
+                from_col=from_col,
+                to_col=to_col,
+                i=i,
+            )
+            pre_segment_out = pre_segment_func_nb(pre_segment_ctx, *pre_group_out, *pre_segment_args)
+
             if cash_sharing:
                 _cash_deposits = flex_select_nb(cash_deposits_, i, group)
                 if _cash_deposits < 0:
@@ -5135,14 +5426,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     if track_cash_deposits:
                         cash_deposits_out[i, col] += _cash_deposits
 
-            # Update valuation price using current open
-            for ci in range(group_len):
-                col = from_col + ci
-                _open = flex_select_nb(open_, i, col)
-                if not np.isnan(_open) or not ffill_val_price:
-                    last_val_price[col] = _open
-
-            # Update value and return
             if cash_sharing:
                 group_value = last_cash[group]
                 for col in range(from_col, to_col):
@@ -5164,17 +5447,15 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         output_value=last_value[col] - last_cash_deposits[col],
                     )
 
-            # Update open position stats
             if fill_pos_info:
                 for col in range(from_col, to_col):
                     update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Get signals
             skip = skip_empty
             for ci in range(group_len):
                 col = from_col + ci
 
-                signal_ctx = SignalContext(
+                signal_ctx = FSSignalContext(
                     target_shape=target_shape,
                     group_lens=group_lens,
                     cash_sharing=cash_sharing,
@@ -5220,9 +5501,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     i=i,
                     col=col,
                 )
-                is_long_entry, is_long_exit, is_short_entry, is_short_exit = signal_func_nb(signal_ctx, *signal_args)
+                is_long_entry, is_long_exit, is_short_entry, is_short_exit = signal_func_nb(
+                    signal_ctx,
+                    *pre_segment_out,
+                    *signal_args,
+                )
 
-                # Update limit and stop prices
                 _i = i - abs(flex_select_nb(from_ago_, i, col))
                 if _i < 0:
                     _price = np.nan
@@ -5233,27 +5517,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     price=_price,
                     limit_price=last_limit_info["init_price"][col],
                 )
-                last_sl_info["init_price"][col] = resolve_dyn_stop_entry_price_nb(
-                    val_price=last_val_price[col],
-                    price=_price,
-                    stop_entry_price=last_sl_info["init_price"][col],
-                )
-                last_tsl_info["init_price"][col] = resolve_dyn_stop_entry_price_nb(
-                    val_price=last_val_price[col],
-                    price=_price,
-                    stop_entry_price=last_tsl_info["init_price"][col],
-                )
-                last_tsl_info["peak_price"][col] = resolve_dyn_stop_entry_price_nb(
-                    val_price=last_val_price[col],
-                    price=_price,
-                    stop_entry_price=last_tsl_info["peak_price"][col],
-                )
-                last_tp_info["init_price"][col] = resolve_dyn_stop_entry_price_nb(
-                    val_price=last_val_price[col],
-                    price=_price,
-                    stop_entry_price=last_tp_info["init_price"][col],
-                )
-
                 limit_signal = is_limit_active_nb(
                     init_idx=last_limit_info["init_idx"][col],
                     init_price=last_limit_info["init_price"][col],
@@ -5265,6 +5528,26 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     td_stop_signal = False
                     dt_stop_signal = False
                 else:
+                    last_sl_info["init_price"][col] = resolve_dyn_stop_entry_price_nb(
+                        val_price=last_val_price[col],
+                        price=_price,
+                        stop_entry_price=last_sl_info["init_price"][col],
+                    )
+                    last_tsl_info["init_price"][col] = resolve_dyn_stop_entry_price_nb(
+                        val_price=last_val_price[col],
+                        price=_price,
+                        stop_entry_price=last_tsl_info["init_price"][col],
+                    )
+                    last_tsl_info["peak_price"][col] = resolve_dyn_stop_entry_price_nb(
+                        val_price=last_val_price[col],
+                        price=_price,
+                        stop_entry_price=last_tsl_info["peak_price"][col],
+                    )
+                    last_tp_info["init_price"][col] = resolve_dyn_stop_entry_price_nb(
+                        val_price=last_val_price[col],
+                        price=_price,
+                        stop_entry_price=last_tp_info["init_price"][col],
+                    )
                     sl_stop_signal = is_stop_active_nb(
                         init_idx=last_sl_info["init_idx"][col],
                         stop=last_sl_info["stop"][col],
@@ -5286,7 +5569,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         stop=last_dt_info["stop"][col],
                     )
 
-                # Pack signals into a single integer
                 last_signal[col] = (
                     (is_long_entry << 10)
                     | (is_long_exit << 9)
@@ -5303,7 +5585,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     skip = False
 
             if not skip:
-                # Update value and return
                 if cash_sharing:
                     group_value = last_cash[group]
                     for col in range(from_col, to_col):
@@ -5325,25 +5606,21 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             output_value=last_value[col] - last_cash_deposits[col],
                         )
 
-                # Get size and value of each order
                 for ci in range(group_len):
                     col = from_col + ci
 
-                    # Set defaults
-                    main_info["bar_zone"][col] = -1
-                    main_info["signal_idx"][col] = -1
-                    main_info["creation_idx"][col] = -1
-                    main_info["idx"][col] = i
-                    main_info["val_price"][col] = np.nan
-                    main_info["price"][col] = np.nan
-                    main_info["size"][col] = np.nan
-                    main_info["size_type"][col] = -1
-                    main_info["direction"][col] = -1
-                    main_info["type"][col] = -1
-                    main_info["stop_type"][col] = -1
-                    temp_sort_by[col] = 0.0
+                    order_info["bar_zone"][col] = BarZone.Close
+                    order_info["signal_idx"][col] = i
+                    order_info["creation_idx"][col] = i
+                    order_info["idx"][col] = i
+                    order_info["val_price"][col] = last_val_price[col]
+                    order_info["size"][col] = np.nan
+                    order_info["price"][col] = np.nan
+                    order_info["size_type"][col] = -1
+                    order_info["direction"][col] = -1
+                    order_info["type"][col] = OrderType.Market
+                    order_info["stop_type"][col] = -1
 
-                    # Unpack a single integer into signals
                     is_long_entry = (last_signal[col] >> 10) & 1
                     is_long_exit = (last_signal[col] >> 9) & 1
                     is_short_entry = (last_signal[col] >> 8) & 1
@@ -5361,7 +5638,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         sl_stop_signal or tsl_stop_signal or tp_stop_signal or td_stop_signal or dt_stop_signal
                     )
 
-                    # Set initial info
                     exec_limit_set = False
                     exec_limit_set_on_open = False
                     exec_limit_set_on_close = False
@@ -5405,21 +5681,18 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     exec_user_make_limit = False
                     exec_user_bar_zone = -1
 
-                    # Resolve the current bar
                     _i = i - abs(flex_select_nb(from_ago_, i, col))
                     _open = flex_select_nb(open_, i, col)
                     _high = flex_select_nb(high_, i, col)
                     _low = flex_select_nb(low_, i, col)
                     _close = flex_select_nb(close_, i, col)
 
-                    # Process the limit signal
                     if any_limit_signal:
-                        # Check whether the limit price was hit
                         _signal_i = last_limit_info["signal_idx"][col]
                         _creation_i = last_limit_info["creation_idx"][col]
                         _init_i = last_limit_info["init_idx"][col]
-                        _price = last_limit_info["init_price"][col]
                         _size = last_limit_info["init_size"][col]
+                        _price = last_limit_info["init_price"][col]
                         _size_type = last_limit_info["init_size_type"][col]
                         _direction = last_limit_info["init_direction"][col]
                         _stop_type = last_limit_info["init_stop_type"][col]
@@ -5461,7 +5734,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         )
                         limit_hit = np.isfinite(limit_price)
 
-                        # Resolve the price
                         limit_price = resolve_limit_order_price_nb(
                             limit_price=limit_price,
                             close=_close,
@@ -5469,14 +5741,13 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         )
 
                         if limit_expired_on_open or (not limit_hit_on_open and limit_expired):
-                            # Expired limit signal
                             any_limit_signal = False
 
                             last_limit_info["signal_idx"][col] = -1
                             last_limit_info["creation_idx"][col] = -1
                             last_limit_info["init_idx"][col] = -1
-                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size"][col] = np.nan
+                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size_type"][col] = -1
                             last_limit_info["init_direction"][col] = -1
                             last_limit_info["delta"][col] = np.nan
@@ -5487,9 +5758,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             last_limit_info["reverse"][col] = False
                             last_limit_info["order_price"][col] = np.nan
                         else:
-                            # Save info
                             if limit_hit:
-                                # Executable limit signal
                                 exec_limit_set = True
                                 exec_limit_set_on_open = limit_hit_on_open
                                 exec_limit_set_on_close = limit_hit_on_close or _order_price == LimitOrderPrice.Close
@@ -5508,12 +5777,9 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 exec_limit_direction = _direction
                                 exec_limit_stop_type = _stop_type
 
-                    # Process the stop signal
                     if any_stop_signal:
-                        # Check SL
                         sl_stop_price, sl_stop_hit_on_open, sl_stop_hit_on_close = np.nan, False, False
                         if sl_stop_signal:
-                            # Check against high and low
                             sl_stop_price, sl_stop_hit_on_open, sl_stop_hit_on_close = check_stop_hit_nb(
                                 open=_open,
                                 high=_high,
@@ -5528,10 +5794,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             )
                         sl_stop_hit = np.isfinite(sl_stop_price)
 
-                        # Check TSL and TTP
                         tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit_on_close = np.nan, False, False
                         if tsl_stop_signal:
-                            # Update peak price using open
                             if last_position[col] > 0:
                                 if _open > last_tsl_info["peak_price"][col]:
                                     if last_tsl_info["delta_format"][col] == DeltaFormat.Target:
@@ -5548,7 +5812,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         )
                                     last_tsl_info["peak_idx"][col] = i
                                     last_tsl_info["peak_price"][col] = _open
-                            # Check threshold against previous bars and open
                             if np.isnan(last_tsl_info["th"][col]):
                                 th_hit = True
                             else:
@@ -5572,7 +5835,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     hit_below=True,
                                     hard_stop=last_tsl_info["exit_price"][col] == StopExitPrice.HardStop,
                                 )
-                            # Update peak price using full bar
                             res_high, res_low = resolve_hl_nb(
                                 open=_open,
                                 high=_high,
@@ -5596,7 +5858,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_tsl_info["peak_idx"][col] = i
                                     last_tsl_info["peak_price"][col] = res_low
                             if not np.isfinite(tsl_stop_price):
-                                # Check threshold against full bar
                                 if not th_hit:
                                     if np.isnan(last_tsl_info["th"][col]):
                                         th_hit = True
@@ -5609,7 +5870,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                             delta_format=last_tsl_info["delta_format"][col],
                                         )
                                 if th_hit:
-                                    # Check stop against close
                                     tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit_on_close = check_stop_hit_nb(
                                         open=_open,
                                         high=_high,
@@ -5625,7 +5885,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     )
                         tsl_stop_hit = np.isfinite(tsl_stop_price)
 
-                        # Check TP
                         tp_stop_price, tp_stop_hit_on_open, tp_stop_hit_on_close = np.nan, False, False
                         if tp_stop_signal:
                             tp_stop_price, tp_stop_hit_on_open, tp_stop_hit_on_close = check_stop_hit_nb(
@@ -5642,7 +5901,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             )
                         tp_stop_hit = np.isfinite(tp_stop_price)
 
-                        # Check TD
                         td_stop_price, td_stop_hit, td_stop_hit_on_open = np.nan, False, False
                         if td_stop_signal:
                             td_stop_hit, td_stop_hit_on_open = check_td_stop_hit_nb(
@@ -5661,7 +5919,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 td_stop_price = _close
                         td_stop_hit_on_close = td_stop_hit and not td_stop_hit_on_open
 
-                        # Check DT
                         dt_stop_price, dt_stop_hit, dt_stop_hit_on_open = np.nan, False, False
                         if dt_stop_signal:
                             dt_stop_hit, dt_stop_hit_on_open = check_dt_stop_hit_nb(
@@ -5679,7 +5936,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 dt_stop_price = _close
                         dt_stop_hit_on_close = dt_stop_hit and not dt_stop_hit_on_open
 
-                        # Resolve the stop signal
                         sl_hit = False
                         tsl_hit = False
                         tp_hit = False
@@ -5713,8 +5969,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             stop_hit_on_close = sl_stop_hit_on_close
                             _stop_type = StopType.SL
                             _init_i = last_sl_info["init_idx"][col]
-                            _stop_exit_price = last_sl_info["exit_price"][col]
                             _stop_exit_size = last_sl_info["exit_size"][col]
+                            _stop_exit_price = last_sl_info["exit_price"][col]
                             _stop_exit_size_type = last_sl_info["exit_size_type"][col]
                             _stop_exit_type = last_sl_info["exit_type"][col]
                             _stop_order_type = last_sl_info["order_type"][col]
@@ -5747,8 +6003,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             else:
                                 _stop_type = StopType.TTP
                             _init_i = last_tsl_info["init_idx"][col]
-                            _stop_exit_price = last_tsl_info["exit_price"][col]
                             _stop_exit_size = last_tsl_info["exit_size"][col]
+                            _stop_exit_price = last_tsl_info["exit_price"][col]
                             _stop_exit_size_type = last_tsl_info["exit_size_type"][col]
                             _stop_exit_type = last_tsl_info["exit_type"][col]
                             _stop_order_type = last_tsl_info["order_type"][col]
@@ -5778,8 +6034,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             stop_hit_on_close = tp_stop_hit_on_close
                             _stop_type = StopType.TP
                             _init_i = last_tp_info["init_idx"][col]
-                            _stop_exit_price = last_tp_info["exit_price"][col]
                             _stop_exit_size = last_tp_info["exit_size"][col]
+                            _stop_exit_price = last_tp_info["exit_price"][col]
                             _stop_exit_size_type = last_tp_info["exit_size_type"][col]
                             _stop_exit_type = last_tp_info["exit_type"][col]
                             _stop_order_type = last_tp_info["order_type"][col]
@@ -5809,8 +6065,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             stop_hit_on_close = td_stop_hit_on_close
                             _stop_type = StopType.TD
                             _init_i = last_td_info["init_idx"][col]
-                            _stop_exit_price = last_td_info["exit_price"][col]
                             _stop_exit_size = last_td_info["exit_size"][col]
+                            _stop_exit_price = last_td_info["exit_price"][col]
                             _stop_exit_size_type = last_td_info["exit_size_type"][col]
                             _stop_exit_type = last_td_info["exit_type"][col]
                             _stop_order_type = last_td_info["order_type"][col]
@@ -5840,8 +6096,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             stop_hit_on_close = dt_stop_hit_on_close
                             _stop_type = StopType.DT
                             _init_i = last_dt_info["init_idx"][col]
-                            _stop_exit_price = last_dt_info["exit_price"][col]
                             _stop_exit_size = last_dt_info["exit_size"][col]
+                            _stop_exit_price = last_dt_info["exit_price"][col]
                             _stop_exit_size_type = last_dt_info["exit_size_type"][col]
                             _stop_exit_type = last_dt_info["exit_type"][col]
                             _stop_order_type = last_dt_info["order_type"][col]
@@ -5871,8 +6127,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             stop_hit_on_close = False
 
                         if stop_hit:
-                            # Stop price was hit
-                            # Resolve the final stop signal
                             _accumulate = flex_select_nb(accumulate_, i, col)
                             _size = flex_select_nb(size_, i, col)
                             _size_type = flex_select_nb(size_type_, i, col)
@@ -5896,14 +6150,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 accumulate=_accumulate,
                             )
 
-                            # Resolve the price
                             _price = resolve_stop_exit_price_nb(
                                 stop_price=stop_price,
                                 close=_close,
                                 stop_exit_price=_stop_exit_price,
                             )
 
-                            # Convert both signals to size (direction-aware), size type, and direction
                             _size, _size_type, _direction = signal_to_size_nb(
                                 position_now=last_position[col],
                                 val_price_now=_price,
@@ -5918,13 +6170,10 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             )
 
                             if not np.isnan(_size):
-                                # Executable stop signal
                                 can_execute = True
                                 if _stop_order_type == OrderType.Limit:
-                                    # Use close to check whether the limit price was hit
                                     _limit_delay = flex_select_nb(limit_delay_, i, col)
                                     if stop_hit_on_close or _stop_exit_price == StopExitPrice.Close or _limit_delay:
-                                        # Cannot place a limit order at the close price and execute right away
                                         can_execute = False
                                     if can_execute:
                                         limit_price, limit_hit_on_open, limit_hit_on_close = check_limit_hit_nb(
@@ -5946,7 +6195,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                             stop_hit_on_open = limit_hit_on_open
                                             stop_hit_on_close = limit_hit_on_close
 
-                                # Save info
                                 exec_stop_set = True
                                 exec_stop_set_on_open = stop_hit_on_open
                                 exec_stop_set_on_close = stop_hit_on_close or _stop_exit_price == StopExitPrice.Close
@@ -5967,7 +6215,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 exec_stop_delta_format = _delta_format
                                 exec_stop_make_limit = not can_execute
 
-                    # Process user signal
                     if any_user_signal:
                         if _i < 0:
                             _price = np.nan
@@ -5977,7 +6224,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         else:
                             _accumulate = flex_select_nb(accumulate_, _i, col)
                             if is_long_entry or is_short_entry:
-                                # Resolve any single-direction conflicts
                                 _upon_long_conflict = flex_select_nb(upon_long_conflict_, _i, col)
                                 is_long_entry, is_long_exit = resolve_signal_conflict_nb(
                                     position_now=last_position[col],
@@ -5995,7 +6241,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     conflict_mode=_upon_short_conflict,
                                 )
 
-                                # Resolve any multi-direction conflicts
                                 _upon_dir_conflict = flex_select_nb(upon_dir_conflict_, _i, col)
                                 is_long_entry, is_short_entry = resolve_dir_conflict_nb(
                                     position_now=last_position[col],
@@ -6004,7 +6249,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     upon_dir_conflict=_upon_dir_conflict,
                                 )
 
-                                # Resolve an opposite entry
                                 _upon_opposite_entry = flex_select_nb(upon_opposite_entry_, _i, col)
                                 (
                                     is_long_entry,
@@ -6022,10 +6266,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     accumulate=_accumulate,
                                 )
 
-                            # Resolve the price
                             _price = flex_select_nb(price_, _i, col)
 
-                            # Convert both signals to size (direction-aware), size type, and direction
                             _val_price = flex_select_nb(val_price_, i, col)
                             if np.isinf(_val_price) and _val_price > 0:
                                 if np.isinf(_price) and _price > 0:
@@ -6055,15 +6297,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             else:
                                 user_on_open = True
                         if not np.isnan(_size):
-                            # Executable user signal
                             can_execute = True
                             _order_type = flex_select_nb(order_type_, _i, col)
                             if _order_type == OrderType.Limit:
-                                # Use close to check whether the limit price was hit
                                 _limit_delay = flex_select_nb(limit_delay_, i, col)
                                 can_use_ohlc = False
                                 if user_on_close:
-                                    # Cannot place a limit order at the close price and execute right away
                                     _price = _close
                                     can_execute = False
                                 elif user_on_open and not _limit_delay:
@@ -6095,7 +6334,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         user_on_open = limit_hit_on_open
                                         user_on_close = limit_hit_on_close
 
-                            # Save info
                             exec_user_set = True
                             exec_user_val_price = _val_price
                             exec_user_price = _price
@@ -6112,10 +6350,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         or exec_user_set
                         or ((any_limit_signal or any_stop_signal) and any_user_signal)
                     ):
-                        # Choose the main executable signal
-                        # Priority: limit -> stop -> user
 
-                        # Check whether the main signal comes on open
                         keep_limit = True
                         keep_stop = True
                         execute_limit = False
@@ -6162,7 +6397,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             if execute_user:
                                 exec_user_bar_zone = BarZone.Open
                         if not execute_limit and not execute_stop and not execute_user:
-                            # Check whether the main signal comes in the middle of the bar
                             if exec_limit_set and not exec_limit_set_on_open and keep_limit:
                                 keep_limit = False
                                 keep_stop = False
@@ -6200,7 +6434,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 if execute_user:
                                     exec_user_bar_zone = BarZone.Middle
                             if not execute_limit and not execute_stop and not execute_user:
-                                # Check whether the main signal comes on close
                                 if exec_stop_set_on_close and keep_stop:
                                     keep_limit = False
                                     keep_stop = _ladder
@@ -6231,29 +6464,26 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     if execute_user:
                                         exec_user_bar_zone = BarZone.Close
 
-                        # Process the limit signal
                         if execute_limit:
-                            # Execute the signal
-                            main_info["bar_zone"][col] = exec_limit_bar_zone
-                            main_info["signal_idx"][col] = exec_limit_signal_i
-                            main_info["creation_idx"][col] = exec_limit_creation_i
-                            main_info["idx"][col] = exec_limit_init_i
-                            main_info["val_price"][col] = exec_limit_val_price
-                            main_info["price"][col] = exec_limit_price
-                            main_info["size"][col] = exec_limit_size
-                            main_info["size_type"][col] = exec_limit_size_type
-                            main_info["direction"][col] = exec_limit_direction
-                            main_info["type"][col] = OrderType.Limit
-                            main_info["stop_type"][col] = exec_limit_stop_type
+                            order_info["bar_zone"][col] = exec_limit_bar_zone
+                            order_info["signal_idx"][col] = exec_limit_signal_i
+                            order_info["creation_idx"][col] = exec_limit_creation_i
+                            order_info["idx"][col] = exec_limit_init_i
+                            order_info["val_price"][col] = exec_limit_val_price
+                            order_info["size"][col] = exec_limit_size
+                            order_info["price"][col] = exec_limit_price
+                            order_info["size_type"][col] = exec_limit_size_type
+                            order_info["direction"][col] = exec_limit_direction
+                            order_info["type"][col] = OrderType.Limit
+                            order_info["stop_type"][col] = exec_limit_stop_type
                         if execute_limit or (any_limit_signal and not keep_limit):
-                            # Clear the pending info
                             any_limit_signal = False
 
                             last_limit_info["signal_idx"][col] = -1
                             last_limit_info["creation_idx"][col] = -1
                             last_limit_info["init_idx"][col] = -1
-                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size"][col] = np.nan
+                            last_limit_info["init_price"][col] = np.nan
                             last_limit_info["init_size_type"][col] = -1
                             last_limit_info["init_direction"][col] = -1
                             last_limit_info["init_stop_type"][col] = -1
@@ -6265,9 +6495,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             last_limit_info["reverse"][col] = False
                             last_limit_info["order_price"][col] = np.nan
 
-                        # Process the stop signal
                         if execute_stop:
-                            # Execute the signal
                             if exec_stop_make_limit:
                                 if any_limit_signal:
                                     raise ValueError("Only one active limit signal is allowed at a time")
@@ -6279,8 +6507,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 last_limit_info["signal_idx"][col] = exec_stop_init_i
                                 last_limit_info["creation_idx"][col] = i
                                 last_limit_info["init_idx"][col] = i
-                                last_limit_info["init_price"][col] = exec_stop_price
                                 last_limit_info["init_size"][col] = exec_stop_size
+                                last_limit_info["init_price"][col] = exec_stop_price
                                 last_limit_info["init_size_type"][col] = exec_stop_size_type
                                 last_limit_info["init_direction"][col] = exec_stop_direction
                                 last_limit_info["init_stop_type"][col] = exec_stop_stop_type
@@ -6292,28 +6520,27 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 last_limit_info["reverse"][col] = False
                                 last_limit_info["order_price"][col] = _limit_order_price
                             else:
-                                main_info["bar_zone"][col] = exec_stop_bar_zone
-                                main_info["signal_idx"][col] = exec_stop_init_i
-                                main_info["creation_idx"][col] = i
-                                main_info["idx"][col] = i
-                                main_info["val_price"][col] = exec_stop_val_price
-                                main_info["price"][col] = exec_stop_price
-                                main_info["size"][col] = exec_stop_size
-                                main_info["size_type"][col] = exec_stop_size_type
-                                main_info["direction"][col] = exec_stop_direction
-                                main_info["type"][col] = exec_stop_type
-                                main_info["stop_type"][col] = exec_stop_stop_type
+                                order_info["bar_zone"][col] = exec_stop_bar_zone
+                                order_info["signal_idx"][col] = exec_stop_init_i
+                                order_info["creation_idx"][col] = i
+                                order_info["idx"][col] = i
+                                order_info["val_price"][col] = exec_stop_val_price
+                                order_info["size"][col] = exec_stop_size
+                                order_info["price"][col] = exec_stop_price
+                                order_info["size_type"][col] = exec_stop_size_type
+                                order_info["direction"][col] = exec_stop_direction
+                                order_info["type"][col] = exec_stop_type
+                                order_info["stop_type"][col] = exec_stop_stop_type
 
                         if any_stop_signal and not keep_stop:
-                            # Clear the pending info
                             any_stop_signal = False
 
                             last_sl_info["init_idx"][col] = -1
                             last_sl_info["init_price"][col] = np.nan
                             last_sl_info["init_position"][col] = np.nan
                             last_sl_info["stop"][col] = np.nan
-                            last_sl_info["exit_price"][col] = -1
                             last_sl_info["exit_size"][col] = np.nan
+                            last_sl_info["exit_price"][col] = -1
                             last_sl_info["exit_size_type"][col] = -1
                             last_sl_info["exit_type"][col] = -1
                             last_sl_info["order_type"][col] = -1
@@ -6345,8 +6572,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             last_tp_info["init_price"][col] = np.nan
                             last_tp_info["init_position"][col] = np.nan
                             last_tp_info["stop"][col] = np.nan
-                            last_tp_info["exit_price"][col] = -1
                             last_tp_info["exit_size"][col] = np.nan
+                            last_tp_info["exit_price"][col] = -1
                             last_tp_info["exit_size_type"][col] = -1
                             last_tp_info["exit_type"][col] = -1
                             last_tp_info["order_type"][col] = -1
@@ -6374,8 +6601,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             last_dt_info["init_idx"][col] = -1
                             last_dt_info["init_position"][col] = np.nan
                             last_dt_info["stop"][col] = -1
-                            last_dt_info["exit_price"][col] = -1
                             last_dt_info["exit_size"][col] = np.nan
+                            last_dt_info["exit_price"][col] = -1
                             last_dt_info["exit_size_type"][col] = -1
                             last_dt_info["exit_type"][col] = -1
                             last_dt_info["order_type"][col] = -1
@@ -6386,9 +6613,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             last_dt_info["step"][col] = -1
                             last_dt_info["step_idx"][col] = -1
 
-                        # Process the user signal
                         if execute_user:
-                            # Execute the signal
                             if _i >= 0:
                                 if exec_user_make_limit:
                                     if any_limit_signal:
@@ -6404,8 +6629,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_limit_info["signal_idx"][col] = _i
                                     last_limit_info["creation_idx"][col] = i
                                     last_limit_info["init_idx"][col] = _i
-                                    last_limit_info["init_price"][col] = exec_user_price
                                     last_limit_info["init_size"][col] = exec_user_size
+                                    last_limit_info["init_price"][col] = exec_user_price
                                     last_limit_info["init_size_type"][col] = exec_user_size_type
                                     last_limit_info["init_direction"][col] = exec_user_direction
                                     last_limit_info["init_stop_type"][col] = -1
@@ -6417,17 +6642,114 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_limit_info["reverse"][col] = _limit_reverse
                                     last_limit_info["order_price"][col] = _limit_order_price
                                 else:
-                                    main_info["bar_zone"][col] = exec_user_bar_zone
-                                    main_info["signal_idx"][col] = _i
-                                    main_info["creation_idx"][col] = i
-                                    main_info["idx"][col] = _i
-                                    main_info["val_price"][col] = exec_user_val_price
-                                    main_info["price"][col] = exec_user_price
-                                    main_info["size"][col] = exec_user_size
-                                    main_info["size_type"][col] = exec_user_size_type
-                                    main_info["direction"][col] = exec_user_direction
-                                    main_info["type"][col] = exec_user_type
-                                    main_info["stop_type"][col] = exec_user_stop_type
+                                    order_info["bar_zone"][col] = exec_user_bar_zone
+                                    order_info["signal_idx"][col] = _i
+                                    order_info["creation_idx"][col] = i
+                                    order_info["idx"][col] = _i
+                                    order_info["val_price"][col] = exec_user_val_price
+                                    order_info["size"][col] = exec_user_size
+                                    order_info["price"][col] = exec_user_price
+                                    order_info["size_type"][col] = exec_user_size_type
+                                    order_info["direction"][col] = exec_user_direction
+                                    order_info["type"][col] = exec_user_type
+                                    order_info["stop_type"][col] = exec_user_stop_type
+
+                for col in range(from_col, to_col):
+                    _i = order_info["idx"][col]
+
+                    order_info["fees"][col] = flex_select_nb(fees, _i, col)
+                    order_info["fixed_fees"][col] = flex_select_nb(fixed_fees_, _i, col)
+                    order_info["slippage"][col] = float(flex_select_nb(slippage_, _i, col))
+                    order_info["min_size"][col] = flex_select_nb(min_size_, _i, col)
+                    order_info["max_size"][col] = flex_select_nb(max_size_, _i, col)
+                    order_info["size_granularity"][col] = flex_select_nb(size_granularity_, _i, col)
+                    order_info["cash_limit"][col] = flex_select_nb(cash_limit_, _i, col)
+                    order_info["leverage"][col] = flex_select_nb(leverage_, _i, col)
+                    order_info["leverage_mode"][col] = flex_select_nb(leverage_mode_, _i, col)
+                    order_info["reject_prob"][col] = flex_select_nb(reject_prob_, _i, col)
+                    order_info["price_area_vio_mode"][col] = flex_select_nb(price_area_vio_mode_, _i, col)
+                    order_info["allow_partial"][col] = flex_select_nb(allow_partial_, _i, col)
+                    order_info["raise_reject"][col] = flex_select_nb(raise_reject_, _i, col)
+                    order_info["log"][col] = flex_select_nb(log_, _i, col)
+
+                    if order_info["type"][col] == OrderType.Limit:
+                        order_info["slippage"][col] = 0.0
+                    _min_size = flex_select_nb(min_size_, _i, col)
+                    _max_size = flex_select_nb(max_size_, _i, col)
+                    _size_type = flex_select_nb(size_type_, _i, col)
+                    if _size_type != order_info["size_type"][col]:
+                        if not np.isnan(_min_size):
+                            order_info["min_size"][col], _ = resolve_size_nb(
+                                size=_min_size,
+                                size_type=_size_type,
+                                position=last_position[col],
+                                val_price=last_val_price[col],
+                                value=last_value[group] if cash_sharing else last_value[col],
+                                target_size_type=order_info["size_type"][col],
+                                as_requirement=True,
+                            )
+                        if not np.isnan(_max_size):
+                            order_info["max_size"][col], _ = resolve_size_nb(
+                                size=_max_size,
+                                size_type=_size_type,
+                                position=last_position[col],
+                                val_price=last_val_price[col],
+                                value=last_value[group] if cash_sharing else last_value[col],
+                                target_size_type=order_info["size_type"][col],
+                                as_requirement=True,
+                            )
+
+                pre_order_segment_ctx = FSPreOrderSegmentContext(
+                    target_shape=target_shape,
+                    group_lens=group_lens,
+                    cash_sharing=cash_sharing,
+                    index=index,
+                    freq=freq,
+                    open=open_,
+                    high=high_,
+                    low=low_,
+                    close=close_,
+                    init_cash=init_cash_,
+                    init_position=init_position_,
+                    init_price=init_price_,
+                    order_records=order_records,
+                    order_counts=order_counts,
+                    log_records=log_records,
+                    log_counts=log_counts,
+                    track_cash_deposits=track_cash_deposits,
+                    cash_deposits_out=cash_deposits_out,
+                    track_cash_earnings=track_cash_earnings,
+                    cash_earnings_out=cash_earnings_out,
+                    in_outputs=in_outputs,
+                    last_cash=last_cash,
+                    last_position=last_position,
+                    last_debt=last_debt,
+                    last_locked_cash=last_locked_cash,
+                    last_free_cash=last_free_cash,
+                    last_val_price=last_val_price,
+                    last_value=last_value,
+                    last_return=last_return,
+                    last_pos_info=last_pos_info,
+                    last_limit_info=last_limit_info,
+                    last_sl_info=last_sl_info,
+                    last_tsl_info=last_tsl_info,
+                    last_tp_info=last_tp_info,
+                    last_td_info=last_td_info,
+                    last_dt_info=last_dt_info,
+                    sim_start=sim_start_,
+                    sim_end=sim_end_,
+                    group=group,
+                    group_len=group_len,
+                    from_col=from_col,
+                    to_col=to_col,
+                    i=i,
+                    order_info=order_info,
+                )
+                pre_order_segment_out = pre_order_segment_func_nb(
+                    pre_order_segment_ctx, 
+                    *pre_segment_out, 
+                    *pre_order_segment_args,
+                )
 
                 skip = skip_empty
                 if skip:
@@ -6435,32 +6757,28 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         if flex_select_nb(log_, i, col):
                             skip = False
                             break
-                        if not np.isnan(main_info["size"][col]):
+                        if not np.isnan(order_info["size"][col]):
                             skip = False
                             break
 
                 if not skip:
-                    # Check bar zone and update valuation price
                     bar_zone = -1
                     same_bar_zone = True
-                    same_timing = True
                     for ci in range(group_len):
                         col = from_col + ci
-                        if np.isnan(main_info["size"][col]):
+                        temp_order_value[col] = 0.0
+                        temp_bar_zone[col] = -1
+                        if np.isnan(order_info["size"][col]):
                             continue
                         if bar_zone == -1:
-                            bar_zone = main_info["bar_zone"][col]
-                        if main_info["bar_zone"][col] != bar_zone:
+                            bar_zone = order_info["bar_zone"][col]
+                        if order_info["bar_zone"][col] != bar_zone:
                             same_bar_zone = False
-                            same_timing = False
-                        if main_info["bar_zone"][col] == BarZone.Middle:
-                            same_timing = False
-                        _val_price = main_info["val_price"][col]
+                        _val_price = order_info["val_price"][col]
                         if not np.isnan(_val_price) or not ffill_val_price:
                             last_val_price[col] = _val_price
 
                     if cash_sharing:
-                        # Dynamically sort by order value -> selling comes first to release funds early
                         if call_seq is None:
                             for ci in range(group_len):
                                 temp_call_seq[ci] = ci
@@ -6468,16 +6786,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         else:
                             call_seq_now = call_seq[i, from_col:to_col]
                         if auto_call_seq:
-                            # Sort by order value
-                            if not same_timing:
-                                raise ValueError("Cannot sort orders by value if they are executed at different times")
                             for ci in range(group_len):
                                 if call_seq_now[ci] != ci:
                                     raise ValueError("Call sequence must follow CallSeqType.Default")
                                 col = from_col + ci
-                                if np.isnan(main_info["size"][col]):
+                                if np.isnan(order_info["size"][col]):
                                     continue
-                                # Approximate order value
                                 exec_state = ExecState(
                                     cash=last_cash[group] if cash_sharing else last_cash[col],
                                     position=last_position[col],
@@ -6487,24 +6801,31 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     val_price=last_val_price[col],
                                     value=last_value[group] if cash_sharing else last_value[col],
                                 )
-                                temp_sort_by[ci] = approx_order_value_nb(
+                                temp_order_value[ci] = approx_order_value_nb(
                                     exec_state=exec_state,
-                                    size=main_info["size"][col],
-                                    size_type=main_info["size_type"][col],
-                                    direction=main_info["direction"][col],
+                                    size=order_info["size"][col],
+                                    size_type=order_info["size_type"][col],
+                                    direction=order_info["direction"][col],
                                 )
-                            insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
+                                temp_bar_zone[ci] = order_info["bar_zone"][col]
+                            if same_bar_zone:
+                                insert_argsort_nb(temp_order_value[:group_len], call_seq_now)
+                            else:
+                                insert_lex_argsort_nb(
+                                    temp_bar_zone[:group_len],
+                                    temp_order_value[:group_len],
+                                    call_seq_now,
+                                )
                         else:
                             if not same_bar_zone:
-                                # Sort by bar zone
                                 for ci in range(group_len):
                                     if call_seq_now[ci] != ci:
                                         raise ValueError("Call sequence must follow CallSeqType.Default")
                                     col = from_col + ci
-                                    if np.isnan(main_info["size"][col]):
+                                    if np.isnan(order_info["size"][col]):
                                         continue
-                                    temp_sort_by[ci] = main_info["bar_zone"][col]
-                                insert_argsort_nb(temp_sort_by[:group_len], call_seq_now)
+                                    temp_bar_zone[ci] = order_info["bar_zone"][col]
+                                insert_argsort_nb(temp_bar_zone[:group_len], call_seq_now)
 
                     for k in range(group_len):
                         if cash_sharing:
@@ -6514,10 +6835,9 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         else:
                             ci = k
                         col = from_col + ci
-                        if skip_empty and np.isnan(main_info["size"][col]):  # shortcut
+                        if skip_empty and np.isnan(order_info["size"][col]):  # shortcut
                             continue
 
-                        # Get current values per column
                         position_before = position_now = last_position[col]
                         debt_before = debt_now = last_debt[col]
                         locked_cash_before = locked_cash_now = last_locked_cash[col]
@@ -6529,57 +6849,27 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         value_before = value_now = last_value[group] if cash_sharing else last_value[col]
                         return_before = return_now = last_return[group] if cash_sharing else last_return[col]
 
-                        # Generate the next order
-                        _i = main_info["idx"][col]
-                        if main_info["type"][col] == OrderType.Limit:
-                            _slippage = 0.0
-                        else:
-                            _slippage = float(flex_select_nb(slippage_, _i, col))
-                        _min_size = flex_select_nb(min_size_, _i, col)
-                        _max_size = flex_select_nb(max_size_, _i, col)
-                        _size_type = flex_select_nb(size_type_, _i, col)
-                        if _size_type != main_info["size_type"][col]:
-                            if not np.isnan(_min_size):
-                                _min_size, _ = resolve_size_nb(
-                                    size=_min_size,
-                                    size_type=_size_type,
-                                    position=position_now,
-                                    val_price=val_price_now,
-                                    value=value_now,
-                                    target_size_type=main_info["size_type"][col],
-                                    as_requirement=True,
-                                )
-                            if not np.isnan(_max_size):
-                                _max_size, _ = resolve_size_nb(
-                                    size=_max_size,
-                                    size_type=_size_type,
-                                    position=position_now,
-                                    val_price=val_price_now,
-                                    value=value_now,
-                                    target_size_type=main_info["size_type"][col],
-                                    as_requirement=True,
-                                )
                         order = order_nb(
-                            size=main_info["size"][col],
-                            price=main_info["price"][col],
-                            size_type=main_info["size_type"][col],
-                            direction=main_info["direction"][col],
-                            fees=flex_select_nb(fees_, _i, col),
-                            fixed_fees=flex_select_nb(fixed_fees_, _i, col),
-                            slippage=_slippage,
-                            min_size=_min_size,
-                            max_size=_max_size,
-                            size_granularity=flex_select_nb(size_granularity_, _i, col),
-                            leverage=flex_select_nb(leverage_, _i, col),
-                            leverage_mode=flex_select_nb(leverage_mode_, _i, col),
-                            reject_prob=flex_select_nb(reject_prob_, _i, col),
-                            price_area_vio_mode=flex_select_nb(price_area_vio_mode_, _i, col),
-                            allow_partial=flex_select_nb(allow_partial_, _i, col),
-                            raise_reject=flex_select_nb(raise_reject_, _i, col),
-                            log=flex_select_nb(log_, _i, col),
+                            size=order_info["size"][col],
+                            price=order_info["price"][col],
+                            size_type=order_info["size_type"][col],
+                            direction=order_info["direction"][col],
+                            fees=order_info["fees"][col],
+                            fixed_fees=order_info["fixed_fees"][col],
+                            slippage=order_info["slippage"][col],
+                            min_size=order_info["min_size"][col],
+                            max_size=order_info["max_size"][col],
+                            size_granularity=order_info["size_granularity"][col],
+                            cash_limit=order_info["cash_limit"][col],
+                            leverage=order_info["leverage"][col],
+                            leverage_mode=order_info["leverage_mode"][col],
+                            reject_prob=order_info["reject_prob"][col],
+                            price_area_vio_mode=order_info["price_area_vio_mode"][col],
+                            allow_partial=order_info["allow_partial"][col],
+                            raise_reject=order_info["raise_reject"][col],
+                            log=order_info["log"][col],
                         )
 
-                        # Process the order
                         price_area = PriceArea(
                             open=flex_select_nb(open_, i, col),
                             high=flex_select_nb(high_, i, col),
@@ -6609,14 +6899,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             log_counts=log_counts,
                         )
 
-                        # Append more order information
                         if order_result.status == OrderStatus.Filled and order_counts[col] >= 1:
-                            order_records["signal_idx"][order_counts[col] - 1, col] = main_info["signal_idx"][col]
-                            order_records["creation_idx"][order_counts[col] - 1, col] = main_info["creation_idx"][col]
-                            order_records["type"][order_counts[col] - 1, col] = main_info["type"][col]
-                            order_records["stop_type"][order_counts[col] - 1, col] = main_info["stop_type"][col]
+                            order_records["signal_idx"][order_counts[col] - 1, col] = order_info["signal_idx"][col]
+                            order_records["creation_idx"][order_counts[col] - 1, col] = order_info["creation_idx"][col]
+                            order_records["type"][order_counts[col] - 1, col] = order_info["type"][col]
+                            order_records["stop_type"][order_counts[col] - 1, col] = order_info["stop_type"][col]
 
-                        # Update execution state
                         cash_now = new_exec_state.cash
                         position_now = new_exec_state.position
                         debt_now = new_exec_state.debt
@@ -6625,7 +6913,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         val_price_now = new_exec_state.val_price
                         value_now = new_exec_state.value
 
-                        # Update position record
                         if fill_pos_info:
                             if order_result.status == OrderStatus.Filled:
                                 if order_counts[col] > 0:
@@ -6643,15 +6930,13 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 )
 
                         if use_stops:
-                            # Update stop price
                             if position_now == 0:
-                                # Not in position anymore -> clear stops (irrespective of order success)
                                 last_sl_info["init_idx"][col] = -1
                                 last_sl_info["init_price"][col] = np.nan
                                 last_sl_info["init_position"][col] = np.nan
                                 last_sl_info["stop"][col] = np.nan
-                                last_sl_info["exit_price"][col] = -1
                                 last_sl_info["exit_size"][col] = np.nan
+                                last_sl_info["exit_price"][col] = -1
                                 last_sl_info["exit_size_type"][col] = -1
                                 last_sl_info["exit_type"][col] = -1
                                 last_sl_info["order_type"][col] = -1
@@ -6668,8 +6953,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 last_tsl_info["peak_price"][col] = np.nan
                                 last_tsl_info["stop"][col] = np.nan
                                 last_tsl_info["th"][col] = np.nan
-                                last_tsl_info["exit_price"][col] = -1
                                 last_tsl_info["exit_size"][col] = np.nan
+                                last_tsl_info["exit_price"][col] = -1
                                 last_tsl_info["exit_size_type"][col] = -1
                                 last_tsl_info["exit_type"][col] = -1
                                 last_tsl_info["order_type"][col] = -1
@@ -6683,8 +6968,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 last_tp_info["init_price"][col] = np.nan
                                 last_tp_info["init_position"][col] = np.nan
                                 last_tp_info["stop"][col] = np.nan
-                                last_tp_info["exit_price"][col] = -1
                                 last_tp_info["exit_size"][col] = np.nan
+                                last_tp_info["exit_price"][col] = -1
                                 last_tp_info["exit_size_type"][col] = -1
                                 last_tp_info["exit_type"][col] = -1
                                 last_tp_info["order_type"][col] = -1
@@ -6697,8 +6982,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 last_td_info["init_idx"][col] = -1
                                 last_td_info["init_position"][col] = np.nan
                                 last_td_info["stop"][col] = -1
-                                last_td_info["exit_price"][col] = -1
                                 last_td_info["exit_size"][col] = np.nan
+                                last_td_info["exit_price"][col] = -1
                                 last_td_info["exit_size_type"][col] = -1
                                 last_td_info["exit_type"][col] = -1
                                 last_td_info["order_type"][col] = -1
@@ -6712,8 +6997,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 last_dt_info["init_idx"][col] = -1
                                 last_dt_info["init_position"][col] = np.nan
                                 last_dt_info["stop"][col] = -1
-                                last_dt_info["exit_price"][col] = -1
                                 last_dt_info["exit_size"][col] = np.nan
+                                last_dt_info["exit_price"][col] = -1
                                 last_dt_info["exit_size_type"][col] = -1
                                 last_dt_info["exit_type"][col] = -1
                                 last_dt_info["order_type"][col] = -1
@@ -6724,7 +7009,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 last_dt_info["step"][col] = -1
                                 last_dt_info["step_idx"][col] = -1
                             else:
-                                if main_info["stop_type"][col] == StopType.SL:
+                                if order_info["stop_type"][col] == StopType.SL:
                                     if last_sl_info["ladder"][col]:
                                         step = last_sl_info["step"][col] + 1
                                         last_sl_info["exit_size"][col] = np.nan
@@ -6743,8 +7028,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                             last_sl_info["step"][col] = step
                                             last_sl_info["step_idx"][col] = i
                                 elif (
-                                    main_info["stop_type"][col] == StopType.TSL
-                                    or main_info["stop_type"][col] == StopType.TTP
+                                    order_info["stop_type"][col] == StopType.TSL
+                                    or order_info["stop_type"][col] == StopType.TTP
                                 ):
                                     if last_tsl_info["ladder"][col]:
                                         step = last_tsl_info["step"][col] + 1
@@ -6765,7 +7050,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                             last_tsl_info["stop"][col] = np.nan
                                             last_tsl_info["step"][col] = step
                                             last_tsl_info["step_idx"][col] = i
-                                elif main_info["stop_type"][col] == StopType.TP:
+                                elif order_info["stop_type"][col] == StopType.TP:
                                     if last_tp_info["ladder"][col]:
                                         step = last_tp_info["step"][col] + 1
                                         last_tp_info["step"][col] = step
@@ -6785,7 +7070,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                             last_tp_info["stop"][col] = np.nan
                                             last_tp_info["step"][col] = step
                                             last_tp_info["step_idx"][col] = i
-                                elif main_info["stop_type"][col] == StopType.TD:
+                                elif order_info["stop_type"][col] == StopType.TD:
                                     if last_td_info["ladder"][col]:
                                         step = last_td_info["step"][col] + 1
                                         last_td_info["step"][col] = step
@@ -6805,7 +7090,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                             last_td_info["stop"][col] = -1
                                             last_td_info["step"][col] = step
                                             last_td_info["step_idx"][col] = i
-                                elif main_info["stop_type"][col] == StopType.DT:
+                                elif order_info["stop_type"][col] == StopType.DT:
                                     if last_dt_info["ladder"][col]:
                                         step = last_dt_info["step"][col] + 1
                                         last_dt_info["step"][col] = step
@@ -6827,8 +7112,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                             last_dt_info["step_idx"][col] = i
 
                             if order_result.status == OrderStatus.Filled and position_now != 0:
-                                # Order filled and in position -> possibly set stops
-                                _price = main_info["price"][col]
+                                _price = order_info["price"][col]
                                 _stop_entry_price = flex_select_nb(stop_entry_price_, i, col)
                                 if _stop_entry_price < 0:
                                     if _stop_entry_price == StopEntryPrice.ValPrice:
@@ -6879,13 +7163,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
                                 tsl_updated = False
                                 if exec_state.position == 0 or np.sign(position_now) != np.sign(exec_state.position):
-                                    # Position opened/reversed -> set stops
                                     last_sl_info["init_idx"][col] = i
                                     last_sl_info["init_price"][col] = new_init_price
                                     last_sl_info["init_position"][col] = position_now
                                     last_sl_info["stop"][col] = _sl_stop
-                                    last_sl_info["exit_price"][col] = _stop_exit_price
                                     last_sl_info["exit_size"][col] = np.nan
+                                    last_sl_info["exit_price"][col] = _stop_exit_price
                                     last_sl_info["exit_size_type"][col] = -1
                                     last_sl_info["exit_type"][col] = _stop_exit_type
                                     last_sl_info["order_type"][col] = _stop_order_type
@@ -6903,8 +7186,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_tsl_info["peak_price"][col] = new_init_price
                                     last_tsl_info["stop"][col] = _tsl_stop
                                     last_tsl_info["th"][col] = _tsl_th
-                                    last_tsl_info["exit_price"][col] = _stop_exit_price
                                     last_tsl_info["exit_size"][col] = np.nan
+                                    last_tsl_info["exit_price"][col] = _stop_exit_price
                                     last_tsl_info["exit_size_type"][col] = -1
                                     last_tsl_info["exit_type"][col] = _stop_exit_type
                                     last_tsl_info["order_type"][col] = _stop_order_type
@@ -6918,8 +7201,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_tp_info["init_price"][col] = new_init_price
                                     last_tp_info["init_position"][col] = position_now
                                     last_tp_info["stop"][col] = _tp_stop
-                                    last_tp_info["exit_price"][col] = _stop_exit_price
                                     last_tp_info["exit_size"][col] = np.nan
+                                    last_tp_info["exit_price"][col] = _stop_exit_price
                                     last_tp_info["exit_size_type"][col] = -1
                                     last_tp_info["exit_type"][col] = _stop_exit_type
                                     last_tp_info["order_type"][col] = _stop_order_type
@@ -6932,8 +7215,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_td_info["init_idx"][col] = i
                                     last_td_info["init_position"][col] = position_now
                                     last_td_info["stop"][col] = _td_stop
-                                    last_td_info["exit_price"][col] = _stop_exit_price
                                     last_td_info["exit_size"][col] = np.nan
+                                    last_td_info["exit_price"][col] = _stop_exit_price
                                     last_td_info["exit_size_type"][col] = -1
                                     last_td_info["exit_type"][col] = _stop_exit_type
                                     last_td_info["order_type"][col] = _stop_order_type
@@ -6947,8 +7230,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_dt_info["init_idx"][col] = i
                                     last_dt_info["init_position"][col] = position_now
                                     last_dt_info["stop"][col] = _dt_stop
-                                    last_dt_info["exit_price"][col] = _stop_exit_price
                                     last_dt_info["exit_size"][col] = np.nan
+                                    last_dt_info["exit_price"][col] = _stop_exit_price
                                     last_dt_info["exit_size_type"][col] = -1
                                     last_dt_info["exit_type"][col] = _stop_exit_type
                                     last_dt_info["order_type"][col] = _stop_order_type
@@ -6960,15 +7243,14 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     last_dt_info["step_idx"][col] = i
 
                                 elif abs(position_now) > abs(exec_state.position):
-                                    # Position increased -> keep/override stops
                                     _upon_stop_update = flex_select_nb(upon_stop_update_, i, col)
                                     if should_update_stop_nb(new_stop=_sl_stop, upon_stop_update=_upon_stop_update):
                                         last_sl_info["init_idx"][col] = i
                                         last_sl_info["init_price"][col] = new_init_price
                                         last_sl_info["init_position"][col] = position_now
                                         last_sl_info["stop"][col] = _sl_stop
-                                        last_sl_info["exit_price"][col] = _stop_exit_price
                                         last_sl_info["exit_size"][col] = np.nan
+                                        last_sl_info["exit_price"][col] = _stop_exit_price
                                         last_sl_info["exit_size_type"][col] = -1
                                         last_sl_info["exit_type"][col] = _stop_exit_type
                                         last_sl_info["order_type"][col] = _stop_order_type
@@ -6986,8 +7268,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         last_tsl_info["peak_price"][col] = new_init_price
                                         last_tsl_info["stop"][col] = _tsl_stop
                                         last_tsl_info["th"][col] = _tsl_th
-                                        last_tsl_info["exit_price"][col] = _stop_exit_price
                                         last_tsl_info["exit_size"][col] = np.nan
+                                        last_tsl_info["exit_price"][col] = _stop_exit_price
                                         last_tsl_info["exit_size_type"][col] = -1
                                         last_tsl_info["exit_type"][col] = _stop_exit_type
                                         last_tsl_info["order_type"][col] = _stop_order_type
@@ -7001,8 +7283,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         last_tp_info["init_price"][col] = new_init_price
                                         last_tp_info["init_position"][col] = position_now
                                         last_tp_info["stop"][col] = _tp_stop
-                                        last_tp_info["exit_price"][col] = _stop_exit_price
                                         last_tp_info["exit_size"][col] = np.nan
+                                        last_tp_info["exit_price"][col] = _stop_exit_price
                                         last_tp_info["exit_size_type"][col] = -1
                                         last_tp_info["exit_type"][col] = _stop_exit_type
                                         last_tp_info["order_type"][col] = _stop_order_type
@@ -7017,8 +7299,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         last_td_info["init_idx"][col] = i
                                         last_td_info["init_position"][col] = position_now
                                         last_td_info["stop"][col] = _td_stop
-                                        last_td_info["exit_price"][col] = _stop_exit_price
                                         last_td_info["exit_size"][col] = np.nan
+                                        last_td_info["exit_price"][col] = _stop_exit_price
                                         last_td_info["exit_size_type"][col] = -1
                                         last_td_info["exit_type"][col] = _stop_exit_type
                                         last_td_info["order_type"][col] = _stop_order_type
@@ -7034,8 +7316,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         last_dt_info["init_idx"][col] = i
                                         last_dt_info["init_position"][col] = position_now
                                         last_dt_info["stop"][col] = _dt_stop
-                                        last_dt_info["exit_price"][col] = _stop_exit_price
                                         last_dt_info["exit_size"][col] = np.nan
+                                        last_dt_info["exit_price"][col] = _stop_exit_price
                                         last_dt_info["exit_size_type"][col] = -1
                                         last_dt_info["exit_type"][col] = _stop_exit_type
                                         last_dt_info["order_type"][col] = _stop_order_type
@@ -7047,7 +7329,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         last_dt_info["step_idx"][col] = i
 
                                 if tsl_updated:
-                                    # Update high/low price
                                     if can_use_ohlc:
                                         _open = flex_select_nb(open_, i, col)
                                         _high = flex_select_nb(high_, i, col)
@@ -7084,7 +7365,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                                 last_tsl_info["peak_idx"][col] = i
                                                 last_tsl_info["peak_price"][col] = _low
 
-                        # Now becomes last
                         last_position[col] = position_now
                         last_debt[col] = debt_now
                         last_locked_cash[col] = locked_cash_now
@@ -7101,8 +7381,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             last_value[col] = value_now
                             last_return[col] = return_now
 
-                        # Call post-signal function
-                        post_signal_ctx = PostSignalContext(
+                        post_order_ctx = FSPostOrderContext(
                             target_shape=target_shape,
                             group_lens=group_lens,
                             cash_sharing=cash_sharing,
@@ -7156,10 +7435,9 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             value_before=value_before,
                             order_result=order_result,
                         )
-                        post_signal_func_nb(post_signal_ctx, *post_signal_args)
+                        post_order_func_nb(post_order_ctx, *pre_order_segment_out, *post_order_args)
 
             for col in range(from_col, to_col):
-                # Update valuation price using current close
                 _close = flex_select_nb(close_, i, col)
                 if not np.isnan(_close) or not ffill_val_price:
                     last_val_price[col] = _close
@@ -7176,7 +7454,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                 if track_cash_earnings:
                     cash_earnings_out[i, col] += _cash_earnings
 
-            # Update value and return
             if cash_sharing:
                 group_value = last_cash[group]
                 for col in range(from_col, to_col):
@@ -7200,13 +7477,11 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     )
                     prev_close_value[col] = last_value[col]
 
-            # Update open position stats
             if fill_pos_info:
                 for col in range(from_col, to_col):
                     update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Call post-segment function
-            post_segment_ctx = SignalSegmentContext(
+            post_segment_ctx = FSSegmentContext(
                 target_shape=target_shape,
                 group_lens=group_lens,
                 cash_sharing=cash_sharing,
@@ -7251,10 +7526,98 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                 to_col=to_col,
                 i=i,
             )
-            post_segment_func_nb(post_segment_ctx, *post_segment_args)
+            post_segment_func_nb(post_segment_ctx, *pre_segment_out, *post_segment_args)
 
             if i >= sim_end_[group] - 1:
                 break
+
+        post_group_ctx = FSGroupContext(
+            target_shape=target_shape,
+            group_lens=group_lens,
+            cash_sharing=cash_sharing,
+            index=index,
+            freq=freq,
+            open=open_,
+            high=high_,
+            low=low_,
+            close=close_,
+            init_cash=init_cash_,
+            init_position=init_position_,
+            init_price=init_price_,
+            order_records=order_records,
+            order_counts=order_counts,
+            log_records=log_records,
+            log_counts=log_counts,
+            track_cash_deposits=track_cash_deposits,
+            cash_deposits_out=cash_deposits_out,
+            track_cash_earnings=track_cash_earnings,
+            cash_earnings_out=cash_earnings_out,
+            in_outputs=in_outputs,
+            last_cash=last_cash,
+            last_position=last_position,
+            last_debt=last_debt,
+            last_locked_cash=last_locked_cash,
+            last_free_cash=last_free_cash,
+            last_val_price=last_val_price,
+            last_value=last_value,
+            last_return=last_return,
+            last_pos_info=last_pos_info,
+            last_limit_info=last_limit_info,
+            last_sl_info=last_sl_info,
+            last_tsl_info=last_tsl_info,
+            last_tp_info=last_tp_info,
+            last_td_info=last_td_info,
+            last_dt_info=last_dt_info,
+            sim_start=sim_start_,
+            sim_end=sim_end_,
+            group=group,
+            group_len=group_len,
+            from_col=from_col,
+            to_col=to_col,
+        )
+        post_group_func_nb(post_group_ctx, *pre_group_out, *post_group_args)
+
+    post_sim_ctx = FSSimulationContext(
+        target_shape=target_shape,
+        group_lens=group_lens,
+        cash_sharing=cash_sharing,
+        index=index,
+        freq=freq,
+        open=open_,
+        high=high_,
+        low=low_,
+        close=close_,
+        init_cash=init_cash_,
+        init_position=init_position_,
+        init_price=init_price_,
+        order_records=order_records,
+        order_counts=order_counts,
+        log_records=log_records,
+        log_counts=log_counts,
+        track_cash_deposits=track_cash_deposits,
+        cash_deposits_out=cash_deposits_out,
+        track_cash_earnings=track_cash_earnings,
+        cash_earnings_out=cash_earnings_out,
+        in_outputs=in_outputs,
+        last_cash=last_cash,
+        last_position=last_position,
+        last_debt=last_debt,
+        last_locked_cash=last_locked_cash,
+        last_free_cash=last_free_cash,
+        last_val_price=last_val_price,
+        last_value=last_value,
+        last_return=last_return,
+        last_pos_info=last_pos_info,
+        last_limit_info=last_limit_info,
+        last_sl_info=last_sl_info,
+        last_tsl_info=last_tsl_info,
+        last_tp_info=last_tp_info,
+        last_td_info=last_td_info,
+        last_dt_info=last_dt_info,
+        sim_start=sim_start_,
+        sim_end=sim_end_,
+    )
+    post_sim_func_nb(post_sim_ctx, *pre_sim_out, *post_sim_args)
 
     sim_start_out, sim_end_out = generic_nb.resolve_ungrouped_sim_range_nb(
         target_shape=target_shape,
@@ -7304,6 +7667,9 @@ def dir_to_ls_signals_nb(
     only to the long arrays; if the direction is `Direction.ShortOnly`, they contribute to the short arrays;
     otherwise, they are allocated as a long entry and a short exit.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         entries (FlexArray2d): 2D array of boolean entry signals.
@@ -7319,9 +7685,6 @@ def dir_to_ls_signals_nb(
             * long exits,
             * short entries,
             * short exits.
-
-    !!! tip
-        This function is parallelizable.
     """
     long_entries_out = np.empty(target_shape, dtype=np.bool_)
     long_exits_out = np.empty(target_shape, dtype=np.bool_)
@@ -7351,11 +7714,11 @@ def dir_to_ls_signals_nb(
 
 
 @register_jitted
-def no_adjust_func_nb(c: SignalContext, *args) -> None:
+def no_adjust_func_nb(c: FSSignalContext, *args) -> None:
     """Placeholder function that performs no adjustments.
 
     Args:
-        c (SignalContext): Signal context.
+        c (FSSignalContext): Signal context.
         *args: Additional positional arguments.
 
     Returns:
@@ -7369,12 +7732,14 @@ def no_adjust_func_nb(c: SignalContext, *args) -> None:
 # % <uncomment>
 # @register_jitted
 # def adjust_func_nb(
-#     c: SignalContext,
+#     c: FSSignalContext,
+#     *args,
 # ) -> None:
 #     """Custom adjustment function.
 #
 #     Args:
-#         c (SignalContext): Signal context.
+#         c (FSSignalContext): Signal context.
+#         *args: Additional positional arguments.
 #
 #     Returns:
 #         None
@@ -7391,10 +7756,10 @@ def no_adjust_func_nb(c: SignalContext, *args) -> None:
 # % blocks["adjust_func_nb"]
 @register_jitted
 def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb", "signal_func_nb")
-    c: SignalContext,
+    c: FSSignalContext,
     direction: int,
     close_at_end: bool,
-    adjust_func_nb: tp.AdjustFunc = no_adjust_func_nb,  # % None
+    adjust_func_nb: tp.FSAdjustFunc = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
     """Generate direction-aware signals based on holding positions.
@@ -7406,14 +7771,14 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
     it returns an exit signal accordingly.
 
     Args:
-        c (SignalContext): Signal context.
+        c (FSSignalContext): Signal context.
         direction (int): Position direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         close_at_end (bool): Flag indicating whether to exit the position at the end of the period.
-        adjust_func_nb (AdjustFunc): Callback function to be called to adjust the context before signal generation.
+        adjust_func_nb (FSAdjustFunc): Callback function to be called to adjust the context before signal generation.
 
-            Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*adjust_args`, and returns nothing.
+            Accepts `vectorbtpro.portfolio.enums.FSSignalContext` and `*adjust_args`, and returns nothing.
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
 
     Returns:
@@ -7445,12 +7810,12 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
 # % blocks["adjust_func_nb"]
 @register_jitted
 def dir_signal_func_nb(  # % line.replace("dir_signal_func_nb", "signal_func_nb")
-    c: SignalContext,
+    c: FSSignalContext,
     entries: tp.FlexArray2d,
     exits: tp.FlexArray2d,
     direction: tp.FlexArray2d,
     from_ago: tp.FlexArray2d,
-    adjust_func_nb: tp.AdjustFunc = no_adjust_func_nb,  # % None
+    adjust_func_nb: tp.FSAdjustFunc = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
     """Generate direction-aware signals by combining entry, exit, and direction arrays.
@@ -7466,16 +7831,16 @@ def dir_signal_func_nb(  # % line.replace("dir_signal_func_nb", "signal_func_nb"
     Before computing the signals, the function calls the adjustment function to update the signal context.
 
     Args:
-        c (SignalContext): Signal context.
+        c (FSSignalContext): Signal context.
         entries (FlexArray2d): 2D array of boolean entry signals.
         exits (FlexArray2d): 2D array of boolean exit signals.
         direction (FlexArray2d): Array indicating the order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         from_ago (FlexArray2d): 2D array used to adjust the time index for signal lookup.
-        adjust_func_nb (AdjustFunc): Callback function to be called to adjust the context before signal generation.
+        adjust_func_nb (FSAdjustFunc): Callback function to be called to adjust the context before signal generation.
 
-            Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*adjust_args`, and returns nothing.
+            Accepts `vectorbtpro.portfolio.enums.FSSignalContext` and `*adjust_args`, and returns nothing.
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
 
     Returns:
@@ -7508,13 +7873,13 @@ def dir_signal_func_nb(  # % line.replace("dir_signal_func_nb", "signal_func_nb"
 # % blocks["adjust_func_nb"]
 @register_jitted
 def ls_signal_func_nb(  # % line.replace("ls_signal_func_nb", "signal_func_nb")
-    c: SignalContext,
+    c: FSSignalContext,
     long_entries: tp.FlexArray2d,
     long_exits: tp.FlexArray2d,
     short_entries: tp.FlexArray2d,
     short_exits: tp.FlexArray2d,
     from_ago: tp.FlexArray2d,
-    adjust_func_nb: tp.AdjustFunc = no_adjust_func_nb,  # % None
+    adjust_func_nb: tp.FSAdjustFunc = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
     """Generate direction-aware signals from pre-computed long and short signal arrays.
@@ -7525,15 +7890,15 @@ def ls_signal_func_nb(  # % line.replace("ls_signal_func_nb", "signal_func_nb")
     prior to retrieving the signal.
 
     Args:
-        c (SignalContext): Signal context.
+        c (FSSignalContext): Signal context.
         long_entries (FlexArray2d): 2D array of boolean long entry signals.
         long_exits (FlexArray2d): 2D array of boolean long exit signals.
         short_entries (FlexArray2d): 2D array of boolean short entry signals.
         short_exits (FlexArray2d): 2D array of boolean short exit signals.
         from_ago (FlexArray2d): 2D array used as a time offset for signal selection.
-        adjust_func_nb (AdjustFunc): Callback function to be called to adjust the context before signal generation.
+        adjust_func_nb (FSAdjustFunc): Callback function to be called to adjust the context before signal generation.
 
-            Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*adjust_args`, and returns nothing.
+            Accepts `vectorbtpro.portfolio.enums.FSSignalContext` and `*adjust_args`, and returns nothing.
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
 
     Returns:
@@ -7563,7 +7928,7 @@ def ls_signal_func_nb(  # % line.replace("ls_signal_func_nb", "signal_func_nb")
 # % blocks["adjust_func_nb"]
 @register_jitted
 def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func_nb")
-    c: SignalContext,
+    c: FSSignalContext,
     size: tp.FlexArray2d,
     price: tp.FlexArray2d,
     size_type: tp.FlexArray2d,
@@ -7572,7 +7937,7 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
     max_size: tp.FlexArray2d,
     val_price: tp.FlexArray2d,
     from_ago: tp.FlexArray2d,
-    adjust_func_nb: tp.AdjustFunc = no_adjust_func_nb,  # % None
+    adjust_func_nb: tp.FSAdjustFunc = no_adjust_func_nb,  # % None
     adjust_args: tp.Args = (),
 ) -> tp.Tuple[bool, bool, bool, bool]:
     """Signal processing function that converts orders into direction-aware signals.
@@ -7581,7 +7946,7 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
     accumulation is enabled.
 
     Args:
-        c (SignalContext): Signal context.
+        c (FSSignalContext): Signal context.
         size (FlexArray2d): Array of order sizes.
         price (FlexArray2d): 2D array of order prices.
         size_type (FlexArray2d): 2D array representing the order size types.
@@ -7594,9 +7959,9 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
         max_size (FlexArray2d): 2D array of maximum order sizes.
         val_price (FlexArray2d): 2D array of valuation prices with special handling for infinity.
         from_ago (FlexArray2d): 2D array determining the offset index for fetching order parameters.
-        adjust_func_nb (AdjustFunc): Callback function to be called to adjust the context before signal generation.
+        adjust_func_nb (FSAdjustFunc): Callback function to be called to adjust the context before signal generation.
 
-            Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*adjust_args`, and returns nothing.
+            Accepts `vectorbtpro.portfolio.enums.FSSignalContext` and `*adjust_args`, and returns nothing.
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
 
     Returns:
@@ -7690,7 +8055,7 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
 # % blocks["post_segment_func_nb"]
 @register_jitted
 def save_post_segment_func_nb(  # % line.replace("save_post_segment_func_nb", "post_segment_func_nb")
-    c: SignalSegmentContext,
+    c: FSSegmentContext,
     save_state: bool = True,
     save_value: bool = True,
     save_returns: bool = True,
@@ -7698,7 +8063,7 @@ def save_post_segment_func_nb(  # % line.replace("save_post_segment_func_nb", "p
     """Segment post-processing function that saves state, value, and returns.
 
     Args:
-        c (SignalSegmentContext): Signal segment context.
+        c (FSSegmentContext): Signal segment context.
         save_state (bool): Flag to record the account state.
 
             See `vectorbtpro.portfolio.enums.AccountState`.

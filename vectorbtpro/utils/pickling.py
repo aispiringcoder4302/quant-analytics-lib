@@ -15,13 +15,13 @@
 """
 
 import ast
+import base64
+import datetime
 import io
 import zipfile
-from pathlib import Path
-import base64
-from types import MethodType
 from graphlib import TopologicalSorter
-import datetime
+from pathlib import Path
+from types import MethodType
 
 import humanize
 import numpy as np
@@ -55,6 +55,9 @@ __all__ = [
 def get_serialization_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[str]:
     """Return all supported serialization extensions.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.pickling`.
+
     Args:
         cls_name (Optional[str]): Class name to retrieve specific serialization extensions.
 
@@ -62,9 +65,6 @@ def get_serialization_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[st
 
     Returns:
         Set[str]: Set of serialization file extensions.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.pickling`.
     """
     from vectorbtpro._settings import settings
 
@@ -78,6 +78,9 @@ def get_serialization_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[st
 def get_compression_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[str]:
     """Return all supported compression extensions.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.pickling`.
+
     Args:
         cls_name (Optional[str]): Class name to retrieve specific compression extensions.
 
@@ -85,9 +88,6 @@ def get_compression_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[str]
 
     Returns:
         Set[str]: Set of compression file extensions.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.pickling`.
     """
     from vectorbtpro._settings import settings
 
@@ -106,6 +106,9 @@ def compress(
 ) -> bytes:
     """Compress given bytes using the specified compression format.
 
+    !!! info
+        For default settings, see `extensions.compression` in `vectorbtpro._settings.pickling`.
+
     Args:
         bytes_ (bytes): Byte stream to be compressed.
         compression (CompressionLike): Compression algorithm.
@@ -118,15 +121,8 @@ def compress(
 
     Returns:
         bytes: Compressed data.
-
-    !!! info
-        For default settings, see `extensions.compression` in `vectorbtpro._settings.pickling`.
     """
-    from vectorbtpro.utils.module_ import (
-        assert_can_import,
-        assert_can_import_any,
-        check_installed,
-    )
+    from vectorbtpro.utils.module_ import assert_can_import, assert_can_import_any, check_installed
 
     if isinstance(compression, bool) and compression:
         from vectorbtpro._settings import settings
@@ -204,6 +200,9 @@ def decompress(
 ) -> bytes:
     """Decompress given bytes using the specified compression format.
 
+    !!! info
+        For default settings, see `extensions.compression` in `vectorbtpro._settings.pickling`.
+
     Args:
         bytes_ (bytes): Compressed byte stream to be decompressed.
         compression (CompressionLike): Compression algorithm.
@@ -215,15 +214,8 @@ def decompress(
 
     Returns:
         bytes: Decompressed data.
-
-    !!! info
-        For default settings, see `extensions.compression` in `vectorbtpro._settings.pickling`.
     """
-    from vectorbtpro.utils.module_ import (
-        assert_can_import,
-        assert_can_import_any,
-        check_installed,
-    )
+    from vectorbtpro.utils.module_ import assert_can_import, assert_can_import_any, check_installed
 
     if isinstance(compression, bool) and compression:
         from vectorbtpro._settings import settings
@@ -584,15 +576,15 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
     """Obtain the reconstruction identifier for a class or instance.
 
     If the object is an instance or subclass of `Pickleable` with a defined `_rec_id`, that value is returned.
-    Otherwise, returns the fully qualified class path derived using `vectorbtpro.utils.module_.find_class`.
+    Otherwise, returns the fully qualified reference name.
 
     Args:
         obj (Any): Class or instance to evaluate.
 
     Returns:
-        Optional[str]: Reconstruction identifier or class path, or None if not found.
+        Optional[str]: Reconstruction identifier or class reference name, or None if not found.
     """
-    from vectorbtpro.utils.module_ import find_class
+    from vectorbtpro.utils.refs import refname_exists
 
     if isinstance(obj, type):
         cls = obj
@@ -603,9 +595,9 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
             if not isinstance(cls._rec_id, str):
                 raise TypeError(f"Reconstructing id of class {cls} must be a string")
             return cls._rec_id
-    class_path = cls.__module__ + "." + cls.__name__
-    if find_class(class_path) is not None:
-        return class_path
+    refname = cls.__module__ + "." + cls.__name__
+    if refname_exists(refname):
+        return refname
     return None
 
 
@@ -618,11 +610,11 @@ def get_class_from_id(class_id: str) -> tp.Optional[tp.Type]:
     Returns:
         Type: Class associated with the provided identifier.
     """
-    from vectorbtpro.utils.module_ import find_class
+    from vectorbtpro.utils.refs import get_obj
 
     if class_id in rec_info_registry:
         return rec_info_registry[class_id].cls
-    cls = find_class(class_id)
+    cls = get_obj(class_id, raise_error=False)
     if cls is not None:
         return cls
     raise ValueError(f"Please register an instance of RecInfo for {class_id!r}")
@@ -633,7 +625,7 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
 
     The function uses the reconstruction state to initialize a new instance, setting initialization
     arguments and updating attributes. If the provided class is not directly a type, it attempts to
-    resolve the class using `rec_info_registry` or `vectorbtpro.utils.module_.find_class`.
+    resolve the class using `rec_info_registry` or `vectorbtpro.utils.refs.get_obj`.
 
     Args:
         cls (Union[Hashable, Type]): Class or its reconstruction identifier.
@@ -643,7 +635,7 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
     Returns:
         Any: Reconstructed instance.
     """
-    from vectorbtpro.utils.module_ import find_class
+    from vectorbtpro.utils.refs import get_obj
 
     found_rec = False
     if not isinstance(cls, type):
@@ -657,7 +649,7 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
     if not isinstance(cls, type):
         if isinstance(cls, str):
             cls_name = cls
-            cls = find_class(cls_name)
+            cls = get_obj(cls_name, raise_error=False)
             if cls is None:
                 cls = cls_name
     if not isinstance(cls, type):
@@ -762,6 +754,9 @@ class Pickleable(Base):
         It uses the instance's `rec_state` property and raises an error if it is None. If an object cannot be
         represented as a string, it is serialized using `dumps`.
 
+        !!! note
+            The initial order of keys can be preserved only by using references.
+
         Args:
             top_name (Optional[str]): Top-level section name.
             unpack_objects (bool): Flag to store a `Pickleable` object's reconstruction state in a separate section.
@@ -785,9 +780,6 @@ class Pickleable(Base):
 
         Returns:
             str: Encoded configuration string.
-
-        !!! note
-            The initial order of keys can be preserved only by using references.
         """
         import configparser
         from io import StringIO
@@ -963,6 +955,10 @@ class Pickleable(Base):
         the section `a` explicitly, it will automatically become the outermost key.
         Sections containing only a single pair (`_ = _`) are treated as empty dictionaries.
 
+        !!! warning
+            Unpickling byte streams and running code has important security implications. Don't attempt
+            to parse configs coming from untrusted sources as those can contain malicious code!
+
         Args:
             config_str (str): Configuration string to decode.
             parse_literals (bool): Detect Python literals and container types (e.g., `True`, `[]`),
@@ -985,10 +981,6 @@ class Pickleable(Base):
 
         Returns:
             Pickleable: Decoded instance.
-
-        !!! warning
-            Unpickling byte streams and running code has important security implications. Don't attempt
-            to parse configs coming from untrusted sources as those can contain malicious code!
 
         Examples:
             File `types.cfg`:
@@ -1610,6 +1602,10 @@ class Pickleable(Base):
             dictionary and not already an instance of `Pickleable`, it is treated
             as keyword arguments for constructing an instance of this class.
 
+        !!! warning
+            Unpickling byte streams and running code has important security implications. Don't attempt
+            to parse configs coming from untrusted sources as those can contain malicious code!
+
         Args:
             yaml_str (str): YAML content to decode.
             run_code (bool): Whether to execute code in `!expr` tags and to unpickle `!pickle` payloads.
@@ -1642,10 +1638,6 @@ class Pickleable(Base):
             ConstructorError: On failures during object construction, such as missing
                 class IDs when required, disabled class references, or invalid serialized content.
             ImportError: If the requested YAML backend is unavailable or cannot be imported.
-
-        !!! warning
-            Unpickling byte streams and running code has important security implications. Don't attempt
-            to parse configs coming from untrusted sources as those can contain malicious code!
 
         Examples:
             File `types.yaml`:
@@ -1872,7 +1864,7 @@ class Pickleable(Base):
                 if not value.startswith("base64,"):
                     raise ConstructorError(None, None, "Pickle payload must be base64-encoded", node.start_mark)
                 return loads(base64.b64decode(value[7:]))
-            
+
             if tag == "!expr":
                 if not run_code:
                     raise ConstructorError(None, None, "Running code is disabled", node.start_mark)
@@ -1986,6 +1978,9 @@ class Pickleable(Base):
         * `__vbt_expr__`: Python literal expression.
         * `__vbt_pickle__`: Base64-encoded pickled object for unsupported types.
 
+        !!! warning
+            TOML doesn't guarantee the order of keys in tables.
+
         Args:
             root_key (Optional[str]): If provided, wraps the entire output in a table
                 with this key.
@@ -2013,9 +2008,6 @@ class Pickleable(Base):
             ValueError: If a `Pickleable` object is unpacked but lacks a valid
                 reconstruction ID or state.
             ImportError: If `tomlkit` is not installed.
-
-        !!! warning
-            TOML doesn't guarantee the order of keys in tables.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -2209,6 +2201,10 @@ class Pickleable(Base):
         objects. It builds and resolves a dependency graph to handle object
         references correctly.
 
+        !!! warning
+            Unpickling byte streams and running code has important security implications.
+            Only parse TOML from trusted sources.
+
         Args:
             toml_str (str): TOML content to decode.
             run_code (bool): If True, executes code in `__vbt_expr__` wrappers and unpickles
@@ -2235,10 +2231,6 @@ class Pickleable(Base):
             ValueError: If a reference cannot be resolved, a class ID is not found,
                 or the dependency graph contains circular references.
             ImportError: If `tomlkit` is not installed.
-
-        !!! warning
-            Unpickling byte streams and running code has important security implications.
-            Only parse TOML from trusted sources.
 
         Examples:
             File `types.toml`:
@@ -2583,6 +2575,14 @@ class Pickleable(Base):
         File format and compression can be provided either via a suffix in `path`,
         or via the argument `file_format` and `compression` respectively.
 
+        !!! note
+            When saving, default `file_format` and `compression` values are taken from
+            `vectorbtpro._settings.pickling`. When loading, the function searches for matching
+            files in the current directory.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.pickling`.
+
         Args:
             path (Optional[PathLike]): File path, directory, or None.
 
@@ -2595,16 +2595,8 @@ class Pickleable(Base):
                 See `compress`.
             for_save (bool): Resolve the file path for saving if True; otherwise, for loading.
 
-        !!! note
-            When saving, default `file_format` and `compression` values are taken from
-            `vectorbtpro._settings.pickling`. When loading, the function searches for matching
-            files in the current directory.
-
         Returns:
             Path: Resolved file path with the appropriate extensions.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.pickling`.
         """
         from vectorbtpro._settings import settings
 

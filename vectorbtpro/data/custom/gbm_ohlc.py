@@ -33,11 +33,11 @@ __pdoc__ = {}
 class GBMOHLCData(SyntheticData):
     """Data class for generating synthetic OHLC data using geometric Brownian motion.
 
-    See:
-        * `GBMOHLCData.generate_symbol` for argument details.
-
     !!! info
         For default settings, see `custom.gbm_ohlc` in `vectorbtpro._settings.data`.
+
+    See:
+        * `GBMOHLCData.generate_symbol` for argument details.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.gbm_ohlc")
@@ -59,6 +59,13 @@ class GBMOHLCData(SyntheticData):
     ) -> tp.SymbolData:
         """Generate synthetic OHLC data for a given symbol using geometric Brownian motion.
 
+        !!! note
+            When setting a seed, provide a seed per symbol using `vectorbtpro.data.base.symbol_dict`.
+
+        See:
+            * `vectorbtpro.data.nb.generate_gbm_data_1d_nb` for generating ticks.
+            * `vectorbtpro.ohlcv.nb.ohlc_every_1d_nb` for aggregating ticks into OHLC bars.
+
         Args:
             symbol (Symbol): Symbol identifier.
             index (Index): Pandas index representing time periods.
@@ -78,13 +85,6 @@ class GBMOHLCData(SyntheticData):
 
         Returns:
             SymbolData: Generated data and a metadata dictionary.
-
-        See:
-            * `vectorbtpro.data.nb.generate_gbm_data_1d_nb` for generating ticks.
-            * `vectorbtpro.ohlcv.nb.ohlc_every_1d_nb` for aggregating ticks into OHLC bars.
-
-        !!! note
-            When setting a seed, provide a seed per symbol using `vectorbtpro.data.base.symbol_dict`.
         """
         n_ticks = cls.resolve_custom_setting(n_ticks, "n_ticks")
         template_context = merge_dicts(dict(symbol=symbol, index=index), template_context)

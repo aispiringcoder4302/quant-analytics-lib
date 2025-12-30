@@ -66,6 +66,14 @@ def generate_nb(
 ) -> tp.Array2d:
     """Create a boolean matrix of `target_shape` and place signals using `place_func_nb`.
 
+    !!! note
+        The first argument is always a 1-dimensional boolean array that contains only those
+        elements where signals can be placed. The range and column indices only describe
+        which range this array maps to.
+
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         place_func_nb (PlaceFunc): Callback function that accepts `vectorbtpro.signals.enums.GenEnContext`
@@ -78,14 +86,6 @@ def generate_nb(
 
     Returns:
         Array2d: 2-dimensional boolean array with placed signals.
-
-    !!! note
-        The first argument is always a 1-dimensional boolean array that contains only those
-        elements where signals can be placed. The range and column indices only describe
-        which range this array maps to.
-
-    !!! tip
-        This function is parallelizable.
     """
     if wait < 0:
         raise ValueError("wait must be zero or greater")
@@ -141,6 +141,9 @@ def generate_ex_nb(
 ) -> tp.Array2d:
     """Place exit signals using `exit_place_func_nb` after each signal in `entries`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         entries (Array2d): Boolean array with entry signals.
         exit_place_func_nb (PlaceFunc): Callback function that accepts `vectorbtpro.signals.enums.GenExContext`
@@ -165,9 +168,6 @@ def generate_ex_nb(
 
     Returns:
         Array2d: 2-dimensional boolean array with placed exit signals.
-
-    !!! tip
-        This function is parallelizable.
     """
     if wait < 0:
         raise ValueError("wait must be zero or greater")
@@ -245,6 +245,9 @@ def generate_enex_nb(
 ) -> tp.Tuple[tp.Array2d, tp.Array2d]:
     """Place entry and exit signals sequentially using provided placement functions.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         entry_place_func_nb (PlaceFunc): Callback function that accepts `vectorbtpro.signals.enums.GenEnExContext`
@@ -270,9 +273,6 @@ def generate_enex_nb(
 
     Returns:
         Tuple[Array2d, Array2d]: Tuple containing the entry signals array and the exit signals array.
-
-    !!! tip
-        This function is parallelizable.
     """
     if entry_wait < 0:
         raise ValueError("entry_wait must be zero or greater")
@@ -425,6 +425,9 @@ def generate_rand_enex_nb(
     the distribution of entries and exits mimics a uniform distribution. This involves
     randomizing the position of the first entry, the last exit, and all signals in between.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         n (FlexArray1d): Flexible array specifying the number of entry-exit pairs per column.
@@ -441,9 +444,6 @@ def generate_rand_enex_nb(
 
     Returns:
         Tuple[Array2d, Array2d]: Tuple containing a boolean array for entries and a boolean array for exits.
-
-    !!! tip
-        This function is parallelizable.
     """
     entries = np.full(target_shape, False)
     exits = np.full(target_shape, False)
@@ -451,7 +451,6 @@ def generate_rand_enex_nb(
         raise ValueError("entry_wait and exit_wait cannot be both 0")
 
     if entry_wait == 1 and exit_wait == 1:
-        # Basic case
         both = generate_nb(target_shape, rand_place_nb, (n * 2,), only_once=True, wait=1)
         for col in prange(both.shape[1]):
             both_idxs = np.flatnonzero(both[:, col])
@@ -578,6 +577,12 @@ def stop_place_nb(
 ) -> int:
     """Place an exit signal when a threshold is reached, implementing `place_func_nb`.
 
+    !!! note
+        Waiting time cannot exceed 1.
+
+        * If waiting time is 0, `entry_ts` corresponds to the first value in the bar.
+        * If waiting time is 1, `entry_ts` corresponds to the last value in the bar.
+
     Args:
         c (Union[GenExContext, GenEnExContext]): Signal generation context.
         entry_ts (FlexArray2d): Entry price array.
@@ -602,12 +607,6 @@ def stop_place_nb(
 
     Returns:
         int: Relative index at which the exit signal was placed, or -1 if no exit signal occurred.
-
-    !!! note
-        Waiting time cannot exceed 1.
-
-        * If waiting time is 0, `entry_ts` corresponds to the first value in the bar.
-        * If waiting time is 1, `entry_ts` corresponds to the last value in the bar.
     """
     if c.wait > 1:
         raise ValueError("Wait must be either 0 or 1")
@@ -638,15 +637,12 @@ def stop_place_nb(
         if not np.isnan(init_stop):
             if init_trailing:
                 if init_stop >= 0:
-                    # Trailing stop buy
                     curr_stop_price = min_low * (1 + abs(init_stop))
                 else:
-                    # Trailing stop sell
                     curr_stop_price = max_high * (1 - abs(init_stop))
             else:
                 curr_stop_price = init_entry_ts * (1 + init_stop)
 
-        # Check if stop price is within bar
         if not np.isnan(init_stop):
             if init_stop >= 0:
                 exit_signal = curr_ts >= curr_stop_price
@@ -658,7 +654,6 @@ def stop_place_nb(
                 last_i = i - c.from_i
                 break
 
-        # Keep track of lowest low and highest high if trailing
         if init_trailing:
             if curr_follow_ts < min_low:
                 min_low = curr_follow_ts
@@ -690,6 +685,9 @@ def ohlc_stop_place_nb(
     This function extends `stop_place_nb` by considering the entire bar.
     It simultaneously checks for trailing stop loss and take profit thresholds,
     tracking the hit price and corresponding stop type.
+
+    !!! note
+        The waiting time must not exceed 1.
 
     Args:
         c (Union[GenExContext, GenEnExContext]): Signal generation context.
@@ -736,9 +734,6 @@ def ohlc_stop_place_nb(
     Returns:
         int: Index offset (relative to `c.from_i`) of the bar at which an exit signal was triggered,
             or -1 if no exit signal was generated.
-
-    !!! note
-        The waiting time must not exceed 1.
     """
     if c.wait > 1:
         raise ValueError("Wait must be either 0 or 1")
@@ -753,7 +748,6 @@ def ohlc_stop_place_nb(
 
     last_i = -1
     for i in range(c.from_i - c.wait, c.to_i):
-        # Resolve current bar
         _entry_price = flex_select_nb(entry_price, i, c.col)
         _open = flex_select_nb(open, i, c.col)
         _high = flex_select_nb(high, i, c.col)
@@ -784,7 +778,6 @@ def ohlc_stop_place_nb(
             curr_high = curr_low = _close
 
         if i >= c.from_i:
-            # Calculate stop prices
             if not np.isnan(init_sl_stop):
                 if init_reverse:
                     curr_sl_stop_price = init_entry_price * (1 + init_sl_stop)
@@ -813,10 +806,8 @@ def ohlc_stop_place_nb(
                 else:
                     curr_tp_stop_price = init_entry_price * (1 + init_tp_stop)
 
-            # Check if stop price is within bar
             exit_signal = False
             if not np.isnan(init_sl_stop):
-                # SL hit?
                 stop_price = np.nan
                 if not init_reverse:
                     if _open <= curr_sl_stop_price:
@@ -834,7 +825,6 @@ def ohlc_stop_place_nb(
                     exit_signal = True
 
             if not exit_signal and not np.isnan(init_tsl_stop):
-                # TSL/TTP hit?
                 stop_price = np.nan
                 if not init_reverse:
                     if _open <= curr_tsl_stop_price:
@@ -855,7 +845,6 @@ def ohlc_stop_place_nb(
                     exit_signal = True
 
             if not exit_signal and not np.isnan(init_tp_stop):
-                # TP hit?
                 stop_price = np.nan
                 if not init_reverse:
                     if _open >= curr_tp_stop_price:
@@ -878,7 +867,6 @@ def ohlc_stop_place_nb(
                 break
 
         if i > init_i or is_entry_open:
-            # Keep track of the lowest low and the highest high
             if curr_low < last_low:
                 last_low = curr_low
             if curr_high > last_high:
@@ -917,6 +905,9 @@ def rank_nb(
 
     Applies `rank_func_nb` on each True value in the input `mask`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask (Array2d): Boolean mask array indicating positions of signals.
         rank_func_nb (RankFunc): Callback function that accepts `vectorbtpro.signals.enums.RankContext`
@@ -932,9 +923,6 @@ def rank_nb(
 
     Returns:
         Array2d: Array containing computed signal ranks.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(mask.shape, -1, dtype=int_)
 
@@ -1105,15 +1093,15 @@ def distance_from_last_nb(mask: tp.Array2d, nth: int = 1) -> tp.Array2d:
 
     Applies `distance_from_last_1d_nb` for each column in the 2D boolean array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask (Array2d): 2D boolean array indicating signal positions.
         nth (int): Index of the last True value to measure the distance from.
 
     Returns:
         Array2d: 2D array with computed distances.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(mask.shape, dtype=int_)
     for col in prange(mask.shape[1]):
@@ -1204,6 +1192,9 @@ def clean_enex_nb(
 ) -> tp.Tuple[tp.Array2d, tp.Array2d]:
     """Clean 2D entry and exit signals by applying `clean_enex_1d_nb` column-wise.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         entries (Array2d): 2D boolean array of entry signals.
 
@@ -1217,9 +1208,6 @@ def clean_enex_nb(
 
     Returns:
         Tuple[Array2d, Array2d]: Tuple containing the cleaned entries and exits arrays.
-
-    !!! tip
-        This function is parallelizable.
     """
     entries_out = np.empty(entries.shape, dtype=np.bool_)
     exits_out = np.empty(exits.shape, dtype=np.bool_)
@@ -1250,6 +1238,9 @@ def relation_idxs_1d_nb(
     `source_mask` and `target_mask` according to the specified signal relation.
     For available relations, see `vectorbtpro.signals.enums.SignalRelation`.
 
+    !!! note
+        If both True values occur simultaneously, the source signal is prioritized.
+
     Args:
         source_mask (Array1d): Boolean array indicating source signals.
         target_mask (Array1d): Boolean array indicating target signals.
@@ -1264,9 +1255,6 @@ def relation_idxs_1d_nb(
             * `target_range`: Order positions for target signals.
             * `source_idxs`: Indices of True entries in the source mask.
             * `target_idxs`: Indices of True entries in the target mask.
-
-    !!! note
-        If both True values occur simultaneously, the source signal is prioritized.
     """
     if relation == SignalRelation.Chain or relation == SignalRelation.AnyChain:
         max_signals = source_mask.shape[0] * 2
@@ -1489,6 +1477,9 @@ def between_ranges_nb(mask: tp.Array2d, incl_open: bool = False) -> tp.RecordArr
     If `incl_open` is True and the last signal does not have a corresponding closing signal,
     an open range is recorded.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask (Array2d): Boolean array indicating signal positions.
         incl_open (bool): Include an open range if no closing signal is found.
@@ -1497,9 +1488,6 @@ def between_ranges_nb(mask: tp.Array2d, incl_open: bool = False) -> tp.RecordArr
         RecordArray: Array of records containing range metadata.
 
             Has the `vectorbtpro.generic.enums.range_dt` dtype.
-
-    !!! tip
-        This function is parallelizable.
     """
     new_records = np.empty(mask.shape, dtype=range_dt)
     counts = np.full(mask.shape[1], 0, dtype=int_)
@@ -1553,6 +1541,9 @@ def between_two_ranges_nb(
     and `target_mask` for each column. When valid index pairs are found, a closed range record is created.
     If only the source index is valid and `incl_open` is True, an open range record is recorded.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         source_mask (Array2d): Boolean array indicating positions of source signals.
         target_mask (Array2d): Boolean array indicating positions of target signals.
@@ -1565,9 +1556,6 @@ def between_two_ranges_nb(
         RecordArray: Array of records containing range data.
 
             Has the `vectorbtpro.generic.enums.range_dt` dtype.
-
-    !!! tip
-        This function is parallelizable.
     """
     new_records = np.empty(source_mask.shape, dtype=range_dt)
     counts = np.full(source_mask.shape[1], 0, dtype=int_)
@@ -1613,6 +1601,9 @@ def partition_ranges_nb(mask: tp.Array2d) -> tp.RecordArray:
     partitions ending before the last index are marked as closed, while those extending to the
     end are marked as open.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask (Array2d): Boolean array where True indicates the presence of a signal.
 
@@ -1620,9 +1611,6 @@ def partition_ranges_nb(mask: tp.Array2d) -> tp.RecordArray:
         RecordArray: Array of records containing partition range data.
 
             Has the `vectorbtpro.generic.enums.range_dt` dtype.
-
-    !!! tip
-        This function is parallelizable.
     """
     new_records = np.empty(mask.shape, dtype=range_dt)
     counts = np.full(mask.shape[1], 0, dtype=int_)
@@ -1673,6 +1661,9 @@ def between_partition_ranges_nb(mask: tp.Array2d) -> tp.RecordArray:
     When a new partition starts after an existing one, a range is recorded from the previous
     partition start to the current index.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask (Array2d): Boolean array indicating partitions with signal presence.
 
@@ -1680,9 +1671,6 @@ def between_partition_ranges_nb(mask: tp.Array2d) -> tp.RecordArray:
         RecordArray: Array of records containing range data between partitions.
 
             Has the `vectorbtpro.generic.enums.range_dt` dtype.
-
-    !!! tip
-        This function is parallelizable.
     """
     new_records = np.empty(mask.shape, dtype=range_dt)
     counts = np.full(mask.shape[1], 0, dtype=int_)
@@ -1990,15 +1978,15 @@ def unravel_between_two_nb(
 def ravel_nb(mask: tp.Array2d, group_map: tp.GroupMap) -> tp.Array2d:
     """Ravel True values into separate columns for each group.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask (Array2d): 2D boolean mask to process.
         group_map (GroupMap): Tuple of indices and lengths for each group.
 
     Returns:
         Array2d: 2D boolean mask with True values raveled into individual columns per group.
-
-    !!! tip
-        This function is parallelizable.
     """
     group_idxs, group_lens = group_map
     group_start_idxs = np.cumsum(group_lens) - group_lens
@@ -2022,6 +2010,9 @@ def ravel_nb(mask: tp.Array2d, group_map: tp.GroupMap) -> tp.Array2d:
 def nth_index_1d_nb(mask: tp.Array1d, n: int) -> int:
     """Return the index of the n-th True value in a 1D boolean mask.
 
+    !!! note
+        `n` starts with 0 and can be negative.
+
     Args:
         mask (Array1d): 1D boolean array.
         n (int): Zero-based index of the True value to locate.
@@ -2030,9 +2021,6 @@ def nth_index_1d_nb(mask: tp.Array1d, n: int) -> int:
 
     Returns:
         int: Index of the n-th True value, or -1 if it does not exist.
-
-    !!! note
-        `n` starts with 0 and can be negative.
     """
     if n >= 0:
         found = -1
@@ -2060,15 +2048,15 @@ def nth_index_1d_nb(mask: tp.Array1d, n: int) -> int:
 def nth_index_nb(mask: tp.Array2d, n: int) -> tp.Array1d:
     """Return the index of the n-th True value for each column in a 2D boolean mask.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask (Array2d): 2D boolean array to evaluate column-wise.
         n (int): Zero-based index of the True value to locate in each column.
 
     Returns:
         Array1d: Array of indices corresponding to the n-th True value in each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(mask.shape[1], dtype=int_)
     for col in prange(mask.shape[1]):
@@ -2099,14 +2087,14 @@ def norm_avg_index_1d_nb(mask: tp.Array1d) -> float:
 def norm_avg_index_nb(mask: tp.Array2d) -> tp.Array1d:
     """Return normalized average indices for each column in a 2D boolean mask.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask (Array2d): 2D boolean mask.
 
     Returns:
         Array1d: Array of normalized mean indices for each column scaled to (-1, 1).
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(mask.shape[1], dtype=float_)
     for col in prange(mask.shape[1]):
@@ -2126,15 +2114,15 @@ def norm_avg_index_nb(mask: tp.Array2d) -> tp.Array1d:
 def norm_avg_index_grouped_nb(mask: tp.Array2d, group_lens: tp.Array1d) -> tp.Array1d:
     """Return normalized average indices for each group in a 2D boolean mask.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         mask (Array2d): 2D boolean mask.
         group_lens (ArrayLike): 1D array of group lengths indicating the number of columns per group.
 
     Returns:
         Array1d: Array of normalized average indices for each group scaled to (-1, 1).
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(len(group_lens), dtype=float_)
     group_end_idxs = np.cumsum(group_lens)

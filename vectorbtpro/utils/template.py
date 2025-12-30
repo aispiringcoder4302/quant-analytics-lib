@@ -67,15 +67,15 @@ class CustomTemplate(Evaluable, DefineMixin):
 
         Also, append `eval_id` and import entries from `vectorbtpro.imported_star` if available.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.template`.
+
         Args:
             context (KwargsLike): Additional context to merge.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             Kwargs: Merged context mapping.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.template`.
         """
         from vectorbtpro._settings import settings
 
@@ -106,14 +106,14 @@ class CustomTemplate(Evaluable, DefineMixin):
         """Return the resolved strict flag, combining the provided `strict` argument,
         the instance setting, and the global default from `vectorbtpro._settings.template`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.template`.
+
         Args:
             strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
 
         Returns:
             bool: True if strict mode is enabled, False otherwise.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.template`.
         """
         if strict is None:
             strict = self.strict
@@ -128,11 +128,11 @@ class CustomTemplate(Evaluable, DefineMixin):
     def get_context_vars(self) -> tp.List[str]:
         """Return a list of variable names extracted from the template.
 
-        Returns:
-            List[str]: Names of the placeholders in the template.
-
         !!! abstract
             This method should be overridden in a subclass.
+
+        Returns:
+            List[str]: Names of the placeholders in the template.
         """
         raise NotImplementedError
 
@@ -145,6 +145,9 @@ class CustomTemplate(Evaluable, DefineMixin):
         """Perform template substitution by merging the instance context with the provided
         `context` and processing `CustomTemplate.template`.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             context (KwargsLike): Additional context mapping for substitution.
             strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
@@ -152,9 +155,6 @@ class CustomTemplate(Evaluable, DefineMixin):
 
         Returns:
             Any: Result of the template substitution.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -192,9 +192,9 @@ class Sub(CustomTemplate):
 
         try:
             return Template(self.template).substitute(context)
-        except KeyError as e:
+        except KeyError:
             if strict:
-                raise e
+                raise
         return self
 
 
@@ -229,9 +229,9 @@ class SafeSub(CustomTemplate):
 
         try:
             return Template(self.template).safe_substitute(context)
-        except KeyError as e:
+        except KeyError:
             if strict:
-                raise e
+                raise
         return self
 
 
@@ -254,9 +254,9 @@ class Rep(CustomTemplate):
 
         try:
             return context[self.template]
-        except KeyError as e:
+        except KeyError:
             if strict:
-                raise e
+                raise
         return self
 
 
@@ -280,9 +280,9 @@ class RepEval(CustomTemplate):
 
         try:
             return evaluate(self.template, context)
-        except NameError as e:
+        except NameError:
             if strict:
-                raise e
+                raise
         return self
 
 
@@ -311,9 +311,9 @@ class RepFunc(CustomTemplate):
 
         try:
             return self.template(**func_kwargs)
-        except TypeError as e:
+        except TypeError:
             if strict:
-                raise e
+                raise
         return self
 
 
@@ -326,15 +326,15 @@ def has_templates(obj: tp.Any, **kwargs) -> tp.Any:
     The default search behavior can be customized by passing additional keyword arguments
     that merge with `search_kwargs` from `vectorbtpro._settings.template`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.template`.
+
     Args:
         obj (Any): Object to search for template instances.
         **kwargs: Additional parameters to override default search settings.
 
     Returns:
         Any: Object containing template instances, or None if none are found.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.template`.
     """
     from vectorbtpro._settings import settings
 
@@ -369,6 +369,9 @@ def substitute_templates(
     The default search behavior can be customized by passing additional keyword arguments
     that merge with `search_kwargs` from `vectorbtpro._settings.template`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.template`.
+
     Args:
         obj (Any): Object to traverse for template substitution.
         context (KwargsLike): Context for replacing template placeholders.
@@ -378,9 +381,6 @@ def substitute_templates(
 
     Returns:
         Any: Object with template instances replaced by their substituted values.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.template`.
 
     Examples:
         ```pycon

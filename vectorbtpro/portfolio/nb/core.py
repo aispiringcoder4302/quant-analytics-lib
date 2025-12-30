@@ -85,27 +85,6 @@ def check_adj_price_nb(
 
 
 @register_jitted(cache=True)
-def approx_long_buy_value_nb(val_price: float, size: float) -> float:
-    """Approximate the value of a long-buy operation.
-
-    Calculates the order value as the product of the absolute order size and the valuation price,
-    and returns it as a negative value to represent spending.
-
-    Args:
-        val_price (float): Valuation price of the asset.
-        size (float): Order size.
-
-    Returns:
-        float: Negative value representing spending, or 0.0 if the order size is zero.
-    """
-    if size == 0:
-        return 0.0
-    order_value = abs(size) * val_price
-    add_free_cash = -order_value
-    return -add_free_cash
-
-
-@register_jitted(cache=True)
 def should_apply_size_granularity_nb(size: float, size_granularity: float) -> bool:
     """Determine whether size granularity should be applied to the given size.
 
@@ -170,6 +149,7 @@ def long_buy_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     leverage: float = 1.0,
     leverage_mode: int = LeverageMode.Lazy,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
@@ -192,6 +172,7 @@ def long_buy_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
 
@@ -211,32 +192,47 @@ def long_buy_nb(
     """
     _account_state = cast_account_state_nb(account_state)
 
-    # Get cash limit
-    cash_limit = _account_state.free_cash
-    if not np.isnan(percent):
-        cash_limit = cash_limit * percent
-    if cash_limit <= 0:
-        return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
-    cash_limit = cash_limit * leverage
+    if leverage_mode == LeverageMode.LazyMult:
+        size = size * leverage
+        leverage_mode = LeverageMode.Lazy
+    elif leverage_mode == LeverageMode.EagerMult:
+        size = size * leverage
+        leverage_mode = LeverageMode.Eager
 
-    # Adjust for granularity
+    if np.isnan(cash_limit):
+        base_cash_limit = _account_state.free_cash
+    else:
+        base_cash_limit = min(cash_limit, _account_state.free_cash)
+    if not np.isnan(percent):
+        base_cash_limit = base_cash_limit * percent
+    base_cash_limit = min(base_cash_limit, _account_state.free_cash)
+    if base_cash_limit <= 0:
+        return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
+
+    order_value_limit = base_cash_limit * leverage
+
+    if leverage_mode == LeverageMode.Eager and leverage > 1.0:
+        max_order_value = add_nb(base_cash_limit, -fixed_fees) / ((1.0 / leverage) + fees)
+        if max_order_value <= 0:
+            return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
+
+        fees_for_max_value = max_order_value * fees + fixed_fees
+        eager_order_value_limit = max_order_value + fees_for_max_value
+        order_value_limit = min(order_value_limit, eager_order_value_limit)
+
     if should_apply_size_granularity_nb(size, size_granularity):
         size = apply_size_granularity_nb(size, size_granularity)
 
-    # Adjust for max size
     if not np.isnan(max_size) and size > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
-
         size = max_size
-    if np.isinf(size) and np.isinf(cash_limit):
+    if np.isinf(size) and np.isinf(order_value_limit):
         raise ValueError("Attempt to go in long direction infinitely")
 
-    # Get price adjusted with slippage
     adj_price = price * (1 + slippage)
     adj_price = check_adj_price_nb(adj_price, price_area, is_closing_price, price_area_vio_mode)
 
-    # Get cash required to complete this order
     if np.isinf(size):
         req_cash = np.inf
         req_fees = np.inf
@@ -245,22 +241,16 @@ def long_buy_nb(
         req_fees = order_value * fees + fixed_fees
         req_cash = order_value + req_fees
 
-    if is_close_or_less_nb(req_cash, cash_limit):
-        # Sufficient amount of cash
+    if is_close_or_less_nb(req_cash, order_value_limit):
         final_size = size
         fees_paid = req_fees
     else:
-        # Insufficient amount of cash, size will be less than requested
-
-        # For fees of 10% and 1$ per transaction, you can buy for 90$ (new_req_cash)
-        # to spend 100$ (cash_limit) in total
-        max_req_cash = add_nb(cash_limit, -fixed_fees) / (1 + fees)
+        max_req_cash = add_nb(order_value_limit, -fixed_fees) / (1.0 + fees)
         if max_req_cash <= 0:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
         max_acq_size = max_req_cash / adj_price
 
-        # Adjust for granularity
         if should_apply_size_granularity_nb(max_acq_size, size_granularity):
             final_size = apply_size_granularity_nb(max_acq_size, size_granularity)
             new_order_value = final_size * adj_price
@@ -268,22 +258,18 @@ def long_buy_nb(
             req_cash = new_order_value + fees_paid
         else:
             final_size = max_acq_size
-            fees_paid = cash_limit - max_req_cash
-            req_cash = cash_limit
+            fees_paid = order_value_limit - max_req_cash
+            req_cash = order_value_limit
 
-    # Check against size of zero
     if is_close_nb(final_size, 0):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.SizeZero), _account_state
 
-    # Check against minimum size
     if not np.isnan(min_size) and is_less_nb(final_size, min_size):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.MinSizeNotReached), _account_state
 
-    # Check against partial fill (np.inf doesn't count)
     if np.isfinite(size) and is_less_nb(final_size, size) and not allow_partial:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.PartialFill), _account_state
 
-    # Create a filled order
     order_result = OrderResult(
         float(final_size),
         float(adj_price),
@@ -293,31 +279,36 @@ def long_buy_nb(
         -1,
     )
 
-    # Update the current account state
-    new_cash = add_nb(_account_state.cash, -req_cash)
-    new_position = add_nb(_account_state.position, final_size)
     if leverage_mode == LeverageMode.Lazy:
-        debt_diff = max(add_nb(req_cash, -_account_state.free_cash), 0.0)
+        own_cash_used = min(req_cash, base_cash_limit)
+        new_cash = add_nb(_account_state.cash, -own_cash_used)
+        new_position = add_nb(_account_state.position, final_size)
+        new_free_cash = add_nb(_account_state.free_cash, -own_cash_used)
+        debt_diff = max(add_nb(req_cash, -own_cash_used), 0.0)
         if debt_diff > 0:
             new_debt = _account_state.debt + debt_diff
-            new_locked_cash = _account_state.locked_cash + _account_state.free_cash
-            new_free_cash = 0.0
+            new_locked_cash = _account_state.locked_cash + own_cash_used
         else:
             new_debt = _account_state.debt
             new_locked_cash = _account_state.locked_cash
-            new_free_cash = add_nb(_account_state.free_cash, -req_cash)
     else:
-        if leverage > 1:
-            if np.isinf(leverage):
-                raise ValueError("Leverage must be finite for LeverageMode.Eager")
+        new_position = add_nb(_account_state.position, final_size)
+        if leverage > 1.0:
             order_value = final_size * adj_price
-            new_debt = _account_state.debt + order_value * (leverage - 1) / leverage
-            new_locked_cash = _account_state.locked_cash + order_value / leverage
-            new_free_cash = add_nb(_account_state.free_cash, -order_value / leverage - fees_paid)
+            margin_cash = order_value / leverage
+            total_eager_cash = margin_cash + fees_paid
+            own_cash_used = min(total_eager_cash, base_cash_limit)
+            extra_debt = max(add_nb(total_eager_cash, -own_cash_used), 0.0)
+            new_cash = add_nb(_account_state.cash, -own_cash_used)
+            new_free_cash = add_nb(_account_state.free_cash, -own_cash_used)
+            new_locked_cash = _account_state.locked_cash + margin_cash
+            new_debt = _account_state.debt + order_value * (leverage - 1.0) / leverage + extra_debt
         else:
+            new_cash = add_nb(_account_state.cash, -req_cash)
             new_debt = _account_state.debt
             new_locked_cash = _account_state.locked_cash
             new_free_cash = add_nb(_account_state.free_cash, -req_cash)
+
     new_account_state = AccountState(
         cash=float(new_cash),
         position=float(new_position),
@@ -326,32 +317,6 @@ def long_buy_nb(
         free_cash=float(new_free_cash),
     )
     return order_result, new_account_state
-
-
-@register_jitted(cache=True)
-def approx_long_sell_value_nb(position: float, debt: float, val_price: float, size: float) -> float:
-    """Approximate the value of a long-sell operation.
-
-    The computed value represents the spending amount for sorting purposes,
-    where a positive value indicates spending.
-
-    Args:
-        position (float): Current position size.
-        debt (float): Current account debt.
-        val_price (float): Valuation price of the asset.
-        size (float): Requested order size for the long-sell operation.
-
-    Returns:
-        float: Approximate value of the long-sell operation.
-    """
-    if size == 0 or position == 0:
-        return 0.0
-    size_limit = min(abs(size), position)
-    order_value = size_limit * val_price
-    size_fraction = size_limit / position
-    released_debt = size_fraction * debt
-    add_free_cash = order_value - released_debt
-    return -add_free_cash
 
 
 @register_jitted(cache=True)
@@ -365,6 +330,7 @@ def long_sell_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
     allow_partial: bool = True,
     percent: float = np.nan,
@@ -387,6 +353,7 @@ def long_sell_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
@@ -403,55 +370,45 @@ def long_sell_nb(
     """
     _account_state = cast_account_state_nb(account_state)
 
-    # Check for open position
     if _account_state.position == 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoOpenPosition), _account_state
 
-    # Get size limit
     size_limit = min(size, _account_state.position)
     if not np.isnan(percent):
         size_limit = size_limit * percent
 
-    # Adjust for granularity
     if should_apply_size_granularity_nb(size_limit, size_granularity):
         size = apply_size_granularity_nb(size, size_granularity)
         size_limit = apply_size_granularity_nb(size_limit, size_granularity)
 
-    # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
-
         size_limit = max_size
 
-    # Check against size of zero
     if is_close_nb(size_limit, 0):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.SizeZero), _account_state
 
-    # Check against minimum size
     if not np.isnan(min_size) and is_less_nb(size_limit, min_size):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.MinSizeNotReached), _account_state
 
-    # Check against partial fill
-    if np.isfinite(size) and is_less_nb(size_limit, size) and not allow_partial:  # np.inf doesn't count
+    if np.isfinite(size) and is_less_nb(size_limit, size) and not allow_partial:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.PartialFill), _account_state
 
-    # Get price adjusted with slippage
     adj_price = price * (1 - slippage)
     adj_price = check_adj_price_nb(adj_price, price_area, is_closing_price, price_area_vio_mode)
-
-    # Get acquired cash
     acq_cash = size_limit * adj_price
-
-    # Update fees
     fees_paid = acq_cash * fees + fixed_fees
-
-    # Get final cash by subtracting costs
     final_acq_cash = add_nb(acq_cash, -fees_paid)
-    if final_acq_cash < 0 and is_less_nb(_account_state.free_cash, -final_acq_cash):
-        return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
-    # Create a filled order
+    if final_acq_cash < 0:
+        if np.isnan(cash_limit):
+            allowed_to_spend = _account_state.free_cash
+        else:
+            allowed_to_spend = min(cash_limit, _account_state.free_cash)
+        if is_less_nb(allowed_to_spend, -final_acq_cash):
+            return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
+
     order_result = OrderResult(
         float(size_limit),
         float(adj_price),
@@ -461,7 +418,6 @@ def long_sell_nb(
         -1,
     )
 
-    # Update the current account state
     new_cash = _account_state.cash + final_acq_cash
     new_position = add_nb(_account_state.position, -size_limit)
     new_pos_fraction = abs(new_position) / abs(_account_state.position)
@@ -470,6 +426,7 @@ def long_sell_nb(
     size_fraction = size_limit / _account_state.position
     released_debt = size_fraction * _account_state.debt
     new_free_cash = add_nb(_account_state.free_cash, final_acq_cash - released_debt)
+
     new_account_state = AccountState(
         cash=float(new_cash),
         position=float(new_position),
@@ -478,27 +435,6 @@ def long_sell_nb(
         free_cash=float(new_free_cash),
     )
     return order_result, new_account_state
-
-
-@register_jitted(cache=True)
-def approx_short_sell_value_nb(val_price: float, size: float) -> float:
-    """Approximate the value of a short-sell operation.
-
-    Calculates the transaction value based on the provided price and position size.
-    A positive result indicates expenditure (for sorting purposes).
-
-    Args:
-        val_price (float): Valuation price of the asset.
-        size (float): Size of the short position.
-
-    Returns:
-        float: Approximated value of the short-sell operation.
-    """
-    if size == 0:
-        return 0.0
-    order_value = abs(size) * val_price
-    add_free_cash = -order_value
-    return -add_free_cash
 
 
 @register_jitted(cache=True)
@@ -512,7 +448,9 @@ def short_sell_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     leverage: float = 1.0,
+    leverage_mode: int = LeverageMode.Lazy,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
     allow_partial: bool = True,
     percent: float = np.nan,
@@ -533,7 +471,11 @@ def short_sell_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         leverage (float): Leverage factor.
+        leverage_mode (int): Leverage mode.
+
+            See `vectorbtpro.portfolio.enums.LeverageMode`.
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
@@ -550,66 +492,79 @@ def short_sell_nb(
     """
     _account_state = cast_account_state_nb(account_state)
 
-    # Get cash limit
-    cash_limit = _account_state.free_cash
-    if not np.isnan(percent):
-        cash_limit = cash_limit * percent
-    if cash_limit <= 0:
-        return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
-    cash_limit = cash_limit * leverage
+    if leverage_mode == LeverageMode.LazyMult:
+        size = size * leverage
+        leverage_mode = LeverageMode.Lazy
+    elif leverage_mode == LeverageMode.EagerMult:
+        size = size * leverage
+        leverage_mode = LeverageMode.Eager
 
-    # Get price adjusted with slippage
+    if np.isnan(cash_limit):
+        base_cash_limit = _account_state.free_cash
+    else:
+        base_cash_limit = min(cash_limit, _account_state.free_cash)
+    if not np.isnan(percent):
+        base_cash_limit = base_cash_limit * percent
+    base_cash_limit = min(base_cash_limit, _account_state.free_cash)
+    if base_cash_limit <= 0:
+        return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
+
     adj_price = price * (1 - slippage)
     adj_price = check_adj_price_nb(adj_price, price_area, is_closing_price, price_area_vio_mode)
 
-    # Get size limit
-    fees_adj_price = adj_price * (1 + fees)
+    fees_adj_price = adj_price * ((1.0 / leverage) + fees)
     if fees_adj_price == 0:
         max_size_limit = np.inf
     else:
-        max_size_limit = add_nb(cash_limit, -fixed_fees) / (adj_price * (1 + fees))
+        max_size_limit = add_nb(base_cash_limit, -fixed_fees) / fees_adj_price
+
     size_limit = min(size, max_size_limit)
     if size_limit <= 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
-    # Adjust for granularity
     if should_apply_size_granularity_nb(size_limit, size_granularity):
         size = apply_size_granularity_nb(size, size_granularity)
         size_limit = apply_size_granularity_nb(size_limit, size_granularity)
 
-    # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
-
         size_limit = max_size
+
     if np.isinf(size_limit):
         raise ValueError("Attempt to go in short direction infinitely")
 
-    # Check against size of zero
     if is_close_nb(size_limit, 0):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.SizeZero), _account_state
 
-    # Check against minimum size
     if not np.isnan(min_size) and is_less_nb(size_limit, min_size):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.MinSizeNotReached), _account_state
 
-    # Check against partial fill
-    if np.isfinite(size) and is_less_nb(size_limit, size) and not allow_partial:  # np.inf doesn't count
+    if np.isfinite(size) and is_less_nb(size_limit, size) and not allow_partial:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.PartialFill), _account_state
 
-    # Get acquired cash
     order_value = size_limit * adj_price
-
-    # Update fees
     fees_paid = order_value * fees + fixed_fees
-
-    # Get final cash by subtracting costs
     final_acq_cash = add_nb(order_value, -fees_paid)
-    if final_acq_cash < 0:
+
+    if final_acq_cash < 0 and is_less_nb(base_cash_limit, -final_acq_cash):
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
-    # Create a filled order
+    if np.isinf(leverage):
+        if np.isinf(_account_state.free_cash):
+            raise ValueError("Leverage must be finite when account_state.free_cash is infinite")
+        if is_close_or_less_nb(_account_state.free_cash, fees_paid):
+            return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
+        effective_leverage = order_value / (_account_state.free_cash - fees_paid)
+    else:
+        effective_leverage = float(leverage)
+
+    margin_cash = order_value / effective_leverage
+    actual_cash_out = margin_cash + fees_paid
+
+    if is_less_nb(base_cash_limit, actual_cash_out):
+        return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
+
     order_result = OrderResult(
         float(size_limit),
         float(adj_price),
@@ -619,20 +574,12 @@ def short_sell_nb(
         -1,
     )
 
-    # Update the current account state
     new_cash = _account_state.cash + final_acq_cash
     new_position = _account_state.position - size_limit
     new_debt = _account_state.debt + order_value
-    if np.isinf(leverage):
-        if np.isinf(_account_state.free_cash):
-            raise ValueError("Leverage must be finite when _account_state.free_cash is infinite")
-        if is_close_or_less_nb(_account_state.free_cash, fees_paid):
-            return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
-        leverage_ = order_value / (_account_state.free_cash - fees_paid)
-    else:
-        leverage_ = float(leverage)
-    new_locked_cash = _account_state.locked_cash + order_value / leverage_
-    new_free_cash = add_nb(_account_state.free_cash, -order_value / leverage_ - fees_paid)
+    new_locked_cash = _account_state.locked_cash + margin_cash
+    new_free_cash = add_nb(_account_state.free_cash, -actual_cash_out)
+
     new_account_state = AccountState(
         cash=float(new_cash),
         position=float(new_position),
@@ -641,34 +588,6 @@ def short_sell_nb(
         free_cash=float(new_free_cash),
     )
     return order_result, new_account_state
-
-
-@register_jitted(cache=True)
-def approx_short_buy_value_nb(position: float, debt: float, locked_cash: float, val_price: float, size: float) -> float:
-    """Approximate the cash value adjustment for a short-buy operation.
-
-    Computes the additional cash required or freed by comparing the released debt and locked cash
-    against the order value. A positive return value indicates a spending requirement.
-
-    Args:
-        position (float): Current short position size.
-        debt (float): Total debt associated with the short position.
-        locked_cash (float): Cash currently locked as collateral.
-        val_price (float): Valuation price of the asset.
-        size (float): Desired order size for the short-buy operation.
-
-    Returns:
-        float: Approximate cash value adjustment, where a positive value signifies spending.
-    """
-    if size == 0 or position == 0:
-        return 0.0
-    size_limit = min(abs(size), abs(position))
-    order_value = size_limit * val_price
-    size_fraction = size_limit / abs(position)
-    released_debt = size_fraction * debt
-    released_cash = size_fraction * locked_cash
-    add_free_cash = released_cash + released_debt - order_value
-    return -add_free_cash
 
 
 @register_jitted(cache=True)
@@ -682,6 +601,7 @@ def short_buy_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
     allow_partial: bool = True,
     percent: float = np.nan,
@@ -707,6 +627,7 @@ def short_buy_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
@@ -723,36 +644,32 @@ def short_buy_nb(
     """
     _account_state = cast_account_state_nb(account_state)
 
-    # Check for open position
     if _account_state.position == 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoOpenPosition), _account_state
 
-    # Get cash limit
-    cash_limit = _account_state.free_cash + _account_state.debt + _account_state.locked_cash
-    if cash_limit <= 0:
+    if np.isnan(cash_limit):
+        base_cash_limit = _account_state.free_cash
+    else:
+        base_cash_limit = min(cash_limit, _account_state.free_cash)
+    order_value_limit = base_cash_limit + _account_state.debt + _account_state.locked_cash
+    if order_value_limit <= 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
 
-    # Get size limit
     size_limit = min(size, abs(_account_state.position))
     if not np.isnan(percent):
         size_limit = size_limit * percent
 
-    # Adjust for granularity
     if should_apply_size_granularity_nb(size_limit, size_granularity):
         size_limit = apply_size_granularity_nb(size_limit, size_granularity)
 
-    # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
-
         size_limit = max_size
 
-    # Get price adjusted with slippage
     adj_price = price * (1 + slippage)
     adj_price = check_adj_price_nb(adj_price, price_area, is_closing_price, price_area_vio_mode)
 
-    # Get cash required to complete this order
     if np.isinf(size_limit):
         req_cash = np.inf
         req_fees = np.inf
@@ -761,22 +678,16 @@ def short_buy_nb(
         req_fees = order_value * fees + fixed_fees
         req_cash = order_value + req_fees
 
-    if is_close_or_less_nb(req_cash, cash_limit):
-        # Sufficient amount of cash
+    if is_close_or_less_nb(req_cash, order_value_limit):
         final_size = size_limit
         fees_paid = req_fees
     else:
-        # Insufficient amount of cash, size will be less than requested
-
-        # For fees of 10% and 1$ per transaction, you can buy for 90$ (new_req_cash)
-        # to spend 100$ (cash_limit) in total
-        max_req_cash = add_nb(cash_limit, -fixed_fees) / (1 + fees)
+        max_req_cash = add_nb(order_value_limit, -fixed_fees) / (1 + fees)
         if max_req_cash <= 0:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
         max_acq_size = max_req_cash / adj_price
 
-        # Adjust for granularity
         if should_apply_size_granularity_nb(max_acq_size, size_granularity):
             final_size = apply_size_granularity_nb(max_acq_size, size_granularity)
             new_order_value = final_size * adj_price
@@ -784,22 +695,18 @@ def short_buy_nb(
             req_cash = new_order_value + fees_paid
         else:
             final_size = max_acq_size
-            fees_paid = cash_limit - max_req_cash
-            req_cash = cash_limit
+            fees_paid = order_value_limit - max_req_cash
+            req_cash = order_value_limit
 
-    # Check size of zero
     if is_close_nb(final_size, 0):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.SizeZero), _account_state
 
-    # Check against minimum size
     if not np.isnan(min_size) and is_less_nb(final_size, min_size):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.MinSizeNotReached), _account_state
 
-    # Check against partial fill (np.inf doesn't count)
     if np.isfinite(size_limit) and is_less_nb(final_size, size_limit) and not allow_partial:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.PartialFill), _account_state
 
-    # Create a filled order
     order_result = OrderResult(
         float(final_size),
         float(adj_price),
@@ -809,7 +716,6 @@ def short_buy_nb(
         -1,
     )
 
-    # Update the current account state
     new_cash = add_nb(_account_state.cash, -req_cash)
     new_position = add_nb(_account_state.position, final_size)
     new_pos_fraction = abs(new_position) / abs(_account_state.position)
@@ -819,6 +725,7 @@ def short_buy_nb(
     released_debt = size_fraction * _account_state.debt
     released_cash = size_fraction * _account_state.locked_cash
     new_free_cash = add_nb(_account_state.free_cash, released_cash + released_debt - req_cash)
+
     new_account_state = AccountState(
         cash=float(new_cash),
         position=float(new_position),
@@ -827,47 +734,6 @@ def short_buy_nb(
         free_cash=float(new_free_cash),
     )
     return order_result, new_account_state
-
-
-@register_jitted(cache=True)
-def approx_buy_value_nb(
-    position: float,
-    debt: float,
-    locked_cash: float,
-    val_price: float,
-    size: float,
-    direction: int,
-) -> float:
-    """Approximate value of a buy operation.
-
-    Calculates an estimated order value based on the current position, debt, locked cash,
-    valuation price, and desired order size. Depending on the position and trade direction,
-    it uses a short or long buy approximation or a combination of both. A positive return
-    value indicates spending, which is useful for sorting.
-
-    Args:
-        position (float): Current position amount.
-        debt (float): Current debt amount.
-        locked_cash (float): Cash currently locked as collateral.
-        val_price (float): Valuation price of the asset.
-        size (float): Requested order size.
-        direction (int): Order direction.
-
-            See `vectorbtpro.portfolio.enums.Direction`.
-
-    Returns:
-        float: Approximate order value representing the spending amount.
-    """
-    if position <= 0 and direction == Direction.ShortOnly:
-        return approx_short_buy_value_nb(position, debt, locked_cash, val_price, size)
-    if position >= 0:
-        return approx_long_buy_value_nb(val_price, size)
-    value1 = approx_short_buy_value_nb(position, debt, locked_cash, val_price, size)
-    new_size = add_nb(size, -abs(position))
-    if new_size <= 0:
-        return value1
-    value2 = approx_long_buy_value_nb(val_price, new_size)
-    return value1 + value2
 
 
 @register_jitted(cache=True)
@@ -882,6 +748,7 @@ def buy_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     leverage: float = 1.0,
     leverage_mode: int = LeverageMode.Lazy,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
@@ -908,6 +775,7 @@ def buy_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
 
@@ -939,6 +807,7 @@ def buy_nb(
             min_size=min_size,
             max_size=max_size,
             size_granularity=size_granularity,
+            cash_limit=cash_limit,
             price_area_vio_mode=price_area_vio_mode,
             allow_partial=allow_partial,
             percent=percent,
@@ -956,6 +825,7 @@ def buy_nb(
             min_size=min_size,
             max_size=max_size,
             size_granularity=size_granularity,
+            cash_limit=cash_limit,
             leverage=leverage,
             leverage_mode=leverage_mode,
             price_area_vio_mode=price_area_vio_mode,
@@ -983,6 +853,7 @@ def buy_nb(
         min_size=min_size1,
         max_size=max_size1,
         size_granularity=size_granularity,
+        cash_limit=cash_limit,
         price_area_vio_mode=price_area_vio_mode,
         allow_partial=allow_partial,
         percent=np.nan,
@@ -1004,6 +875,11 @@ def buy_nb(
         max_size2 = max(max_size - abs(_account_state.position), 0.0)
     else:
         max_size2 = np.nan
+    cash_limit1 = max(add_nb(_account_state.free_cash, -new_account_state1.free_cash), 0.0)
+    if np.isnan(cash_limit):
+        cash_limit2 = np.nan
+    else:
+        cash_limit2 = max(add_nb(cash_limit, -cash_limit1), 0.0)
     new_order_result2, new_account_state2 = long_buy_nb(
         account_state=new_account_state1,
         size=new_size,
@@ -1014,6 +890,7 @@ def buy_nb(
         min_size=min_size2,
         max_size=max_size2,
         size_granularity=size_granularity,
+        cash_limit=cash_limit2,
         leverage=leverage,
         leverage_mode=leverage_mode,
         price_area_vio_mode=price_area_vio_mode,
@@ -1041,43 +918,6 @@ def buy_nb(
 
 
 @register_jitted(cache=True)
-def approx_sell_value_nb(
-    position: float,
-    debt: float,
-    val_price: float,
-    size: float,
-    direction: int,
-) -> float:
-    """Approximate the sell operation value based on asset position, debt, and valuation price.
-
-    Calculates an estimated sell value given the current position, associated debt, valuation price,
-    and order size. A positive result represents spending, which is useful for sorting operations.
-
-    Args:
-        position (float): Current asset position.
-        debt (float): Debt associated with the asset.
-        val_price (float): Valuation price of the asset.
-        size (float): Size of the sell order.
-        direction (int): Order direction.
-
-            See `vectorbtpro.portfolio.enums.Direction`.
-
-    Returns:
-        float: Approximate value of the sell operation.
-    """
-    if position >= 0 and direction == Direction.LongOnly:
-        return approx_long_sell_value_nb(position, debt, val_price, size)
-    if position <= 0:
-        return approx_short_sell_value_nb(val_price, size)
-    value1 = approx_long_sell_value_nb(position, debt, val_price, size)
-    new_size = add_nb(size, -abs(position))
-    if new_size <= 0:
-        return value1
-    value2 = approx_short_sell_value_nb(val_price, new_size)
-    return value1 + value2
-
-
-@register_jitted(cache=True)
 def sell_nb(
     account_state: AccountState,
     size: float,
@@ -1089,7 +929,9 @@ def sell_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     leverage: float = 1.0,
+    leverage_mode: int = LeverageMode.Lazy,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
     allow_partial: bool = True,
     percent: float = np.nan,
@@ -1118,7 +960,11 @@ def sell_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         leverage (float): Leverage factor.
+        leverage_mode (int): Leverage mode.
+
+            See `vectorbtpro.portfolio.enums.LeverageMode`.
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
@@ -1145,6 +991,7 @@ def sell_nb(
             min_size=min_size,
             max_size=max_size,
             size_granularity=size_granularity,
+            cash_limit=cash_limit,
             price_area_vio_mode=price_area_vio_mode,
             allow_partial=allow_partial,
             percent=percent,
@@ -1162,7 +1009,9 @@ def sell_nb(
             min_size=min_size,
             max_size=max_size,
             size_granularity=size_granularity,
+            cash_limit=cash_limit,
             leverage=leverage,
+            leverage_mode=leverage_mode,
             price_area_vio_mode=price_area_vio_mode,
             allow_partial=allow_partial,
             percent=percent,
@@ -1188,6 +1037,7 @@ def sell_nb(
         min_size=min_size1,
         max_size=max_size1,
         size_granularity=size_granularity,
+        cash_limit=cash_limit,
         price_area_vio_mode=price_area_vio_mode,
         allow_partial=allow_partial,
         percent=np.nan,
@@ -1209,6 +1059,11 @@ def sell_nb(
         max_size2 = max(max_size - _account_state.position, 0.0)
     else:
         max_size2 = np.nan
+    cash_limit1 = max(add_nb(_account_state.free_cash, -new_account_state1.free_cash), 0.0)
+    if np.isnan(cash_limit):
+        cash_limit2 = np.nan
+    else:
+        cash_limit2 = max(add_nb(cash_limit, -cash_limit1), 0.0)
     new_order_result2, new_account_state2 = short_sell_nb(
         account_state=new_account_state1,
         size=new_size,
@@ -1219,7 +1074,9 @@ def sell_nb(
         min_size=min_size2,
         max_size=max_size2,
         size_granularity=size_granularity,
+        cash_limit=cash_limit2,
         leverage=leverage,
+        leverage_mode=leverage_mode,
         price_area_vio_mode=price_area_vio_mode,
         allow_partial=allow_partial,
         percent=percent,
@@ -1403,6 +1260,190 @@ def resolve_size_nb(
 
 
 @register_jitted(cache=True)
+def approx_long_buy_value_nb(val_price: float, size: float) -> float:
+    """Approximate the value of a long-buy operation.
+
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
+
+    Args:
+        val_price (float): Valuation price of the asset.
+        size (float): Order size.
+
+    Returns:
+        float: Approximated value of the long-buy operation.
+    """
+    if np.isnan(size):
+        return np.nan
+    if size == 0:
+        return 0.0
+    order_value = abs(size) * val_price
+    add_free_cash = -order_value
+    return -add_free_cash
+
+
+@register_jitted(cache=True)
+def approx_long_sell_value_nb(position: float, debt: float, val_price: float, size: float) -> float:
+    """Approximate the value of a long-sell operation.
+
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
+
+    Args:
+        position (float): Current position size.
+        debt (float): Current account debt.
+        val_price (float): Valuation price of the asset.
+        size (float): Requested order size for the long-sell operation.
+
+    Returns:
+        float: Approximated value of the long-sell operation.
+    """
+    if np.isnan(size):
+        return np.nan
+    if size == 0 or position == 0:
+        return 0.0
+    size_limit = min(abs(size), position)
+    order_value = size_limit * val_price
+    size_fraction = size_limit / position
+    released_debt = size_fraction * debt
+    add_free_cash = order_value - released_debt
+    return -add_free_cash
+
+
+@register_jitted(cache=True)
+def approx_short_sell_value_nb(val_price: float, size: float) -> float:
+    """Approximate the value of a short-sell operation.
+
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
+
+    Args:
+        val_price (float): Valuation price of the asset.
+        size (float): Size of the short position.
+
+    Returns:
+        float: Approximated value of the short-sell operation.
+    """
+    if np.isnan(size):
+        return np.nan
+    if size == 0:
+        return 0.0
+    order_value = abs(size) * val_price
+    add_free_cash = -order_value
+    return -add_free_cash
+
+
+@register_jitted(cache=True)
+def approx_short_buy_value_nb(position: float, debt: float, locked_cash: float, val_price: float, size: float) -> float:
+    """Approximate value of a short-buy operation.
+
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
+
+    Args:
+        position (float): Current short position size.
+        debt (float): Total debt associated with the short position.
+        locked_cash (float): Cash currently locked as collateral.
+        val_price (float): Valuation price of the asset.
+        size (float): Desired order size for the short-buy operation.
+
+    Returns:
+        float: Approximated value of the short-buy operation.
+    """
+    if np.isnan(size):
+        return np.nan
+    if size == 0 or position == 0:
+        return 0.0
+    size_limit = min(abs(size), abs(position))
+    order_value = size_limit * val_price
+    size_fraction = size_limit / abs(position)
+    released_debt = size_fraction * debt
+    released_cash = size_fraction * locked_cash
+    add_free_cash = released_cash + released_debt - order_value
+    return -add_free_cash
+
+
+@register_jitted(cache=True)
+def approx_buy_value_nb(
+    position: float,
+    debt: float,
+    locked_cash: float,
+    val_price: float,
+    size: float,
+    direction: int,
+) -> float:
+    """Approximate value of a buy operation.
+
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
+
+    Args:
+        position (float): Current position amount.
+        debt (float): Current debt amount.
+        locked_cash (float): Cash currently locked as collateral.
+        val_price (float): Valuation price of the asset.
+        size (float): Requested order size.
+        direction (int): Order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+
+    Returns:
+        float: Approximated value of the buy operation.
+    """
+    if np.isnan(size):
+        return np.nan
+    if position <= 0 and direction == Direction.ShortOnly:
+        return approx_short_buy_value_nb(position, debt, locked_cash, val_price, size)
+    if position >= 0:
+        return approx_long_buy_value_nb(val_price, size)
+    value1 = approx_short_buy_value_nb(position, debt, locked_cash, val_price, size)
+    new_size = add_nb(size, -abs(position))
+    if new_size <= 0:
+        return value1
+    value2 = approx_long_buy_value_nb(val_price, new_size)
+    return value1 + value2
+
+
+@register_jitted(cache=True)
+def approx_sell_value_nb(
+    position: float,
+    debt: float,
+    val_price: float,
+    size: float,
+    direction: int,
+) -> float:
+    """Approximate value of a sell operation.
+
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
+
+    Args:
+        position (float): Current asset position.
+        debt (float): Debt associated with the asset.
+        val_price (float): Valuation price of the asset.
+        size (float): Size of the sell order.
+        direction (int): Order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+
+    Returns:
+        float: Approximated value of the sell operation.
+    """
+    if np.isnan(size):
+        return np.nan
+    if position >= 0 and direction == Direction.LongOnly:
+        return approx_long_sell_value_nb(position, debt, val_price, size)
+    if position <= 0:
+        return approx_short_sell_value_nb(val_price, size)
+    value1 = approx_long_sell_value_nb(position, debt, val_price, size)
+    new_size = add_nb(size, -abs(position))
+    if new_size <= 0:
+        return value1
+    value2 = approx_short_sell_value_nb(val_price, new_size)
+    return value1 + value2
+
+
+@register_jitted(cache=True)
 def approx_order_value_nb(
     exec_state: ExecState,
     size: float,
@@ -1413,7 +1454,8 @@ def approx_order_value_nb(
 
     Assumes infinite cash.
 
-    Positive value indicates spending (used for sorting purposes).
+    !!! note
+        Positive return value indicates spending (for sorting purposes).
 
     Args:
         exec_state (ExecState): Current execution state.
@@ -1428,8 +1470,10 @@ def approx_order_value_nb(
             See `vectorbtpro.portfolio.enums.Direction`.
 
     Returns:
-        float: Approximate order value.
+        float: Approximated value of the order.
     """
+    if np.isnan(size):
+        return np.nan
     size = get_diraware_size_nb(float(size), direction)
     amount_size, _ = resolve_size_nb(
         size=size,
@@ -1488,7 +1532,6 @@ def execute_order_nb(
         Tuple[OrderResult, ExecState]: Tuple containing the order execution result and
             the updated execution state.
     """
-    # numerical stability
     cash = float(exec_state.cash)
     if is_close_nb(cash, 0):
         cash = 0.0
@@ -1511,7 +1554,6 @@ def execute_order_nb(
     if is_close_nb(value, 0):
         value = 0.0
 
-    # Pre-fill account state
     account_state = AccountState(
         cash=cash,
         position=position,
@@ -1520,7 +1562,6 @@ def execute_order_nb(
         free_cash=free_cash,
     )
 
-    # Check price area
     if np.isinf(price_area.open) or price_area.open < 0:
         raise ValueError("price_area.open must be either NaN, or finite and 0 or greater")
     if np.isinf(price_area.high) or price_area.high < 0:
@@ -1530,7 +1571,6 @@ def execute_order_nb(
     if np.isinf(price_area.close) or price_area.close < 0:
         raise ValueError("price_area.close must be either NaN, or finite and 0 or greater")
 
-    # Resolve price
     order_price = order.price
     is_closing_price = False
     if np.isinf(order_price):
@@ -1544,13 +1584,11 @@ def execute_order_nb(
     elif order_price == PriceType.NextClose:
         raise ValueError("Next close must be handled higher in the stack")
 
-    # Ignore order if size or price is nan
     if np.isnan(order.size):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.SizeNaN), exec_state
     if np.isnan(order_price):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.PriceNaN), exec_state
 
-    # Check account state
     if np.isnan(cash):
         raise ValueError("exec_state.cash cannot be NaN")
     if not np.isfinite(position):
@@ -1562,7 +1600,6 @@ def execute_order_nb(
     if np.isnan(free_cash):
         raise ValueError("exec_state.free_cash cannot be NaN")
 
-    # Check order
     if not np.isfinite(order_price) or order_price < 0:
         raise ValueError("order.price must be finite and 0 or greater")
     if order.size_type < 0 or order.size_type >= len(SizeType):
@@ -1581,6 +1618,8 @@ def execute_order_nb(
         raise ValueError("order.max_size must be either NaN or greater than 0")
     if np.isinf(order.size_granularity) or order.size_granularity <= 0:
         raise ValueError("order.size_granularity must be either NaN, or finite and greater than 0")
+    if np.isinf(order.cash_limit) or order.cash_limit < 0:
+        raise ValueError("order.cash_limit must be either NaN, 0, or greater")
     if np.isnan(order.leverage) or order.leverage <= 0:
         raise ValueError("order.leverage must be greater than 0")
     if order.leverage_mode < 0 or order.leverage_mode >= len(LeverageMode):
@@ -1588,7 +1627,6 @@ def execute_order_nb(
     if not np.isfinite(order.reject_prob) or order.reject_prob < 0 or order.reject_prob > 1:
         raise ValueError("order.reject_prob must be between 0 and 1")
 
-    # Positive/negative size in short direction should be treated as negative/positive
     order_size = get_diraware_size_nb(order.size, order.direction)
     min_order_size = order.min_size
     max_order_size = order.max_size
@@ -1659,6 +1697,7 @@ def execute_order_nb(
             min_size=min_order_size,
             max_size=max_order_size,
             size_granularity=order.size_granularity,
+            cash_limit=order.cash_limit,
             leverage=order.leverage,
             leverage_mode=order.leverage_mode,
             price_area_vio_mode=order.price_area_vio_mode,
@@ -1679,7 +1718,9 @@ def execute_order_nb(
             min_size=min_order_size,
             max_size=max_order_size,
             size_granularity=order.size_granularity,
+            cash_limit=order.cash_limit,
             leverage=order.leverage,
+            leverage_mode=order.leverage_mode,
             price_area_vio_mode=order.price_area_vio_mode,
             allow_partial=order.allow_partial,
             percent=percent,
@@ -1793,6 +1834,7 @@ def fill_log_record_nb(
     records["req_min_size"][r, col] = order.min_size
     records["req_max_size"][r, col] = order.max_size
     records["req_size_granularity"][r, col] = order.size_granularity
+    records["req_cash_limit"][r, col] = order.cash_limit
     records["req_leverage"][r, col] = order.leverage
     records["req_leverage_mode"][r, col] = order.leverage_mode
     records["req_reject_prob"][r, col] = order.reject_prob
@@ -1929,7 +1971,6 @@ def process_order_nb(
         Tuple[OrderResult, ExecState]: Tuple containing the result of the order execution and
             the updated execution state.
     """
-    # Execute the order
     order_result, new_exec_state = execute_order_nb(
         exec_state=exec_state,
         order=order,
@@ -1940,7 +1981,6 @@ def process_order_nb(
     is_filled = order_result.status == OrderStatus.Filled
     if order_records is not None and order_counts is not None:
         if is_filled and order_records.shape[0] > 0:
-            # Fill order record
             if order_counts[col] >= order_records.shape[0]:
                 raise IndexError("order_records index out of range. Set a higher max_order_records.")
             fill_order_record_nb(order_records, order_counts[col], col, i, order_result)
@@ -1948,7 +1988,6 @@ def process_order_nb(
 
     if log_records is not None and log_counts is not None:
         if order.log and log_records.shape[0] > 0:
-            # Fill log record
             if log_counts[col] >= log_records.shape[0]:
                 raise IndexError("log_records index out of range. Set a higher max_log_records.")
             fill_log_record_nb(
@@ -1981,6 +2020,7 @@ def order_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     leverage: float = 1.0,
     leverage_mode: int = LeverageMode.Lazy,
     reject_prob: float = 0.0,
@@ -2006,6 +2046,7 @@ def order_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
 
@@ -2032,6 +2073,7 @@ def order_nb(
         min_size=float(min_size),
         max_size=float(max_size),
         size_granularity=float(size_granularity),
+        cash_limit=float(cash_limit),
         leverage=float(leverage),
         leverage_mode=int(leverage_mode),
         reject_prob=float(reject_prob),
@@ -2051,6 +2093,7 @@ def close_position_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     leverage: float = 1.0,
     leverage_mode: int = LeverageMode.Lazy,
     reject_prob: float = 0.0,
@@ -2069,6 +2112,7 @@ def close_position_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
 
@@ -2095,6 +2139,7 @@ def close_position_nb(
         min_size=min_size,
         max_size=max_size,
         size_granularity=size_granularity,
+        cash_limit=cash_limit,
         leverage=leverage,
         leverage_mode=leverage_mode,
         reject_prob=reject_prob,
@@ -2475,7 +2520,6 @@ def fill_init_pos_info_nb(record: tp.Record, col: int, position_now: float, pric
     record["status"] = TradeStatus.Open
     record["parent_id"] = record["id"]
 
-    # Update open position stats
     update_open_pos_info_stats_nb(record, position_now, np.nan)
 
 
@@ -2509,7 +2553,6 @@ def update_pos_info_nb(
     """
     if order_result.status == OrderStatus.Filled:
         if position_before == 0 and position_now != 0:
-            # New position opened
             record["id"] += 1
             record["col"] = col
             record["size"] = order_result.size
@@ -2528,7 +2571,6 @@ def update_pos_info_nb(
             record["status"] = TradeStatus.Open
             record["parent_id"] = record["id"]
         elif position_before != 0 and position_now == 0:
-            # Position closed
             record["exit_order_id"] = order_id
             record["exit_idx"] = i
             if np.isnan(record["exit_price"]):
@@ -2552,7 +2594,6 @@ def update_pos_info_nb(
             record["return"] = ret
             record["status"] = TradeStatus.Closed
         elif np.sign(position_before) != np.sign(position_now):
-            # Position reversed
             record["id"] += 1
             record["size"] = abs(position_now)
             record["entry_order_id"] = order_id
@@ -2571,9 +2612,7 @@ def update_pos_info_nb(
             record["status"] = TradeStatus.Open
             record["parent_id"] = record["id"]
         else:
-            # Position changed
             if abs(position_before) <= abs(position_now):
-                # Position increased
                 entry_gross_sum = record["size"] * record["entry_price"]
                 entry_gross_sum += order_result.size * order_result.price
                 entry_price = entry_gross_sum / (record["size"] + order_result.size)
@@ -2581,7 +2620,6 @@ def update_pos_info_nb(
                 record["entry_fees"] += order_result.fees
                 record["size"] += order_result.size
             else:
-                # Position decreased
                 record["exit_order_id"] = order_id
                 if np.isnan(record["exit_price"]):
                     exit_price = order_result.price
@@ -2593,7 +2631,6 @@ def update_pos_info_nb(
                 record["exit_price"] = exit_price
                 record["exit_fees"] += order_result.fees
 
-        # Update open position stats
         update_open_pos_info_stats_nb(record, position_now, order_result.price)
 
 
@@ -3678,6 +3715,9 @@ def set_sl_info_nb(
 ) -> None:
     """Set SL (stop loss) order information in the provided record.
 
+    See:
+        `vectorbtpro.portfolio.enums.sl_info_dt`
+
     Args:
         sl_info (Record): Record containing SL order information.
 
@@ -3711,9 +3751,6 @@ def set_sl_info_nb(
 
     Returns:
         None: Function modifies the `sl_info` record in place.
-
-    See:
-        `vectorbtpro.portfolio.enums.sl_info_dt`
     """
     sl_info["init_idx"] = init_idx
     sl_info["init_price"] = init_price
@@ -3782,6 +3819,9 @@ def set_tsl_info_nb(
 ) -> None:
     """Set TSL/TTP order information.
 
+    See:
+        `vectorbtpro.portfolio.enums.tsl_info_dt`
+
     Args:
         tsl_info (Record): Record containing TSL order information.
 
@@ -3822,9 +3862,6 @@ def set_tsl_info_nb(
 
     Returns:
         None: Function modifies the `tsl_info` record in place.
-
-    See:
-        `vectorbtpro.portfolio.enums.tsl_info_dt`
     """
     tsl_info["init_idx"] = init_idx
     tsl_info["init_price"] = init_price
@@ -3896,6 +3933,9 @@ def set_tp_info_nb(
 ) -> None:
     """Set TP order information.
 
+    See:
+        `vectorbtpro.portfolio.enums.tp_info_dt`
+
     Args:
         tp_info (Record): Record containing TP order information.
 
@@ -3929,9 +3969,6 @@ def set_tp_info_nb(
 
     Returns:
         None: Function modifies the `tp_info` record in place.
-
-    See:
-        `vectorbtpro.portfolio.enums.tp_info_dt`
     """
     tp_info["init_idx"] = init_idx
     tp_info["init_price"] = init_price
@@ -3997,6 +4034,9 @@ def set_time_info_nb(
 ) -> None:
     """Set time order information.
 
+    See:
+        `vectorbtpro.portfolio.enums.time_info_dt`
+
     Args:
         time_info (Record): Record containing time-based order information.
 
@@ -4032,9 +4072,6 @@ def set_time_info_nb(
 
     Returns:
         None: Function modifies the `time_info` record in place.
-
-    See:
-        `vectorbtpro.portfolio.enums.time_info_dt`
     """
     time_info["init_idx"] = init_idx
     time_info["init_position"] = init_position

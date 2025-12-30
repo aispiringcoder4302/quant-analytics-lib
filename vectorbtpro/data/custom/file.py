@@ -228,13 +228,11 @@ class FileData(LocalData):
 
             single_key = False
             if isinstance(keys, (str, Path)):
-                # Single key
                 keys = [keys]
                 single_key = True
 
             single_path = False
             if isinstance(paths, (str, Path)):
-                # Single path
                 paths = [paths]
                 single_path = True
                 if sync:
@@ -242,7 +240,6 @@ class FileData(LocalData):
 
             cls.check_dict_type(paths, "paths", dict_type=dict_type)
             if isinstance(paths, key_dict):
-                # Dict of path per key
                 if sync:
                     keys = list(paths.keys())
                 elif len(keys) != len(paths):
@@ -251,7 +248,6 @@ class FileData(LocalData):
                     else:
                         raise ValueError("Number of symbols must be equal to the number of matched paths")
             elif checks.is_iterable(paths) or checks.is_sequence(paths):
-                # Multiple paths
                 matched_paths = [
                     p
                     for sub_path in paths
