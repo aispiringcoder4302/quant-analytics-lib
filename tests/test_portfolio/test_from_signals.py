@@ -6533,15 +6533,24 @@ class TestFromSignals:
 
     @pytest.mark.parametrize("test_group_by", [False, np.array([0, 0, 1])])
     @pytest.mark.parametrize("test_cash_sharing", [False, True])
-    def test_save_returns(self, test_group_by, test_cash_sharing):
+    @pytest.mark.parametrize("test_flexible", [False, True])
+    def test_save_returns(self, test_group_by, test_cash_sharing, test_flexible):
+        if test_flexible:
+            _from_signals_both = partial(from_signals_both, adjust_func_nb=adjust_func_nb)
+            _from_signals_longonly = partial(from_signals_longonly, adjust_func_nb=adjust_func_nb)
+            _from_signals_shortonly = partial(from_signals_shortonly, adjust_func_nb=adjust_func_nb)
+        else:
+            _from_signals_both = from_signals_both
+            _from_signals_longonly = from_signals_longonly
+            _from_signals_shortonly = from_signals_shortonly
         assert_frame_equal(
-            from_signals_both(
+            _from_signals_both(
                 close=price_wide,
                 save_returns=True,
                 group_by=test_group_by,
                 cash_sharing=test_cash_sharing,
             ).returns,
-            from_signals_both(
+            _from_signals_both(
                 close=price_wide,
                 save_returns=False,
                 group_by=test_group_by,
@@ -6549,13 +6558,13 @@ class TestFromSignals:
             ).returns,
         )
         assert_frame_equal(
-            from_signals_longonly(
+            _from_signals_longonly(
                 close=price_wide,
                 save_returns=True,
                 group_by=test_group_by,
                 cash_sharing=test_cash_sharing,
             ).returns,
-            from_signals_longonly(
+            _from_signals_longonly(
                 close=price_wide,
                 save_returns=False,
                 group_by=test_group_by,
@@ -6563,13 +6572,13 @@ class TestFromSignals:
             ).returns,
         )
         assert_frame_equal(
-            from_signals_shortonly(
+            _from_signals_shortonly(
                 close=price_wide,
                 save_returns=True,
                 group_by=test_group_by,
                 cash_sharing=test_cash_sharing,
             ).returns,
-            from_signals_shortonly(
+            _from_signals_shortonly(
                 close=price_wide,
                 save_returns=False,
                 group_by=test_group_by,

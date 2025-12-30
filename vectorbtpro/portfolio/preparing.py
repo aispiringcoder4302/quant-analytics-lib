@@ -1619,9 +1619,8 @@ class FSPreparer(BasePFPreparer):
     def pre_sim_func_nb(self) -> tp.Optional[tp.Callable]:
         """Processed `pre_sim_func_nb` argument.
 
-        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
-
-        If a value is provided, it is returned. Outside dynamic mode, returns None.
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`;
+        otherwise, the provided callable is returned. If dynamic mode is inactive, returns None.
 
         Returns:
             Optional[Callable]: Pre-simulation function callable or None.
@@ -1636,9 +1635,8 @@ class FSPreparer(BasePFPreparer):
     def pre_group_func_nb(self) -> tp.Optional[tp.Callable]:
         """Processed `pre_group_func_nb` argument.
 
-        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
-
-        If a value is provided, it is returned. Outside dynamic mode, returns None.
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`;
+        otherwise, the provided callable is returned. If dynamic mode is inactive, returns None.
 
         Returns:
             Optional[Callable]: Pre-group function callable or None.
@@ -1653,9 +1651,8 @@ class FSPreparer(BasePFPreparer):
     def pre_segment_func_nb(self) -> tp.Optional[tp.Callable]:
         """Processed `pre_segment_func_nb` argument.
 
-        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
-
-        If a value is provided, it is returned. Outside dynamic mode, returns None.
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`;
+        otherwise, the provided callable is returned. If dynamic mode is inactive, returns None.
 
         Returns:
             Optional[Callable]: Pre-segment function callable or None.
@@ -1670,9 +1667,8 @@ class FSPreparer(BasePFPreparer):
     def adjust_func_nb(self) -> tp.Optional[tp.Callable]:
         """Processed `adjust_func_nb` argument.
 
-        In dynamic mode, if `adjust_func_nb` is not provided, it returns
-        `vectorbtpro.portfolio.nb.from_signals.no_adjust_func_nb`; otherwise,
-        the provided callable is returned. If dynamic mode is inactive, returns None.
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_signals.no_adjust_func_nb`;
+        otherwise, the provided callable is returned. If dynamic mode is inactive, returns None.
 
         Returns:
             Optional[Callable]: Adjustment function callable or None.
@@ -1714,9 +1710,8 @@ class FSPreparer(BasePFPreparer):
     def pre_order_segment_func_nb(self) -> tp.Optional[tp.Callable]:
         """Processed `pre_order_segment_func_nb` argument.
 
-        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
-
-        If a value is provided, it is returned. Outside dynamic mode, returns None.
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`;
+        otherwise, the provided callable is returned. If dynamic mode is inactive, returns None.
 
         Returns:
             Optional[Callable]: Pre-order segment function callable or None.
@@ -1731,10 +1726,8 @@ class FSPreparer(BasePFPreparer):
     def post_order_func_nb(self) -> tp.Optional[tp.Callable]:
         """Processed `post_order_func_nb` argument.
 
-        In dynamic mode, if not provided, a default `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`
-        is returned; otherwise, the provided callable is used.
-
-        If dynamic mode is inactive, returns None.
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`;
+        otherwise, the provided callable is returned. If dynamic mode is inactive, returns None.
 
         Returns:
             Optional[Callable]: Post-order function callable or None.
@@ -1751,8 +1744,7 @@ class FSPreparer(BasePFPreparer):
 
         In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_signals.save_post_segment_func_nb`
         if saving state, value, or returns is enabled; otherwise, returns
-        `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
-
+        `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`;
         If a value is provided, it is returned. Outside dynamic mode, returns None.
 
         Returns:
@@ -1770,19 +1762,14 @@ class FSPreparer(BasePFPreparer):
     def post_group_func_nb(self) -> tp.Optional[tp.Callable]:
         """Processed `post_group_func_nb` argument.
 
-        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_signals.save_post_group_func_nb`
-        if saving state, value, or returns is enabled; otherwise, returns
-        `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
-
-        If a value is provided, it is returned. Outside dynamic mode, returns None.
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`;
+        otherwise, the provided callable is returned. If dynamic mode is inactive, returns None.
 
         Returns:
             Optional[Callable]: Post-group function callable or None.
         """
         if self.dynamic_mode:
             if self["post_group_func_nb"] is None:
-                if self.save_state or self.save_value or self.save_returns:
-                    return nb.save_post_group_func_nb
                 return nb.no_post_func_nb
             return self["post_group_func_nb"]
         return None
@@ -1791,19 +1778,14 @@ class FSPreparer(BasePFPreparer):
     def post_sim_func_nb(self) -> tp.Optional[tp.Callable]:
         """Processed `post_sim_func_nb` argument.
 
-        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_signals.save_post_sim_func_nb`
-        if saving state, value, or returns is enabled; otherwise, returns
-        `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
-
-        If a value is provided, it is returned. Outside dynamic mode, returns None.
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`;
+        otherwise, the provided callable is returned. If dynamic mode is inactive, returns None.
 
         Returns:
             Optional[Callable]: Post-simulation function callable or None.
         """
         if self.dynamic_mode:
             if self["post_sim_func_nb"] is None:
-                if self.save_state or self.save_value or self.save_returns:
-                    return nb.save_post_sim_func_nb
                 return nb.no_post_func_nb
             return self["post_sim_func_nb"]
         return None
