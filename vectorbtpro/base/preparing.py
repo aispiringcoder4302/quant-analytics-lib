@@ -712,19 +712,20 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """
         arg_broadcast_kwargs = defaultdict(dict)
         for k, v in self.arg_config.items():
-            if v.get("full_shape", False):
+            if v.get("full_shape", False) or v.get("rows_only", False) or v.get("cols_only", False):
                 if "keep_flex" not in arg_broadcast_kwargs:
                     arg_broadcast_kwargs["keep_flex"] = {}
                 arg_broadcast_kwargs["keep_flex"][k] = False
+                if "min_ndim" not in arg_broadcast_kwargs:
+                    arg_broadcast_kwargs["min_ndim"] = {}
+                arg_broadcast_kwargs["min_ndim"][k] = 2
             if v.get("rows_only", False):
                 if "axis" not in arg_broadcast_kwargs:
                     arg_broadcast_kwargs["axis"] = {}
-                arg_broadcast_kwargs["keep_flex"][k] = False
                 arg_broadcast_kwargs["axis"][k] = 0
             if v.get("cols_only", False):
                 if "axis" not in arg_broadcast_kwargs:
                     arg_broadcast_kwargs["axis"] = {}
-                arg_broadcast_kwargs["keep_flex"][k] = False
                 arg_broadcast_kwargs["axis"][k] = 1
             if v.get("broadcast", False):
                 broadcast_kwargs = v.get("broadcast_kwargs", None)

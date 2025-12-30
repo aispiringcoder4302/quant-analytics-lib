@@ -32,7 +32,7 @@ from types import ModuleType, MethodWrapperType
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import DefineMixin, define, get_type_and_kind, get_attr, get_attrs
-from vectorbtpro.utils.config import Configured, merge_dicts
+from vectorbtpro.utils.config import Configured, merge_dicts, get
 from vectorbtpro.utils.module_ import import_module, resolve_module, get_module, package_shortcut_config
 from vectorbtpro.utils.warnings_ import warn
 
@@ -2064,6 +2064,13 @@ class RefGraph(Configured):
         nodes = data["nodes"]
         edges = data["edges"]
         pos = {n["id"]: (n["x"], n["y"]) for n in nodes}
+        incoming_adj = defaultdict(set)
+        outgoing_adj = defaultdict(set)
+        for e in edges:
+            u = e["source"]
+            v = e["target"]
+            outgoing_adj[u].add(v)
+            incoming_adj[v].add(u)
 
         if isinstance(highlight_neighbors, bool):
             if highlight_neighbors:
@@ -2080,6 +2087,15 @@ class RefGraph(Configured):
         if make_figure_kwargs is None:
             make_figure_kwargs = {}
 
+        if isinstance(interactive, bool):
+            if interactive:
+                interactive = "notebook" if checks.in_notebook() else "dash"
+            else:
+                interactive = None
+        if isinstance(interactive, str) and interactive.lower() == "notebook":
+            make_figure_kwargs = dict(make_figure_kwargs or {})
+            make_figure_kwargs["use_widgets"] = True
+
         if use_webgl is None:
             use_webgl = plotting_cfg["use_webgl"] and len(nodes) + len(edges) >= 10_000
         if use_webgl:
@@ -2087,30 +2103,10 @@ class RefGraph(Configured):
         else:
             Scatter = go.Scatter
 
-        def _plot(fig, highlight_nodes):
-            if isinstance(highlight_nodes, str):
-                highlight_nodes = [highlight_nodes]
-            highlight_set = set(highlight_nodes or [])
-            highlight_set = {ensure_refname(n, module=module, resolve=resolve) for n in highlight_set}
-            highlight_set &= set(pos.keys())
-            neighbor_set = dict(
-                incoming=set(),
-                outgoing=set(),
-            )
-            if highlight_set and highlight_neighbors.lower() != "none":
-                for e in edges:
-                    u = e["source"]
-                    v = e["target"]
-                    if highlight_neighbors.lower() in ("both", "outgoing"):
-                        if u in highlight_set and v not in highlight_set:
-                            neighbor_set["outgoing"].add(v)
-                    if highlight_neighbors.lower() in ("both", "incoming"):
-                        if v in highlight_set and u not in highlight_set:
-                            neighbor_set["incoming"].add(u)
+        xaxis = "xaxis" + xref[1:]
+        yaxis = "yaxis" + yref[1:]
 
-            xaxis = "xaxis" + xref[1:]
-            yaxis = "yaxis" + yref[1:]
-
+        def _resolve_fig(fig):
             if fig is None:
                 fig = make_figure(**make_figure_kwargs)
                 def_width = layout_cfg.get("width", None)
@@ -2143,10 +2139,119 @@ class RefGraph(Configured):
             else:
                 _layout_kwargs = layout_kwargs
             fig.update_layout(**_layout_kwargs)
+            return fig
 
-            node_x = [n["x"] for n in nodes]
-            node_y = [n["y"] for n in nodes]
-            node_colors = [n["color"] for n in nodes]
+        fig = _resolve_fig(fig)
+
+        bg = get_bgcolor(fig)
+        contrast_color = get_contrast_color(bg)
+
+        node_x = [n["x"] for n in nodes]
+        node_y = [n["y"] for n in nodes]
+        base_node_colors = [n["color"] for n in nodes]
+        node_style_by_kind = {
+            "module": dict(symbol="square", size=6.0, line=dict(width=0.5)),
+            "class": dict(symbol="diamond", size=5.5, line=dict(width=0.5)),
+            "callable": dict(symbol="circle", size=5.0, line=dict(width=0.5)),
+            "data": dict(symbol="triangle-up", size=4.5, line=dict(width=0.5)),
+            "unknown": dict(symbol="triangle-down", size=4.0, line=dict(width=0.5)),
+        }
+        node_idxs_by_kind = defaultdict(list)
+        for i, n in enumerate(nodes):
+            k = n.get("obj_kind", None)
+            if k is None or k not in node_style_by_kind:
+                k = "unknown"
+            node_idxs_by_kind[k].append(i)
+        node_customdata = [
+            [
+                n["id"],
+                n.get("obj_qualname", None) or "",
+                n.get("obj_module", None) or "",
+                n.get("obj_type", None) or "",
+                n.get("obj_kind", None) or "",
+            ]
+            for n in nodes
+        ]
+        node_hovertemplate = (
+            "qualname: %{customdata[1]}<br>"
+            "module: %{customdata[2]}<br>"
+            "type: %{customdata[3]}<br>"
+            "kind: %{customdata[4]}<extra></extra>"
+        )
+
+        edge_style_by_kind = {
+            "container": dict(color=plotting_cfg["color_schema"]["gray"], width=2, dash="solid"),
+            "direct_base": dict(color=plotting_cfg["color_schema"]["blue"], width=2, dash="solid"),
+            "nested_base": dict(color=plotting_cfg["color_schema"]["cyan"], width=2, dash="dot"),
+            "direct_member": dict(color=plotting_cfg["color_schema"]["green"], width=1, dash="solid"),
+            "nested_member": dict(color=plotting_cfg["color_schema"]["orange"], width=1, dash="dot"),
+            "direct_dependency": dict(color=plotting_cfg["color_schema"]["purple"], width=1, dash="solid"),
+            "nested_dependency": dict(color=plotting_cfg["color_schema"]["pink"], width=1, dash="dot"),
+            "unknown": dict(color=plotting_cfg["color_schema"]["brown"], width=1, dash="dash"),
+        }
+        edges_by_kind = defaultdict(list)
+        for e in edges:
+            if self.is_multigraph:
+                kind = e.get("rel_kind", None)
+                if kind is None or kind not in edge_style_by_kind:
+                    kind = "unknown"
+                edges_by_kind[kind].append(e)
+            else:
+                kinds = e.get("rel_kinds", set())
+                if kinds:
+                    for kind in kinds:
+                        if kind is None or kind not in edge_style_by_kind:
+                            kind = "unknown"
+                        edges_by_kind[kind].append(e)
+                else:
+                    edges_by_kind["unknown"].append(e)
+        kind_edge_data = {}
+        for kind in edge_style_by_kind:
+            kd = []
+            for e in edges_by_kind.get(kind, []):
+                u = e["source"]
+                v = e["target"]
+                x0, y0 = pos[u]
+                x1, y1 = pos[v]
+                kd.append((u, v, x0, y0, x1, y1))
+            kind_edge_data[kind] = kd
+
+        adj_color_cache = {}
+        dim_color_cache = {}
+
+        def _create_trace_specs(highlight_nodes):
+            if isinstance(highlight_nodes, str):
+                highlight_nodes = [highlight_nodes]
+            highlight_set = set(highlight_nodes or [])
+            highlight_set = {ensure_refname(n, module=module, resolve=resolve) for n in highlight_set}
+            highlight_set &= set(pos.keys())
+            neighbor_set = dict(incoming=set(), outgoing=set())
+            if highlight_set and highlight_neighbors.lower() != "none":
+                mode = highlight_neighbors.lower()
+                if mode in ("both", "outgoing"):
+                    neighbor_set["outgoing"] = set().union(*(outgoing_adj[n] for n in highlight_set))
+                    neighbor_set["outgoing"] -= highlight_set
+                if mode in ("both", "incoming"):
+                    neighbor_set["incoming"] = set().union(*(incoming_adj[n] for n in highlight_set))
+                    neighbor_set["incoming"] -= highlight_set
+
+            def _adj_color(c, alpha):
+                key = (c, alpha)
+                out = adj_color_cache.get(key)
+                if out is None:
+                    out = adjust_opacity(c, alpha)
+                    adj_color_cache[key] = out
+                return out
+
+            def _dim_color(c, alpha):
+                key = (c, alpha)
+                out = dim_color_cache.get(key)
+                if out is None:
+                    out = flatten_opacity(_adj_color(c, alpha), background_color=bg)
+                    dim_color_cache[key] = out
+                return out
+
+            node_colors = list(base_node_colors)
             if highlight_set:
                 marker_opacity = []
                 for i, n in enumerate(nodes):
@@ -2157,48 +2262,16 @@ class RefGraph(Configured):
                         marker_opacity.append(0.6)
                     elif highlight_set:
                         marker_opacity.append(1.0)
-                        node_colors[i] = flatten_opacity(
-                            adjust_opacity(node_colors[i], 0.2),
-                            background_color=get_bgcolor(fig),
-                        )
+                        node_colors[i] = _dim_color(node_colors[i], 0.2)
                     else:
                         marker_opacity.append(0.2)
             else:
                 marker_opacity = [1.0] * len(nodes)
-            node_style_by_kind = {
-                "module": dict(symbol="square", size=6, line=dict(width=0.5)),
-                "class": dict(symbol="diamond", size=6, line=dict(width=0.5)),
-                "callable": dict(symbol="circle", size=6, line=dict(width=0.5)),
-                "data": dict(symbol="triangle-up", size=6, line=dict(width=0.5)),
-                "unknown": dict(symbol="triangle-down", size=6, line=dict(width=0.5)),
-            }
-            node_idxs_by_kind = defaultdict(list)
-            for i, n in enumerate(nodes):
-                k = n.get("obj_kind", None)
-                if k is None or k not in node_style_by_kind:
-                    k = "unknown"
-                node_idxs_by_kind[k].append(i)
-            node_customdata = [
-                [
-                    n["id"],
-                    n.get("obj_qualname", None) or "",
-                    n.get("obj_module", None) or "",
-                    n.get("obj_type", None) or "",
-                    n.get("obj_kind", None) or "",
-                ]
-                for n in nodes
-            ]
-            node_hovertemplate = (
-                "qualname: %{customdata[1]}<br>"
-                "module: %{customdata[2]}<br>"
-                "type: %{customdata[3]}<br>"
-                "kind: %{customdata[4]}<extra></extra>"
-            )
 
-            gl_node_trace = None
-            dim_node_traces = []
-            hl_node_traces = []
-            legend_node_traces = []
+            gl_node_trace_spec = None
+            dim_node_trace_specs = []
+            hl_node_trace_specs = []
+            legend_node_trace_specs = []
 
             if use_webgl:
                 hl_idxs = []
@@ -2218,7 +2291,7 @@ class RefGraph(Configured):
                     line=dict(width=0),
                     color="rgba(0,0,0,0)",
                 )
-                nodes_hit_kwargs = merge_dicts(
+                gl_node_trace_spec = merge_dicts(
                     dict(
                         x=[node_x[i] for i in hl_idxs],
                         y=[node_y[i] for i in hl_idxs],
@@ -2231,7 +2304,6 @@ class RefGraph(Configured):
                     ),
                     node_trace_kwargs,
                 )
-                gl_node_trace = Scatter(**nodes_hit_kwargs)
 
             for kind in node_style_by_kind:
                 node_idxs = node_idxs_by_kind.get(kind, [])
@@ -2252,107 +2324,80 @@ class RefGraph(Configured):
 
                 marker = dict(node_style_by_kind.get(kind, node_style_by_kind["unknown"]))
 
-                dim_trace_kwargs = merge_dicts(
-                    dict(
-                        x=[node_x[i] for i in dim_idxs],
-                        y=[node_y[i] for i in dim_idxs],
-                        mode="markers",
-                        marker={
-                            **marker,
-                            "color": [node_colors[i] for i in dim_idxs],
-                            "opacity": [marker_opacity[i] for i in dim_idxs],
-                        },
-                        customdata=[node_customdata[i] for i in dim_idxs],
-                        name=f"{kind}_nodes_dim",
-                        legendgroup=f"{kind}_nodes",
-                        showlegend=False,
-                        hoverinfo="skip",
-                    ),
-                    node_trace_kwargs,
+                dim_node_trace_specs.append(
+                    merge_dicts(
+                        dict(
+                            x=[node_x[i] for i in dim_idxs],
+                            y=[node_y[i] for i in dim_idxs],
+                            mode="markers",
+                            marker={
+                                **marker,
+                                "color": [node_colors[i] for i in dim_idxs],
+                                "opacity": [marker_opacity[i] for i in dim_idxs],
+                            },
+                            customdata=[node_customdata[i] for i in dim_idxs],
+                            name=f"{kind}_nodes_dim",
+                            legendgroup=f"{kind}_nodes",
+                            showlegend=False,
+                            hoverinfo="skip",
+                        ),
+                        node_trace_kwargs,
+                    )
                 )
-                dim_node_traces.append(Scatter(**dim_trace_kwargs))
 
-                hl_trace_kwargs = merge_dicts(
-                    dict(
-                        x=[node_x[i] for i in hl_idxs],
-                        y=[node_y[i] for i in hl_idxs],
-                        mode="markers",
-                        marker={
-                            **marker,
-                            "color": [node_colors[i] for i in hl_idxs],
-                            "opacity": [marker_opacity[i] for i in hl_idxs],
-                        },
-                        customdata=[node_customdata[i] for i in hl_idxs],
-                        name=f"{kind}_nodes_hl",
-                        legendgroup=f"{kind}_nodes",
-                        showlegend=False,
-                        hovertemplate=node_hovertemplate,
-                    ),
-                    node_trace_kwargs,
+                hl_node_trace_specs.append(
+                    merge_dicts(
+                        dict(
+                            x=[node_x[i] for i in hl_idxs],
+                            y=[node_y[i] for i in hl_idxs],
+                            mode="markers",
+                            marker={
+                                **marker,
+                                "color": [node_colors[i] for i in hl_idxs],
+                                "opacity": [marker_opacity[i] for i in hl_idxs],
+                            },
+                            customdata=[node_customdata[i] for i in hl_idxs],
+                            name=f"{kind}_nodes_hl",
+                            legendgroup=f"{kind}_nodes",
+                            showlegend=False,
+                            hovertemplate=node_hovertemplate,
+                        ),
+                        node_trace_kwargs,
+                    )
                 )
-                hl_node_traces.append(Scatter(**hl_trace_kwargs))
 
                 legend_marker = dict(marker)
                 legend_marker["size"] = 8
                 legend_marker["color"] = "rgba(0,0,0,0)"
-                legend_marker["line"]["color"] = get_contrast_color(get_bgcolor(fig))
-                legend_trace_kwargs = merge_dicts(
-                    dict(
-                        x=[None],
-                        y=[None],
-                        mode="markers",
-                        marker=legend_marker,
-                        name=f"{kind}_nodes",
-                        legendgroup=f"{kind}_nodes",
-                        showlegend=True,
-                        hoverinfo="skip",
-                    ),
-                    node_trace_kwargs,
+                legend_marker["line"] = dict(legend_marker["line"])
+                legend_marker["line"]["color"] = contrast_color
+                legend_node_trace_specs.append(
+                    merge_dicts(
+                        dict(
+                            x=[None],
+                            y=[None],
+                            mode="markers",
+                            marker=legend_marker,
+                            name=f"{kind}_nodes",
+                            legendgroup=f"{kind}_nodes",
+                            showlegend=True,
+                            hoverinfo="skip",
+                        ),
+                        node_trace_kwargs,
+                    )
                 )
-                legend_node_traces.append(Scatter(**legend_trace_kwargs))
 
-            edge_style_by_kind = {
-                "container": dict(color=plotting_cfg["color_schema"]["orange"], width=2, dash="solid"),
-                "direct_base": dict(color=plotting_cfg["color_schema"]["red"], width=2, dash="solid"),
-                "nested_base": dict(color=plotting_cfg["color_schema"]["red"], width=2, dash="dot"),
-                "direct_member": dict(color=plotting_cfg["color_schema"]["green"], width=1, dash="solid"),
-                "nested_member": dict(color=plotting_cfg["color_schema"]["green"], width=1, dash="dot"),
-                "direct_dependency": dict(color=plotting_cfg["color_schema"]["blue"], width=1, dash="solid"),
-                "nested_dependency": dict(color=plotting_cfg["color_schema"]["blue"], width=1, dash="dot"),
-                "unknown": dict(color=plotting_cfg["color_schema"]["gray"], width=1, dash="dash"),
-            }
-            edges_by_kind = defaultdict(list)
-            for e in edges:
-                if self.is_multigraph:
-                    kind = e.get("rel_kind", None)
-                    if kind is None or kind not in edge_style_by_kind:
-                        kind = "unknown"
-                    edges_by_kind[kind].append(e)
-                else:
-                    kinds = e.get("rel_kinds", set())
-                    if kinds:
-                        for kind in kinds:
-                            if kind is None or kind not in edge_style_by_kind:
-                                kind = "unknown"
-                            edges_by_kind[kind].append(e)
-                    else:
-                        edges_by_kind["unknown"].append(e)
-
-            dim_edge_traces = []
-            hl_edge_traces = []
-            legend_edge_traces = []
+            dim_edge_trace_specs = []
+            hl_edge_trace_specs = []
+            legend_edge_trace_specs = []
 
             for kind in edge_style_by_kind:
-                kind_edges = edges_by_kind.get(kind, [])
+                default_edge_visible = True if kind == "container" else "legendonly"
 
                 hl_edge_x, hl_edge_y = [], []
                 dim_edge_x, dim_edge_y = [], []
                 hl_dir_x, hl_dir_y = [], []
-                for e in kind_edges:
-                    u = e["source"]
-                    v = e["target"]
-                    x0, y0 = pos[u]
-                    x1, y1 = pos[v]
+                for u, v, x0, y0, x1, y1 in kind_edge_data.get(kind, []):
                     highlight_edge = (
                         (u in highlight_set and v in highlight_set)
                         or (u in highlight_set and v in neighbor_set["outgoing"])
@@ -2375,135 +2420,181 @@ class RefGraph(Configured):
 
                 dim_line = dict(line)
                 if highlight_set:
-                    dim_line["color"] = flatten_opacity(
-                        adjust_opacity(dim_line["color"], 0.2),
-                        background_color=get_bgcolor(fig),
-                    )
+                    dim_line["color"] = _dim_color(dim_line["color"], 0.2)
                 else:
-                    dim_line["color"] = adjust_opacity(dim_line["color"], 0.2)
+                    dim_line["color"] = _adj_color(dim_line["color"], 0.2)
                 dim_x = dim_edge_x if show_dimmed or not highlight_set else []
                 dim_y = dim_edge_y if show_dimmed or not highlight_set else []
-                dim_trace_kwargs = merge_dicts(
-                    dict(
-                        x=dim_x,
-                        y=dim_y,
-                        mode="lines",
-                        line=dim_line,
-                        name=f"{kind}_edges_dim",
-                        legendgroup=f"{kind}_edges",
-                        showlegend=False,
-                        hoverinfo="none",
-                    ),
-                    edge_trace_kwargs,
+                dim_edge_trace_specs.append(
+                    merge_dicts(
+                        dict(
+                            x=dim_x,
+                            y=dim_y,
+                            mode="lines",
+                            line=dim_line,
+                            name=f"{kind}_edges_dim",
+                            legendgroup=f"{kind}_edges",
+                            showlegend=False,
+                            hoverinfo="none",
+                            visible=default_edge_visible,
+                        ),
+                        edge_trace_kwargs,
+                    )
                 )
-                dim_edge_traces.append(Scatter(**dim_trace_kwargs))
 
                 hl_line = dict(line)
                 hl_line["width"] = hl_line["width"] + 1
-                hl_line["color"] = adjust_opacity(hl_line["color"], 0.8)
+                hl_line["color"] = _adj_color(hl_line["color"], 0.8)
                 hl_x = hl_edge_x if highlight_set else []
                 hl_y = hl_edge_y if highlight_set else []
-                hl_trace_kwargs = merge_dicts(
-                    dict(
-                        x=hl_x,
-                        y=hl_y,
-                        mode="lines",
-                        line=hl_line,
-                        name=f"{kind}_edges_hl",
-                        legendgroup=f"{kind}_edges",
-                        showlegend=False,
-                        hoverinfo="none",
-                    ),
-                    edge_trace_kwargs,
+                hl_edge_trace_specs.append(
+                    merge_dicts(
+                        dict(
+                            x=hl_x,
+                            y=hl_y,
+                            mode="lines",
+                            line=hl_line,
+                            name=f"{kind}_edges_hl",
+                            legendgroup=f"{kind}_edges",
+                            showlegend=False,
+                            hoverinfo="none",
+                            visible=default_edge_visible,
+                        ),
+                        edge_trace_kwargs,
+                    )
                 )
-                hl_edge_traces.append(Scatter(**hl_trace_kwargs))
 
                 dir_line = dict(hl_line)
                 dir_line["width"] = hl_line["width"] * 2
                 dir_x = hl_dir_x if highlight_set else []
                 dir_y = hl_dir_y if highlight_set else []
-                dir_trace_kwargs = merge_dicts(
-                    dict(
-                        x=dir_x,
-                        y=dir_y,
-                        mode="lines",
-                        line=dir_line,
-                        name=f"{kind}_edges_dir",
-                        legendgroup=f"{kind}_edges",
-                        showlegend=False,
-                        hoverinfo="skip",
-                    ),
-                    edge_trace_kwargs,
+                hl_edge_trace_specs.append(
+                    merge_dicts(
+                        dict(
+                            x=dir_x,
+                            y=dir_y,
+                            mode="lines",
+                            line=dir_line,
+                            name=f"{kind}_edges_dir",
+                            legendgroup=f"{kind}_edges",
+                            showlegend=False,
+                            hoverinfo="skip",
+                            visible=default_edge_visible,
+                        ),
+                        edge_trace_kwargs,
+                    )
                 )
-                hl_edge_traces.append(Scatter(**dir_trace_kwargs))
 
-                legend_trace_kwargs_kind = merge_dicts(
-                    dict(
-                        x=[None],
-                        y=[None],
-                        mode="lines",
-                        line=line,
-                        name=f"{kind}_edges",
-                        legendgroup=f"{kind}_edges",
-                        showlegend=True,
-                        hoverinfo="skip",
-                    ),
-                    edge_trace_kwargs,
+                legend_edge_trace_specs.append(
+                    merge_dicts(
+                        dict(
+                            x=[None],
+                            y=[None],
+                            mode="lines",
+                            line=line,
+                            name=f"{kind}_edges",
+                            legendgroup=f"{kind}_edges",
+                            showlegend=True,
+                            hoverinfo="skip",
+                            visible=default_edge_visible,
+                        ),
+                        edge_trace_kwargs,
+                    )
                 )
-                legend_edge_traces.append(Scatter(**legend_trace_kwargs_kind))
 
-            if gl_node_trace is not None:
-                fig.add_trace(gl_node_trace, **add_trace_kwargs)
-            for tr in dim_edge_traces:
-                fig.add_trace(tr, **add_trace_kwargs)
-            for tr in dim_node_traces:
-                fig.add_trace(tr, **add_trace_kwargs)
-            for tr in hl_edge_traces:
-                fig.add_trace(tr, **add_trace_kwargs)
-            for tr in hl_node_traces:
-                fig.add_trace(tr, **add_trace_kwargs)
-            for tr in legend_edge_traces:
-                fig.add_trace(tr, **add_trace_kwargs)
-            for tr in legend_node_traces:
-                fig.add_trace(tr, **add_trace_kwargs)
+            trace_specs = []
+            if gl_node_trace_spec is not None:
+                trace_specs.append(gl_node_trace_spec)
+            trace_specs.extend(dim_edge_trace_specs)
+            trace_specs.extend(dim_node_trace_specs)
+            trace_specs.extend(hl_edge_trace_specs)
+            trace_specs.extend(hl_node_trace_specs)
+            trace_specs.extend(legend_edge_trace_specs)
+            trace_specs.extend(legend_node_trace_specs)
+            return trace_specs
 
+        for trace_spec in _create_trace_specs(highlight_nodes):
+            fig.add_trace(Scatter(**trace_spec), **add_trace_kwargs)
+
+        if interactive is None:
             return fig
 
-        if isinstance(interactive, bool):
-            if interactive:
-                if checks.in_notebook():
-                    interactive = "notebook"
-                else:
-                    interactive = "dash"
-            else:
-                interactive = None
-        if interactive is None:
-            return _plot(fig, highlight_nodes)
+        def _norm_visible(v):
+            return True if v is None else v
+
+        def _extract_vis_by_group(data):
+            out = {}
+            for trace in data:
+                lg = get(trace, "legendgroup", None)
+                if not lg:
+                    continue
+                if get(trace, "showlegend", False):
+                    out[lg] = _norm_visible(get(trace, "visible", True))
+            for trace in data:
+                lg = get(trace, "legendgroup", None)
+                if lg and lg not in out:
+                    out[lg] = _norm_visible(get(trace, "visible", True))
+            return out
+
+        def _apply_vis_by_group(data, vis_by_group, default=None):
+            for trace in data:
+                lg = get(trace, "legendgroup", None)
+                if not lg:
+                    continue
+                v = get(vis_by_group, lg, default)
+                if v is None:
+                    continue
+                trace["visible"] = v
+
+        def _make_all_groups_visible(data):
+            for trace in data:
+                if get(trace, "legendgroup"):
+                    trace["visible"] = True
+
         if isinstance(interactive, str) and interactive.lower() == "notebook":
-            make_figure_kwargs = dict(make_figure_kwargs)
-            make_figure_kwargs["use_widgets"] = True
-            fig = _plot(fig, highlight_nodes)
-
             active_node = None
+            base_vis_by_group = {}
+            hl_vis_by_group = None
+            cb_attached = set()
 
-            def _copy_trace(dst, src):
-                d = src.to_plotly_json()
-                d.pop("uid", None)
-                dst.update(d)
+            def _patch_trace(dst, trace_spec):
+                dst.update(trace_spec, overwrite=True)
+
+            base_vis_by_group = _extract_vis_by_group(fig.data)
 
             def _update_highlight(node_id):
-                nonlocal active_node, highlight_nodes
-                if active_node == node_id:
-                    active_node = None
-                    new_fig = _plot(None, highlight_nodes)
+                nonlocal active_node, highlight_nodes, base_vis_by_group, hl_vis_by_group
+
+                current_map = _extract_vis_by_group(fig.data)
+                if active_node is None:
+                    base_vis_by_group.update(current_map)
                 else:
-                    active_node = node_id
-                    new_fig = _plot(None, [node_id])
+                    if hl_vis_by_group is None:
+                        hl_vis_by_group = {}
+                    hl_vis_by_group.update(current_map)
+
+                if active_node == node_id:
+                    new_active = None
+                    new_trace_specs = _create_trace_specs(highlight_nodes)
+                else:
+                    new_active = node_id
+                    new_trace_specs = _create_trace_specs([node_id])
+
+                if new_active is None:
+                    desired = dict(base_vis_by_group)
+                else:
+                    if hl_vis_by_group is None:
+                        tmp_trace_specs = [dict(trace_spec) for trace_spec in new_trace_specs]
+                        _make_all_groups_visible(tmp_trace_specs)
+                        hl_vis_by_group = _extract_vis_by_group(tmp_trace_specs)
+                    desired = dict(hl_vis_by_group)
+
                 with fig.batch_update():
-                    for old_tr, new_tr in zip(fig.data, new_fig.data):
-                        _copy_trace(old_tr, new_tr)
-                    fig.layout.update(new_fig.layout)
-                _attach_callbacks(fig)
+                    for old_trace, new_trace_spec in zip(fig.data, new_trace_specs):
+                        _patch_trace(old_trace, new_trace_spec)
+                    _apply_vis_by_group(fig.data, desired, default=None)
+
+                active_node = new_active
 
             def _handle_click(trace, points, state):
                 if not points.point_inds:
@@ -2516,17 +2607,21 @@ class RefGraph(Configured):
                 _update_highlight(node_id)
 
             def _attach_callbacks(widget):
-                for tr in widget.data:
-                    mode = getattr(tr, "mode", None)
-                    customdata = getattr(tr, "customdata", None)
+                for trace in widget.data:
+                    k = id(trace)
+                    if k in cb_attached:
+                        continue
+                    cb_attached.add(k)
+                    mode = getattr(trace, "mode", None)
+                    customdata = getattr(trace, "customdata", None)
                     if mode and "markers" in mode and customdata is not None:
-                        tr.on_click(_handle_click)
+                        trace.on_click(_handle_click)
 
             _attach_callbacks(fig)
             return fig
+
         elif isinstance(interactive, str) and interactive.lower() == "dash":
             assert_can_import("dash")
-
             import dash
 
             if to_dash_kwargs is None:
@@ -2534,31 +2629,96 @@ class RefGraph(Configured):
             if dash_run_kwargs is None:
                 dash_run_kwargs = {}
 
-            base_fig = _plot(None, highlight_nodes)
-            app = base_fig.to_dash_app(**to_dash_kwargs)
+            def _plot(highlight_nodes):
+                fig = _resolve_fig(None)
+                for trace_spec in _create_trace_specs(highlight_nodes):
+                    fig.add_trace(Scatter(**trace_spec), **add_trace_kwargs)
+                return fig
+
+            def _update_vis_store_from_restyle(restyle_data, fig_json, vis_store):
+                if not restyle_data or len(restyle_data) != 2:
+                    return vis_store
+                edits, idxs = restyle_data
+                if not isinstance(edits, dict) or "visible" not in edits:
+                    return vis_store
+                vis_store = dict(vis_store or {})
+                vis_vals = edits["visible"]
+                if not isinstance(vis_vals, (list, tuple)):
+                    vis_vals = [vis_vals] * len(idxs)
+                data = get(fig_json, "data", [])
+                for i, tr_idx in enumerate(idxs):
+                    if not isinstance(tr_idx, int) or tr_idx < 0 or tr_idx >= len(data):
+                        continue
+                    lg = get(data[tr_idx], "legendgroup")
+                    if not lg:
+                        continue
+                    vis_store[lg] = _norm_visible(vis_vals[i])
+                return vis_store
+
+            fig.update_layout(legend=dict(groupclick="togglegroup"))
+
+            base_vis_init = _extract_vis_by_group(fig.data)
+
+            app = fig.to_dash_app(**to_dash_kwargs)
             app.layout.children.insert(0, dash.dcc.Store(id="active-node", data=None))
+            app.layout.children.insert(0, dash.dcc.Store(id="base-vis", data=base_vis_init))
+            app.layout.children.insert(0, dash.dcc.Store(id="hl-vis", data=None))
 
             @app.callback(
                 dash.Output("graph", "figure"),
                 dash.Output("active-node", "data"),
+                dash.Output("base-vis", "data"),
+                dash.Output("hl-vis", "data"),
                 dash.Input("graph", "clickData"),
+                dash.Input("graph", "restyleData"),
+                dash.State("graph", "figure"),
                 dash.State("active-node", "data"),
+                dash.State("base-vis", "data"),
+                dash.State("hl-vis", "data"),
+                prevent_initial_call=True,
             )
-            def _update_highlight(click_data, active_node):
+            def _update(click_data, restyle_data, fig_json, active_node, base_vis, hl_vis):
+                trig = dash.callback_context.triggered
+                prop_id = trig[0]["prop_id"] if trig else ""
+                prop = prop_id.split(".", 1)[1] if "." in prop_id else ""
+
+                if prop == "restyleData" and restyle_data is not None:
+                    if fig_json is None:
+                        raise dash.exceptions.PreventUpdate
+                    if active_node is None:
+                        base_vis = _update_vis_store_from_restyle(restyle_data, fig_json, base_vis)
+                    else:
+                        hl_vis = _update_vis_store_from_restyle(restyle_data, fig_json, hl_vis)
+                    return dash.no_update, dash.no_update, base_vis, hl_vis
+
                 if click_data is None or "points" not in click_data or not click_data["points"]:
                     raise dash.exceptions.PreventUpdate
+
                 pt = click_data["points"][0]
                 customdata = pt.get("customdata", None)
-                if customdata is None:
+                if not customdata:
                     raise dash.exceptions.PreventUpdate
                 node_id = customdata[0]
+
                 if active_node == node_id:
-                    active_node = None
-                    new_fig = _plot(None, highlight_nodes)
+                    new_active = None
+                    new_fig = _plot(highlight_nodes)
+                    new_fig.update_layout(legend=dict(groupclick="togglegroup"))
+                    if base_vis is None:
+                        base_vis = _extract_vis_by_group(new_fig.data)
+                    _apply_vis_by_group(new_fig.data, base_vis, default=None)
                 else:
-                    active_node = node_id
-                    new_fig = _plot(None, [node_id])
-                return new_fig, active_node
+                    new_active = node_id
+                    new_fig = _plot([node_id])
+                    new_fig.update_layout(legend=dict(groupclick="togglegroup"))
+                    if hl_vis is None:
+                        _make_all_groups_visible(new_fig.data)
+                        hl_vis = _extract_vis_by_group(new_fig.data)
+                    _apply_vis_by_group(new_fig.data, hl_vis, default=None)
+
+                if to_dash_kwargs.get("fit_to_window", False):
+                    new_fig.update_layout(autosize=True, width=None, height=None)
+                return new_fig, new_active, base_vis, hl_vis
 
             app.run(**dash_run_kwargs)
         else:

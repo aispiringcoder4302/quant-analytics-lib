@@ -14,6 +14,7 @@ import numpy as np
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._dtypes import *
+from vectorbtpro.signals.enums import StopType
 from vectorbtpro.utils.formatting import prettify_doc
 
 __pdoc__all__ = __all__ = [
