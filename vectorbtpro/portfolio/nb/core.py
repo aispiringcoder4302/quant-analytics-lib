@@ -279,10 +279,10 @@ def long_buy_nb(
         -1,
     )
 
+    new_cash = add_nb(_account_state.cash, -req_cash)
+    new_position = add_nb(_account_state.position, final_size)
     if leverage_mode == LeverageMode.Lazy:
         own_cash_used = min(req_cash, base_cash_limit)
-        new_cash = add_nb(_account_state.cash, -own_cash_used)
-        new_position = add_nb(_account_state.position, final_size)
         new_free_cash = add_nb(_account_state.free_cash, -own_cash_used)
         debt_diff = max(add_nb(req_cash, -own_cash_used), 0.0)
         if debt_diff > 0:
@@ -292,19 +292,16 @@ def long_buy_nb(
             new_debt = _account_state.debt
             new_locked_cash = _account_state.locked_cash
     else:
-        new_position = add_nb(_account_state.position, final_size)
         if leverage > 1.0:
             order_value = final_size * adj_price
             margin_cash = order_value / leverage
             total_eager_cash = margin_cash + fees_paid
             own_cash_used = min(total_eager_cash, base_cash_limit)
             extra_debt = max(add_nb(total_eager_cash, -own_cash_used), 0.0)
-            new_cash = add_nb(_account_state.cash, -own_cash_used)
             new_free_cash = add_nb(_account_state.free_cash, -own_cash_used)
             new_locked_cash = _account_state.locked_cash + margin_cash
             new_debt = _account_state.debt + order_value * (leverage - 1.0) / leverage + extra_debt
         else:
-            new_cash = add_nb(_account_state.cash, -req_cash)
             new_debt = _account_state.debt
             new_locked_cash = _account_state.locked_cash
             new_free_cash = add_nb(_account_state.free_cash, -req_cash)
