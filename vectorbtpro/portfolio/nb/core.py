@@ -212,6 +212,8 @@ def long_buy_nb(
     order_value_limit = base_cash_limit * leverage
 
     if leverage_mode == LeverageMode.Eager and leverage > 1.0:
+        if np.isinf(leverage):
+            raise ValueError("Leverage must be finite for LeverageMode.Eager")
         max_order_value = add_nb(base_cash_limit, -fixed_fees) / ((1.0 / leverage) + fees)
         if max_order_value <= 0:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
