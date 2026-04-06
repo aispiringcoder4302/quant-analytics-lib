@@ -7,7 +7,7 @@ name = "vectorbtpro"
 version = "2025.12.31"
 description = "Next-Generation Quantitative Analysis Tool"
 license = { file = "LICENSE" }
-authors = [{ name = "Private", email = "private@localhost" }]
+authors = [{ name = "Private", email = "private@example.com" }]
 readme = "README.md"
 requires-python = "~=3.8"
 dependencies = [
