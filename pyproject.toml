@@ -7,7 +7,7 @@ name = "vectorbtpro"
 version = "2025.12.31"
 description = "Next-Generation Quantitative Analysis Tool"
 license = { file = "LICENSE" }
-authors = [{ name = "Oleg Polakow", email = "olegpolakow@vectorbt.pro" }]
+authors = [{ name = "Private", email = "private@localhost" }]
 readme = "README.md"
 requires-python = "~=3.8"
 dependencies = [
@@ -52,9 +52,9 @@ classifiers = [
 ]
 
 [project.urls]
-homepage = "https://vectorbt.pro/"
-documentation = "https://vectorbt.pro/documentation/"
-repository = "https://github.com/polakowo/vectorbt.pro"
+homepage = "https://localhost"
+documentation = "https://localhost"
+repository = "https://github.com/yourusername/vectorbtpro-private"
 
 [project.optional-dependencies]
 data-base = [
